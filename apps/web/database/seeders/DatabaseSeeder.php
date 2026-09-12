@@ -1,25 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call([
+            // The glossary comes first, always. Ten AI features inject it into their
+            // prompts and the translation reviewer checks against it, so anything seeded
+            // before it exists would be produced without the vocabulary people search for.
+            GlossarySeeder::class,
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            DemoContentSeeder::class,
         ]);
     }
 }

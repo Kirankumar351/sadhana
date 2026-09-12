@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\LazyCollection;
 
 /**
  * Streaks — the retention mechanic.
@@ -166,9 +167,9 @@ final class StreakService
      * Deliberately not "everyone with a streak": reminding someone who has already done
      * today's quiz is the fastest way to get the whole channel muted.
      *
-     * @return \Illuminate\Support\LazyCollection<int, Streak>
+     * @return LazyCollection<int, Streak>
      */
-    public function atRiskToday(): \Illuminate\Support\LazyCollection
+    public function atRiskToday(): LazyCollection
     {
         return Streak::query()
             ->where('current_streak', '>', 0)

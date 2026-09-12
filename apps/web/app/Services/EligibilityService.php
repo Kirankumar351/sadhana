@@ -33,8 +33,11 @@ use Carbon\CarbonImmutable;
 final class EligibilityService
 {
     public const STATUS_ELIGIBLE = 'eligible';
+
     public const STATUS_PARTIAL = 'partial';
+
     public const STATUS_NOT_ELIGIBLE = 'not_eligible';
+
     public const STATUS_UNKNOWN = 'unknown';
 
     /**

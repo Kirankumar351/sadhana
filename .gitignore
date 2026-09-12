@@ -49,3 +49,6 @@ Thumbs.db
 
 # Local schema smoke-test database
 /apps/web/database/schema-test.sqlite
+
+# Local npm cache redirected off the full C: drive
+/.npm-cache/

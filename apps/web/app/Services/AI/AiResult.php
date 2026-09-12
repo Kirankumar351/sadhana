@@ -20,11 +20,17 @@ use Carbon\CarbonInterface;
 final readonly class AiResult
 {
     public const ANSWERED = 'answered';
+
     public const HANDED_OFF = 'handed_off';       // routed to a deterministic engine
+
     public const NO_SOURCES = 'no_sources';       // nothing in the corpus to answer from
+
     public const LOW_CONFIDENCE = 'low_confidence';
+
     public const BLOCKED = 'blocked';             // an output guard fired
+
     public const CAP_REACHED = 'cap_reached';
+
     public const UNAVAILABLE = 'unavailable';     // provider failure
 
     /**

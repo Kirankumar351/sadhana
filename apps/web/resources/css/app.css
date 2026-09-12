@@ -1,11 +1,154 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/**
+ * Telugu typography.
+ *
+ * The font is SELF-HOSTED and SUBSET. Full Noto Sans Telugu is 300 KB+; the subset is
+ * around 60 KB. Loading it from Google Fonts would add a DNS lookup and a third-party
+ * dependency for a font served on literally every page, on a connection where that lookup
+ * is measured in hundreds of milliseconds.
+ *
+ * Drop the .woff2 files into public/fonts/ before launch. `font-display: swap` means the
+ * page renders in the fallback immediately rather than showing nothing while the font
+ * arrives — on 3G that difference is seconds of blank screen.
+ */
+@font-face {
+    font-family: 'Noto Sans Telugu';
+    src: url('/fonts/noto-sans-telugu-subset.woff2') format('woff2');
+    font-weight: 400 700;
+    font-display: swap;
+    unicode-range: U+0C00-0C7F, U+200C-200D;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+@font-face {
+    font-family: 'Gabarito';
+    src: url('/fonts/gabarito-subset.woff2') format('woff2');
+    font-weight: 400 800;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+2000-206F, U+20B9;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+    }
+
+    /**
+     * Telugu glyphs are taller and its strings run 15-30% longer than the English
+     * equivalent. The extra line-height is not cosmetic — at 1.6 the ascenders and
+     * descenders of adjacent lines collide and the text becomes genuinely harder to read.
+     */
+    html[lang='te'] {
+        font-family: 'Noto Sans Telugu', 'Noto Sans', system-ui, sans-serif;
+        line-height: 1.85;
+        letter-spacing: 0;
+    }
+
+    html[lang='en'] {
+        font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+    }
+
+    body {
+        @apply bg-paper text-ink antialiased;
+    }
+
+    /**
+     * Numerals stay Latin in every locale: 2026, Rs 28,940, 16,614.
+     * Telugu numerals are not read fluently by this audience, and a date is the single
+     * thing on the page a user must not misread.
+     */
+    .numeral,
+    time,
+    [data-numeral] {
+        font-family: 'Noto Sans', system-ui, sans-serif;
+        font-feature-settings: 'tnum';
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Visible focus for keyboard users. Never remove this to make a design look tidier. */
+    :focus-visible {
+        @apply outline-none ring-2 ring-green ring-offset-2 ring-offset-paper;
+    }
+}
+
+@layer components {
+    /* Every interactive element clears 48px, for one-handed use on a moving bus. */
+    .tap {
+        @apply min-h-tap inline-flex items-center justify-center;
+    }
+
+    .btn-primary {
+        @apply tap rounded-control bg-green px-4 py-2.5 font-semibold text-white
+               transition hover:bg-green/90 active:scale-[0.98] disabled:opacity-50;
+    }
+
+    .btn-secondary {
+        @apply tap rounded-control border border-ink/15 bg-white px-4 py-2.5
+               font-medium text-ink transition hover:bg-ink/5;
+    }
+
+    .btn-accent {
+        @apply tap rounded-control bg-marigold px-4 py-2.5 font-semibold text-ink
+               transition hover:bg-marigold/90;
+    }
+
+    .card {
+        @apply rounded-card border border-ink/10 bg-white;
+    }
+
+    /* Eligibility badges — the most important component in the product. */
+    .badge-eligible {
+        @apply inline-flex items-center gap-1 rounded-pill bg-green-wash px-2.5 py-1
+               text-meta font-semibold text-green;
+    }
+
+    .badge-partial {
+        @apply inline-flex items-center gap-1 rounded-pill bg-marigold-wash px-2.5 py-1
+               text-meta font-semibold text-ink-soft;
+    }
+
+    .badge-not-eligible {
+        @apply inline-flex items-center gap-1 rounded-pill bg-ink/5 px-2.5 py-1
+               text-meta font-medium text-muted;
+    }
+
+    /* Logged out: no badge at all rather than a misleading one. */
+    .badge-unknown {
+        @apply inline-flex items-center gap-1 rounded-pill border border-dashed
+               border-ink/20 px-2.5 py-1 text-meta font-medium text-muted;
+    }
+
+    .badge-urgent {
+        @apply inline-flex items-center gap-1 rounded-pill bg-danger/10 px-2.5 py-1
+               text-meta font-semibold text-danger;
+    }
+
+    /* Machine translation and AI output are always labelled. We never blur that line. */
+    .badge-ai {
+        @apply inline-flex items-center gap-1 rounded-pill bg-violet-100 px-2 py-0.5
+               text-meta font-medium text-violet-700;
+    }
+
+    .chip {
+        @apply tap shrink-0 rounded-pill border border-ink/15 bg-white px-3.5 py-2
+               text-body font-medium text-ink-soft transition;
+    }
+
+    .chip-active {
+        @apply border-green bg-green-wash text-green;
+    }
+}
+
+/* Horizontally scrollable filter chips — never a dropdown on mobile. */
+.scroll-x {
+    @apply flex gap-2 overflow-x-auto pb-1;
+    scrollbar-width: none;
+}
+
+.scroll-x::-webkit-scrollbar {
+    display: none;
 }

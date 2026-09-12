@@ -23,7 +23,7 @@ return [
         'bn' => ['name' => 'Bengali',  'native' => 'বাংলা',   'dir' => 'ltr', 'active' => false],
     ],
 
-    'default'  => 'te',
+    'default' => 'te',
     'fallback' => 'en',
 
     /**

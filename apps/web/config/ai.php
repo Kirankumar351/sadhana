@@ -18,7 +18,7 @@ return [
     'provider' => env('AI_PROVIDER', 'anthropic'),
 
     'anthropic' => [
-        'key'      => env('ANTHROPIC_API_KEY'),
+        'key' => env('ANTHROPIC_API_KEY'),
         'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
     ],
 
@@ -47,11 +47,11 @@ return [
      * This preserves the rule that matters: the corpus is derived, never authored.
      */
     'vector' => [
-        'driver'     => env('AI_VECTOR_DRIVER', 'qdrant'),
-        'host'       => env('QDRANT_HOST', 'http://127.0.0.1:6333'),
-        'api_key'    => env('QDRANT_API_KEY'),
+        'driver' => env('AI_VECTOR_DRIVER', 'qdrant'),
+        'host' => env('QDRANT_HOST', 'http://127.0.0.1:6333'),
+        'api_key' => env('QDRANT_API_KEY'),
         'collection' => env('QDRANT_COLLECTION', 'sadhana_chunks'),
-        'distance'   => 'Cosine',
+        'distance' => 'Cosine',
     ],
 
     /**
@@ -80,9 +80,9 @@ return [
      */
     'hard_blocks' => [
         'no_eligibility_outcomes' => true,  // EligibilityService decides, never a model
-        'no_invented_dates'       => true,  // a date absent from retrieved passages is stripped
-        'no_cutoff_prediction'    => true,  // we show five years of real data instead
-        'no_selection_guarantee'  => true,
+        'no_invented_dates' => true,  // a date absent from retrieved passages is stripped
+        'no_cutoff_prediction' => true,  // we show five years of real data instead
+        'no_selection_guarantee' => true,
         'no_answer_without_sources' => true,
         'no_copyrighted_reproduction' => true,  // enforced by restricting the corpus itself
     ],
@@ -95,15 +95,15 @@ return [
      */
     'caps' => [
         'free' => [
-            'ask_questions_per_day'   => 30,
-            'notes_per_month'         => 30,
+            'ask_questions_per_day' => 30,
+            'notes_per_month' => 30,
             'flashcard_decks_per_month' => 10,
             'answer_evaluations_per_month' => 2,
             'mock_interviews_per_month' => 1,
         ],
         'premium' => [
-            'ask_questions_per_day'   => 200,
-            'notes_per_month'         => 200,
+            'ask_questions_per_day' => 200,
+            'notes_per_month' => 200,
             'flashcard_decks_per_month' => 100,
             'answer_evaluations_per_month' => 60,
             'mock_interviews_per_month' => 20,
@@ -139,9 +139,9 @@ return [
      */
     'pricing' => [
         'claude-haiku-4-5-20251001' => ['input' => 8_000.0,   'output' => 40_000.0],
-        'claude-sonnet-5'           => ['input' => 25_000.0,  'output' => 125_000.0],
-        'claude-opus-5'             => ['input' => 125_000.0, 'output' => 625_000.0],
-        'voyage-3'                  => ['input' => 1_000.0,   'output' => 0.0],
+        'claude-sonnet-5' => ['input' => 25_000.0,  'output' => 125_000.0],
+        'claude-opus-5' => ['input' => 125_000.0, 'output' => 625_000.0],
+        'voyage-3' => ['input' => 1_000.0,   'output' => 0.0],
     ],
 
     /**
@@ -149,11 +149,11 @@ return [
      * Explain is at 92% hit rate because a passage does not change; its TTL is long on purpose.
      */
     'cache_ttl' => [
-        'explain'  => 60 * 60 * 24 * 90,
-        'ask'      => 60 * 60 * 6,
-        'notes'    => 60 * 60 * 24 * 30,
+        'explain' => 60 * 60 * 24 * 90,
+        'ask' => 60 * 60 * 6,
+        'notes' => 60 * 60 * 24 * 30,
         'flashcards' => 60 * 60 * 24 * 30,
-        'translate'  => 60 * 60 * 24 * 365,
+        'translate' => 60 * 60 * 24 * 365,
     ],
 
     /**
@@ -163,19 +163,19 @@ return [
      * With gates open (the default posture) these are advisory only.
      */
     'features' => [
-        'ask'           => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'doubt_solver'  => ['tier' => 'large', 'enabled' => false, 'gate' => null],
-        'explain'       => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'notes'         => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'flashcards'    => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'study_plan'    => ['tier' => 'large', 'enabled' => false, 'gate' => null],
-        'answer_eval'   => ['tier' => 'large', 'enabled' => false, 'gate' => 'ai_answer_eval'],
+        'ask' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'doubt_solver' => ['tier' => 'large', 'enabled' => false, 'gate' => null],
+        'explain' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'notes' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'flashcards' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'study_plan' => ['tier' => 'large', 'enabled' => false, 'gate' => null],
+        'answer_eval' => ['tier' => 'large', 'enabled' => false, 'gate' => 'ai_answer_eval'],
         'mock_interview' => ['tier' => 'large', 'enabled' => false, 'gate' => 'ai_mock_interview'],
-        'question_gen'  => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'question_gen' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
         'news_pipeline' => ['tier' => 'small', 'enabled' => true,  'gate' => null],
-        'material_gen'  => ['tier' => 'large', 'enabled' => false, 'gate' => null],
-        'extraction'    => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'translation'   => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'material_gen' => ['tier' => 'large', 'enabled' => false, 'gate' => null],
+        'extraction' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        'translation' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
     ],
 
     /**

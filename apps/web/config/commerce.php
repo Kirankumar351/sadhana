@@ -50,15 +50,15 @@ return [
      * a campus deal, a refund and a manual grant all flow through one code path.
      */
     'entitlements' => [
-        'ads_free'          => 'No display advertising',
-        'test_series_full'  => 'Every mock in every series, not just the free sample',
+        'ads_free' => 'No display advertising',
+        'test_series_full' => 'Every mock in every series, not just the free sample',
         'test_analytics_deep' => 'Percentile, rank, topic strength, comparison to top 10%',
-        'ai_answer_eval'    => 'Descriptive answer evaluation for mains',
+        'ai_answer_eval' => 'Descriptive answer evaluation for mains',
         'ai_mock_interview' => 'Mock interview practice',
-        'ai_higher_caps'    => 'Raised daily and monthly AI limits',
+        'ai_higher_caps' => 'Raised daily and monthly AI limits',
         'material_bulk_download' => 'Bulk PDF download',
-        'doubt_priority'    => 'Doubts surfaced to verified answerers first',
-        'offline_full'      => 'Full offline library sync',
+        'doubt_priority' => 'Doubts surfaced to verified answerers first',
+        'offline_full' => 'Full offline library sync',
     ],
 
     'currency' => 'INR',
@@ -71,9 +71,9 @@ return [
      * Accessed only through the PaymentGateway interface so it stays swappable.
      */
     'gateway' => [
-        'driver'         => env('PAYMENT_GATEWAY', 'razorpay'),
-        'key_id'         => env('RAZORPAY_KEY_ID'),
-        'key_secret'     => env('RAZORPAY_KEY_SECRET'),
+        'driver' => env('PAYMENT_GATEWAY', 'razorpay'),
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
 
         // UPI autopay mandates are opt-in, never pre-ticked. A surprise renewal on a
@@ -87,10 +87,10 @@ return [
      * only the default applied at issue time.
      */
     'gst' => [
-        'enabled'        => (bool) env('GST_ENABLED', false),
-        'default_rate'   => (float) env('GST_RATE', 18.0),
-        'home_state'     => env('GST_HOME_STATE', 'TS'),
-        'gstin'          => env('COMPANY_GSTIN'),
+        'enabled' => (bool) env('GST_ENABLED', false),
+        'default_rate' => (float) env('GST_RATE', 18.0),
+        'home_state' => env('GST_HOME_STATE', 'TS'),
+        'gstin' => env('COMPANY_GSTIN'),
         'invoice_prefix' => env('INVOICE_PREFIX', 'SDH'),
     ],
 
@@ -102,31 +102,31 @@ return [
     'plans' => [
         'free' => [
             'price_paise' => 0,
-            'period'      => 'lifetime',
+            'period' => 'lifetime',
             'entitlements' => [],
-            'ai_credits'  => 0,
+            'ai_credits' => 0,
         ],
         'premium' => [
             'price_paise' => 19_900,
-            'period'      => 'yearly',
+            'period' => 'yearly',
             'entitlements' => [
                 'ads_free', 'test_series_full', 'test_analytics_deep',
                 'material_bulk_download', 'doubt_priority', 'offline_full',
                 'ai_higher_caps',
             ],
-            'ai_credits'  => 500,
+            'ai_credits' => 500,
         ],
         'group1_mains' => [
             // Answer evaluation costs roughly Rs 0.93 a use and mock interview more.
             // These are Group 1 features, and Group 1 aspirants are the cohort that will pay.
             'price_paise' => 99_900,
-            'period'      => 'yearly',
+            'period' => 'yearly',
             'entitlements' => [
                 'ads_free', 'test_series_full', 'test_analytics_deep',
                 'ai_answer_eval', 'ai_mock_interview', 'ai_higher_caps',
                 'material_bulk_download', 'doubt_priority', 'offline_full',
             ],
-            'ai_credits'  => 3_000,
+            'ai_credits' => 3_000,
         ],
     ],
 
@@ -136,15 +136,15 @@ return [
      * "Qualified" means the referred person actually used the product, not merely signed up.
      */
     'referral' => [
-        'enabled'            => true,
+        'enabled' => true,
         'qualify_after_days' => 7,
         'qualify_requires_quiz_attempts' => 3,
-        'referrer_reward'    => ['type' => 'credits', 'value' => 100],
-        'referred_reward'    => ['type' => 'credits', 'value' => 50],
+        'referrer_reward' => ['type' => 'credits', 'value' => 100],
+        'referred_reward' => ['type' => 'credits', 'value' => 50],
     ],
 
     'refund' => [
-        'window_days'       => 7,
+        'window_days' => 7,
         'auto_approve_under_paise' => 20_000,
     ],
 ];

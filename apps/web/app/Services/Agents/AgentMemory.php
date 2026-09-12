@@ -7,6 +7,7 @@ namespace App\Services\Agents;
 use App\Models\AgentDefinition;
 use App\Models\AgentMemoryRecord;
 use App\Models\User;
+use Carbon\CarbonInterface;
 
 /**
  * What makes the tutor a tutor rather than a chatbot.
@@ -118,7 +119,7 @@ final class AgentMemory
         };
     }
 
-    private function expiryFor(string $kind): ?\Carbon\CarbonInterface
+    private function expiryFor(string $kind): ?CarbonInterface
     {
         $days = self::TTL_DAYS[$kind] ?? 45;
 

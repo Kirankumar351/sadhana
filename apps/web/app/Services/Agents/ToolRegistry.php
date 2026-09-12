@@ -105,7 +105,7 @@ final class ToolRegistry
         if ($tool->writesOwnerTable() && ! $declared['approval']) {
             throw new UnsafeToolBindingException(
                 "Tool '{$tool->key()}' writes an owner table but is not marked as requiring "
-                ."approval. Eligibility criteria, dates, fees and answer keys are never "
+                .'approval. Eligibility criteria, dates, fees and answer keys are never '
                 .'agent-writable. Make it draft into ai_drafts instead.'
             );
         }
