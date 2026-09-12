@@ -1,8 +1,14 @@
 {
     "name": "sadhana/web",
     "type": "project",
-    "description": "Sadhana — Telugu-first portal for Indian government and private job aspirants",
-    "keywords": ["laravel", "livewire", "filament", "telugu", "edtech"],
+    "description": "Sadhana \u2014 Telugu-first portal for Indian government and private job aspirants",
+    "keywords": [
+        "laravel",
+        "livewire",
+        "filament",
+        "telugu",
+        "edtech"
+    ],
     "license": "proprietary",
     "require": {
         "php": "^8.2",
@@ -49,7 +55,8 @@
     },
     "scripts": {
         "post-autoload-dump": [
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "lint": "pint --test",
         "fix": "pint",

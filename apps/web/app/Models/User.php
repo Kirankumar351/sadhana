@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,10 +23,23 @@ use Illuminate\Notifications\Notifiable;
  * optional and mostly unused — this audience does not check email, which is why Vol 2
  * reserves it for a weekly digest and nothing else.
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuids, Notifiable, SoftDeletes;
+
+    /**
+     * Who may open the admin portal.
+     *
+     * Gated on an explicit `is_staff` flag rather than on a role lookup, so the check
+     * cannot be accidentally widened by a role gaining a permission. A banned account is
+     * refused even if the flag is still set — deactivating someone has to take effect
+     * immediately, not after an admin remembers to clear a second column.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_staff && ! $this->is_banned;
+    }
 
     protected $guarded = ['id'];
 
