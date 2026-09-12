@@ -61,7 +61,7 @@ return new class extends Migration
 
             $t->timestamps();
 
-            $t->index(['status', 'published_at'], 'idx_status_published');
+            $t->index(['status', 'published_at'], 'idx_news_status_published');
             $t->index('dedupe_group', 'idx_dedupe');
             $t->index(['digest_date', 'probability'], 'idx_digest');
         });
@@ -107,7 +107,7 @@ return new class extends Migration
 
             $t->timestamps();
 
-            $t->index(['user_id', 'due_at'], 'idx_due');
+            $t->index(['user_id', 'due_at'], 'idx_flashcard_due');
             $t->index(['user_id', 'deck'], 'idx_deck');
         });
 

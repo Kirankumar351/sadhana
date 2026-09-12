@@ -179,7 +179,7 @@ return new class extends Migration
             $t->timestamp('completed_at')->nullable();
             $t->timestamps();
 
-            $t->index(['status', 'created_at'], 'idx_queue');
+            $t->index(['status', 'created_at'], 'idx_refund_queue');
         });
 
         /**
@@ -200,7 +200,7 @@ return new class extends Migration
             $t->timestamps();
 
             $t->index(['user_id', 'key', 'expires_at'], 'idx_lookup');
-            $t->index('expires_at', 'idx_expiry');
+            $t->index('expires_at', 'idx_entitlement_expiry');
         });
 
         /**

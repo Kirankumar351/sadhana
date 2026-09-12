@@ -93,7 +93,7 @@ return new class extends Migration
             $t->timestamp('expires_at')->nullable();
             $t->timestamps();
 
-            $t->index('expires_at', 'idx_expiry');
+            $t->index('expires_at', 'idx_aicache_expiry');
             $t->index(['feature', 'hits'], 'idx_popular');
         });
 
@@ -118,7 +118,7 @@ return new class extends Migration
             $t->unsignedBigInteger('promoted_id')->nullable(); // the row created on approval
             $t->timestamps();
 
-            $t->index(['type', 'status', 'created_at'], 'idx_queue');
+            $t->index(['type', 'status', 'created_at'], 'idx_aidraft_queue');
         });
 
         /**
@@ -163,7 +163,7 @@ return new class extends Migration
             $t->timestamps();
 
             $t->unique(['key', 'version'], 'uk_key_version');
-            $t->index(['key', 'is_active'], 'idx_active');
+            $t->index(['key', 'is_active'], 'idx_aiprompt_active');
         });
 
         /**

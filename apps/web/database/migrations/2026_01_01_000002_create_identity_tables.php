@@ -103,8 +103,16 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        // MySQL cannot index a 500-char column in full under utf8mb4; prefix-index it.
-        DB::statement('CREATE UNIQUE INDEX uk_token ON push_tokens (token(191))');
+        // MySQL cannot index a 500-char column in full under utf8mb4, so the index is
+        // prefixed to 191 characters. SQLite has no such limit and no prefix syntax, so
+        // the test suite (which runs on SQLite in memory) gets a plain unique index.
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement('CREATE UNIQUE INDEX uk_token ON push_tokens (token(191))');
+        } else {
+            Schema::table('push_tokens', function (Blueprint $t) {
+                $t->unique('token', 'uk_token');
+            });
+        }
 
         /**
          * Per-type delivery preferences.

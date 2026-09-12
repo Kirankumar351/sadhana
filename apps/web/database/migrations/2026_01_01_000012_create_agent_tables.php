@@ -125,7 +125,7 @@ return new class extends Migration
             $t->timestamps();
 
             $t->index(['agent_definition_id', 'created_at'], 'idx_agent_history');
-            $t->index(['status', 'created_at'], 'idx_status');
+            $t->index(['status', 'created_at'], 'idx_agentrun_status');
             $t->index(['user_id', 'created_at'], 'idx_user_runs');
         });
 

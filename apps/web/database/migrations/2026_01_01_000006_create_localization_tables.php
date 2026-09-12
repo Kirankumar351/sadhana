@@ -67,7 +67,7 @@ return new class extends Migration
             $t->timestamp('reviewed_at')->nullable();
             $t->timestamps();
 
-            $t->index(['status', 'is_critical'], 'idx_status');
+            $t->index(['status', 'is_critical'], 'idx_transq_status');
             $t->index(['model_type', 'model_id'], 'idx_model');
         });
     }

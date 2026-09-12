@@ -46,3 +46,6 @@ Thumbs.db
 # --- Build artefacts ---
 /apps/web/storage/app/public/
 /coverage/
+
+# Local schema smoke-test database
+/apps/web/database/schema-test.sqlite

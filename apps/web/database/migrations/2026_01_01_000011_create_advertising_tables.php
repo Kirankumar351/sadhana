@@ -77,7 +77,7 @@ return new class extends Migration
             $t->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $t->timestamps();
 
-            $t->index(['status', 'starts_at', 'ends_at'], 'idx_active');
+            $t->index(['status', 'starts_at', 'ends_at'], 'idx_adcampaign_active');
             $t->index('placement', 'idx_placement');
         });
 
@@ -94,7 +94,9 @@ return new class extends Migration
          * on a partitioned table must contain the partitioning column, which is why the
          * primary key is composite here.
          */
-        Schema::create('ad_events', function (Blueprint $t) {
+        $isMysql = Schema::getConnection()->getDriverName() === 'mysql';
+
+        Schema::create('ad_events', function (Blueprint $t) use ($isMysql) {
             $t->unsignedBigInteger('id', true);
             $t->unsignedBigInteger('campaign_id');
             $t->enum('event_type', ['impression', 'click']);
@@ -104,17 +106,28 @@ return new class extends Migration
             $t->string('placement', 40)->nullable();
             $t->timestamp('occurred_at');
 
-            $t->primary(['id', 'occurred_at']);
+            // MySQL requires every unique key on a partitioned table to contain the
+            // partitioning column, hence the composite primary key. SQLite rejects
+            // AUTOINCREMENT on a composite primary key outright — and since it does not
+            // partition either, the auto-incrementing id alone is the correct key there.
+            if ($isMysql) {
+                $t->primary(['id', 'occurred_at']);
+            }
+
             $t->index(['campaign_id', 'occurred_at'], 'idx_campaign_time');
         });
 
-        DB::statement(<<<'SQL'
-            ALTER TABLE ad_events
-            PARTITION BY RANGE (UNIX_TIMESTAMP(occurred_at)) (
-                PARTITION p_init VALUES LESS THAN (UNIX_TIMESTAMP('2026-02-01')),
-                PARTITION p_max  VALUES LESS THAN MAXVALUE
-            )
-        SQL);
+        // Monthly partitions, added and dropped by the `ad-events:partition` command.
+        // MySQL only; SQLite has no partitioning and the test suite never needs it.
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement(<<<'SQL'
+                ALTER TABLE ad_events
+                PARTITION BY RANGE (UNIX_TIMESTAMP(occurred_at)) (
+                    PARTITION p_init VALUES LESS THAN (UNIX_TIMESTAMP('2026-02-01')),
+                    PARTITION p_max  VALUES LESS THAN MAXVALUE
+                )
+            SQL);
+        }
 
         Schema::create('ad_event_rollups', function (Blueprint $t) {
             $t->id();

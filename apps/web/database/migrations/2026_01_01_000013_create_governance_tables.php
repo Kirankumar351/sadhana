@@ -77,7 +77,7 @@ return new class extends Migration
             $t->timestamp('completed_at')->nullable();
             $t->timestamps();
 
-            $t->index(['status', 'created_at'], 'idx_queue');
+            $t->index(['status', 'created_at'], 'idx_datareq_queue');
         });
 
         /**

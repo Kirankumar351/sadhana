@@ -34,7 +34,7 @@ return new class extends Migration
             $t->boolean('is_active')->default(true);
             $t->timestamps();
 
-            $t->index(['is_active', 'last_run_at'], 'idx_due');
+            $t->index(['is_active', 'last_run_at'], 'idx_scrapesrc_due');
         });
 
         Schema::create('notifications', function (Blueprint $t) {
@@ -94,7 +94,7 @@ return new class extends Migration
             $t->timestamps();
             $t->softDeletes();
 
-            $t->index(['status', 'published_at'], 'idx_status_published');
+            $t->index(['status', 'published_at'], 'idx_notif_status_published');
             $t->index('apply_end_date', 'idx_deadline');
             $t->index(['min_qualification', 'max_age', 'status'], 'idx_eligibility_match');
             $t->index(['job_type', 'status', 'published_at'], 'idx_job_type');

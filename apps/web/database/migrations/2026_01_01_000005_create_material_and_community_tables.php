@@ -94,7 +94,13 @@ return new class extends Migration
             $t->index(['answer_count', 'created_at'], 'idx_unanswered');
         });
 
-        DB::statement('ALTER TABLE posts ADD FULLTEXT ft_search (title, body)');
+        // Full-text search over doubts, used by search-before-you-ask. MySQL only —
+        // SQLite would need FTS5 virtual tables, which is not worth carrying for a test
+        // suite that never exercises relevance ranking. Production search is Meilisearch;
+        // this index is the fallback that keeps the feature working if Meilisearch is down.
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE posts ADD FULLTEXT ft_search (title, body)');
+        }
 
         Schema::create('answers', function (Blueprint $t) {
             $t->id();
@@ -175,7 +181,7 @@ return new class extends Migration
             $t->timestamp('resolved_at')->nullable();
             $t->timestamps();
 
-            $t->index(['status', 'created_at'], 'idx_queue');
+            $t->index(['status', 'created_at'], 'idx_modflag_queue');
             $t->index(['flaggable_type', 'flaggable_id'], 'idx_flaggable');
         });
 
