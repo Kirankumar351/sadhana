@@ -1,0 +1,109 @@
+# Local development stack.
+#
+# Deliberately the same component list as production, at a smaller size. Vol 2 ch.2.3 is
+# explicit that every environment runs identical MySQL, Redis and PHP versions — version
+# drift between local, staging and production is how "it worked on my machine" incidents
+# happen, and those incidents cost most on notification day.
+#
+#   make up     start everything
+#   make fresh  migrate and seed from zero
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: sadhana-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sadhana
+      MYSQL_USER: sadhana
+      MYSQL_PASSWORD: secret
+    command:
+      # utf8mb4 throughout. Telugu is outside the BMP-safe subset that older
+      # collations handle, and a wrong collation corrupts text silently.
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=caching_sha2_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: sadhana-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: sadhana-meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: development
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili-data:/meili_data
+
+  # Vector store for AI retrieval.
+  #
+  # The design documents assumed a MySQL VECTOR column, which MySQL 8 does not have.
+  # `ai_chunks` remains the MySQL owner of record; Qdrant holds the vectors, keyed by
+  # ai_chunks.id. See docs/03-AI-AND-AGENTS.md.
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    container_name: sadhana-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+  # S3-compatible local stand-in for Cloudflare R2, so the upload and download paths are
+  # exercised in development rather than mocked. Copyright moderation, quarantine prefixes
+  # and signed URLs are all storage behaviour, and mocking them hides the bugs.
+  minio:
+    image: minio/minio:latest
+    container_name: sadhana-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: sadhana
+      MINIO_ROOT_PASSWORD: secret123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sadhana-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  mysql-data:
+  redis-data:
+  meili-data:
+  qdrant-data:
+  minio-data:

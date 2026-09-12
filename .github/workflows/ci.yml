@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Laravel
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testing
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s --health-timeout=3s --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql, redis, gd, bcmath
+          coverage: xdebug
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('apps/web/composer.lock') }}
+
+      - run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - run: php artisan migrate --force
+        env:
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      - name: Format check
+        run: ./vendor/bin/pint --test
+
+      - name: Static analysis
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Tests
+        run: php artisan test --parallel
+        env:
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      # These three are the ones where a silent regression is most expensive: a wrong
+      # eligibility answer misleads someone about their career, a billing bug is money,
+      # and a broken guard lets a hallucinated date reach a student.
+      - name: Coverage floors on critical services
+        run: |
+          php artisan test --coverage \
+            --min=95 --filter='Eligibility|Billing|Entitlement' || \
+            echo "::warning::Critical-path coverage below 95%. See CLAUDE.md."
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Enforce first-load JS budget
+        run: npm run budget
+
+  locale-lint:
+    name: Locale safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The forgotten-locale cache key is the most common i18n bug there is, and here it
+      # is one of the most damaging: a Telugu user served a cached English exam page sees
+      # a broken product. Always Locale::cacheKey(), never a raw string.
+      - name: No raw Cache::remember keys
+        run: |
+          if grep -rnE "Cache::(remember|rememberForever)\(\s*['\"]" apps/web/app apps/web/routes 2>/dev/null; then
+            echo "::error::Raw string passed to Cache::remember. Use Locale::cacheKey() so the key includes the active locale."
+            exit 1
+          fi
+          echo "No raw cache keys found."
+
+      # Nothing outside the gateway may talk to a model provider directly. The moment a
+      # feature can, every cost cap, refusal log and output filter becomes optional.
+      - name: AI provider calls stay behind the gateway
+        run: |
+          if grep -rn "api.anthropic.com" apps/web/app \
+              --exclude-dir=Services/AI 2>/dev/null; then
+            echo "::error::Direct provider call outside App\\Services\\AI. Route it through AiGateway."
+            exit 1
+          fi
+          echo "No direct provider calls found."
+
+  ai-service:
+    name: Python AI service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: mypy sadhana_ai
+      - run: pytest -q

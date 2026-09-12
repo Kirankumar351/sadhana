@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sadhana — Web Portal (working prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12211C; --ink2:#33463E; --muted:#6B7C74; --faint:#9AA8A1;
+  --line:#DDE3DF; --line2:#EDF1EE;
+  --paper:#F7F8F5; --card:#FFFFFF;
+  --green:#0F6B4F; --green-d:#0A4E39; --green-s:#E3F0EA;
+  --gold:#E8A33D; --gold-d:#B67A1F; --gold-s:#FCF1DE;
+  --red:#C4362B; --red-s:#FBE7E4;
+  --blue:#2C5F8A; --blue-s:#E4EDF4;
+  --sans:"Noto Sans","Noto Sans Telugu",system-ui,sans-serif;
+  --disp:"Gabarito","Noto Sans Telugu",system-ui,sans-serif;
+  --te:"Noto Sans Telugu","Noto Sans",sans-serif;
+  --sh:0 1px 2px rgba(18,33,28,.05),0 4px 14px -6px rgba(18,33,28,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:14.5px}
+.te{font-family:var(--te);line-height:1.8}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* ============ DEV BAR ============ */
+.devbar{position:fixed;top:0;left:0;right:0;height:44px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:0 16px;z-index:900;font-size:12.5px}
+.devbar b{font-family:var(--disp);font-weight:700;font-size:13.5px;letter-spacing:-.01em}
+.devbar .sep{width:1px;height:18px;background:rgba(255,255,255,.18)}
+.devbar select{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 9px;font-family:inherit;font-size:12.5px;max-width:280px}
+.devbar select option{background:var(--ink)}
+.devbar .tg{display:flex;background:rgba(255,255,255,.1);border-radius:7px;padding:2px}
+.devbar .tg button{color:rgba(255,255,255,.6);padding:4px 10px;border-radius:5px;font-size:11.5px;font-weight:600}
+.devbar .tg button.on{background:#fff;color:var(--ink)}
+.devbar .grow{flex:1}
+.devbar .hint{color:rgba(255,255,255,.45);font-size:11.5px}
+@media(max-width:900px){.devbar .hint,.devbar .sep{display:none}}
+
+.stage{padding-top:44px;min-height:100vh}
+.view{display:none}
+.view.on{display:block}
+
+/* ============ PUBLIC CHROME ============ */
+.pubnav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:44px;z-index:80}
+.pubnav-in{max-width:1240px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:26px}
+.logo{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.025em;color:var(--green);display:flex;align-items:center;gap:9px}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:15px;font-style:normal;font-weight:800}
+.pubnav nav{display:flex;gap:3px;flex:1}
+.pubnav nav a{font-size:14px;font-weight:500;color:var(--ink2);padding:8px 13px;border-radius:8px}
+.pubnav nav a:hover{background:var(--green-s);color:var(--green-d)}
+.pubnav nav a.on{color:var(--green);font-weight:600}
+.navsearch{position:relative;width:250px}
+.navsearch input{width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:13.5px;background:var(--paper)}
+.navsearch svg{position:absolute;left:11px;top:10px;width:15px;height:15px;color:var(--muted)}
+.langsw{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.langsw button{padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.langsw button.on{background:var(--green);color:#fff}
+
+.container{max-width:1240px;margin:0 auto;padding:0 24px}
+.narrow{max-width:1040px;margin:0 auto;padding:0 24px}
+
+/* ============ ATOMS ============ */
+.btn{font-size:14px;font-weight:600;border-radius:9px;padding:10px 17px;display:inline-flex;align-items:center;gap:7px;line-height:1.25;transition:background .14s,border-color .14s}
+.btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-d)}
+.btn-sec{border:1.5px solid var(--line);color:var(--ink)}.btn-sec:hover{border-color:var(--ink2)}
+.btn-gold{background:var(--gold);color:#3B2A08}.btn-gold:hover{background:#DA9631}
+.btn-ghost{color:var(--green);padding:10px 6px}.btn-ghost:hover{text-decoration:underline}
+.btn-danger{background:var(--red);color:#fff}
+.btn-dis{background:var(--line2);color:var(--faint);cursor:not-allowed}
+.btn-sm{font-size:12.5px;padding:7px 12px;border-radius:7px}
+.btn-lg{font-size:15.5px;padding:13px 24px}
+.btn-full{width:100%;justify-content:center}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px}
+.b-elig{background:var(--green-s);color:var(--green-d)}
+.b-part{background:var(--gold-s);color:var(--gold-d)}
+.b-no{background:var(--line2);color:var(--muted)}
+.b-urgent{background:var(--red-s);color:var(--red)}
+.b-new{background:var(--blue-s);color:var(--blue)}
+.b-draft{background:var(--line2);color:var(--ink2)}
+
+.chip{font-size:13px;font-weight:500;padding:7px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink2);white-space:nowrap}
+.chip:hover{border-color:var(--ink2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px}
+.pad{padding:20px}
+.pad-s{padding:14px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.input{width:100%;font-family:inherit;font-size:14.5px;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink)}
+.input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-s)}
+.input.err{border-color:var(--red);background:var(--red-s)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+.hint.err{color:var(--red)}
+textarea.input{resize:vertical;min-height:88px}
+
+h1.page{font-family:var(--disp);font-size:34px;font-weight:700;letter-spacing:-.028em;line-height:1.12;margin-bottom:8px}
+h2.sec{font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:-.018em;margin-bottom:14px}
+h3.sub{font-family:var(--disp);font-size:15.5px;font-weight:700;margin-bottom:9px}
+.lede{font-size:16px;color:var(--ink2);max-width:64ch}
+.small{font-size:12.5px;color:var(--muted)}
+.divider{height:1px;background:var(--line);margin:22px 0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+
+/* ============ HOME ============ */
+.hero{background:var(--green);color:#fff;padding:64px 0 56px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-family:var(--disp);font-size:clamp(36px,4.4vw,56px);font-weight:800;letter-spacing:-.035em;line-height:1.03;margin-bottom:16px}
+.hero .sub{font-size:17px;color:#C8E3D6;max-width:46ch;line-height:1.65;margin-bottom:26px}
+.hero-check{background:#fff;border-radius:15px;padding:22px;color:var(--ink);box-shadow:0 18px 44px -14px rgba(0,0,0,.35)}
+.hero-stats{display:flex;gap:34px;margin-top:34px;padding-top:26px;border-top:1px solid rgba(255,255,255,.18);flex-wrap:wrap}
+.hero-stats b{font-family:var(--disp);font-size:27px;font-weight:700;display:block;line-height:1}
+.hero-stats span{font-size:12.5px;color:#9CCBB5}
+
+.strip{background:var(--gold-s);border-bottom:1px solid var(--gold);padding:11px 0}
+.strip-in{max-width:1240px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:14px;font-size:13.5px;color:var(--gold-d)}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.split{display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start}
+.split-l{display:grid;grid-template-columns:236px 1fr;gap:28px;align-items:start}
+
+/* notification row */
+.nrow{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:17px 19px;margin-bottom:12px;transition:border-color .14s,box-shadow .14s;display:block}
+.nrow:hover{border-color:var(--green);box-shadow:var(--sh)}
+.nrow .t{font-size:16px;font-weight:600;margin-bottom:3px;letter-spacing:-.008em}
+.nrow .o{font-size:13px;color:var(--muted);margin-bottom:11px}
+.nmeta{display:flex;gap:26px;flex-wrap:wrap;font-size:13px}
+.nmeta i{font-style:normal;color:var(--muted);display:block;font-size:11.5px}
+.nmeta b{font-weight:600}
+
+.crit{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
+.crit:last-child{border-bottom:0}
+.crit .mk{width:19px;height:19px;border-radius:99px;display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+.mk.ok{background:var(--green-s);color:var(--green-d)}
+.mk.no{background:var(--red-s);color:var(--red)}
+.crit b{font-size:13.5px;display:block}
+.crit span{font-size:12.5px;color:var(--muted)}
+
+.dl{display:flex;flex-direction:column;gap:0}
+.dl .r{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px}
+.dl .r:last-child{border-bottom:0}
+.dl .r span{color:var(--muted)}
+.dl .r b{font-weight:600;text-align:right}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tabs button{padding:11px 16px;font-size:14px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+.tabpane{display:none}.tabpane.on{display:block}
+
+.acc{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--card)}
+.acc-h{padding:13px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:14px;font-weight:500;border-bottom:1px solid var(--line2)}
+.acc-h:hover{background:var(--paper)}
+.acc-h.open{font-weight:600;background:var(--paper)}
+.acc-b{padding:0 16px 15px;background:var(--paper);border-bottom:1px solid var(--line2);display:none;font-size:13.5px;color:var(--ink2);line-height:1.9}
+.acc-b.open{display:block}
+
+.sidenav{position:sticky;top:124px}
+.sidenav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:14px;font-weight:500;color:var(--ink2);margin-bottom:2px}
+.sidenav a:hover{background:var(--card)}
+.sidenav a.on{background:var(--green);color:#fff;font-weight:600}
+.sidenav a svg{width:17px;height:17px}
+.sidenav .grp{font-size:11px;font-weight:700;color:var(--faint);padding:14px 12px 6px;letter-spacing:.05em}
+
+.bar{height:9px;border-radius:99px;background:var(--line2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tbl th{text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--muted);border-bottom:1.5px solid var(--line);white-space:nowrap}
+table.tbl td{padding:12px;border-bottom:1px solid var(--line2);vertical-align:middle}
+table.tbl tbody tr:hover{background:var(--paper)}
+
+.chart{display:flex;align-items:flex-end;gap:12px;height:150px}
+.chart .b{flex:1;text-align:center}
+.chart .b i{display:block;background:var(--green);border-radius:5px 5px 0 0}
+.chart .b b{font-size:11.5px;color:var(--muted);font-weight:500;display:block;margin-top:6px}
+.chart .b em{font-size:11.5px;font-style:normal;font-weight:700;display:block;margin-bottom:4px}
+
+.avatar{width:34px;height:34px;border-radius:99px;background:var(--green-s);color:var(--green-d);display:grid;place-items:center;font-weight:700;font-size:12.5px;flex-shrink:0}
+
+/* ============ MODALS ============ */
+.scrim{position:fixed;inset:0;background:rgba(18,33,28,.5);z-index:950;display:none;align-items:center;justify-content:center;padding:24px}
+.scrim.on{display:flex}
+.modal{background:var(--card);border-radius:16px;width:100%;max-width:470px;box-shadow:0 24px 60px -12px rgba(18,33,28,.45);max-height:86vh;overflow:auto}
+.modal.wide{max-width:800px}
+.modal-h{padding:20px 22px 0}
+.modal-h h3{font-family:var(--disp);font-size:19px;font-weight:700;letter-spacing:-.015em;margin-bottom:6px}
+.modal-b{padding:14px 22px 20px;font-size:14px;color:var(--ink2);line-height:1.7}
+.modal-f{padding:15px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--paper);border-radius:0 0 16px 16px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:13px 19px;border-radius:11px;font-size:13.5px;z-index:980;transition:transform .28s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px -8px rgba(0,0,0,.4)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--green-d)}
+
+/* ============ ADMIN ============ */
+.adm{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 44px)}
+.adm-side{background:var(--ink);color:#B7C4BD;padding:18px 12px}
+.adm-side .lg{font-family:var(--disp);font-weight:800;font-size:17px;color:#fff;padding:0 10px 18px;display:flex;align-items:center;gap:8px}
+.adm-side .lg i{width:24px;height:24px;border-radius:7px;background:var(--green);display:grid;place-items:center;font-style:normal;font-size:13px}
+.adm-side .grp{font-size:10.5px;font-weight:700;color:#5F736B;padding:14px 10px 6px;letter-spacing:.07em}
+.adm-side a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:13.5px;margin-bottom:1px}
+.adm-side a:hover{background:rgba(255,255,255,.07);color:#fff}
+.adm-side a.on{background:var(--green);color:#fff;font-weight:600}
+.adm-side a .cnt{margin-left:auto;background:var(--gold);color:#3B2A08;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:99px}
+.adm-main{background:var(--paper);padding:26px 30px}
+.adm-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:20px;flex-wrap:wrap}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:17px}
+.kpi b{font-family:var(--disp);font-size:29px;font-weight:700;display:block;line-height:1;letter-spacing:-.02em}
+.kpi span{font-size:12.5px;color:var(--muted);display:block;margin-top:5px}
+.kpi em{font-style:normal;font-size:11.5px;font-weight:600}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+.loctabs{display:flex;gap:0;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;width:fit-content;margin-bottom:14px}
+.loctabs button{padding:8px 16px;font-size:13px;font-weight:600;color:var(--muted);border-right:1.5px solid var(--line)}
+.loctabs button:last-child{border-right:0}
+.loctabs button.on{background:var(--green);color:#fff}
+.loctabs button .dot{width:6px;height:6px;border-radius:99px;background:var(--red);display:inline-block;margin-left:6px}
+
+.review{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--card)}
+.review-l{padding:18px;border-right:1px solid var(--line)}
+.review-r{background:var(--line2);padding:18px;display:flex;flex-direction:column}
+.pdfmock{flex:1;background:#fff;border:1px solid var(--line);border-radius:8px;padding:22px;font-size:11.5px;line-height:1.85;color:var(--ink2);overflow:auto;max-height:440px}
+.pdfmock h5{font-family:var(--disp);font-size:13px;text-align:center;margin-bottom:4px}
+.checklist label{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:7px 0;cursor:pointer}
+.checklist input{margin-top:3px;width:16px;height:16px;accent-color:var(--green)}
+
+@media(max-width:1080px){
+  .hero-grid,.split,.split-l,.grid3,.grid2,.review{grid-template-columns:1fr}
+  .grid4{grid-template-columns:1fr 1fr}
+  .adm{grid-template-columns:1fr}
+  .adm-side{display:none}
+  .pubnav nav,.navsearch{display:none}
+}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4z"/><path d="M20 4h-6v13.5a2.5 2.5 0 0 0-2.5-2.5"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.3"/><circle cx="12" cy="17" r=".7" fill="currentColor"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H8l-4 3V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10.5 20a1.8 1.8 0 0 0 3 0"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s1 2 2 2 2-4 2-8z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M2 12h3M19 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M4.5 5h15l1.5 8v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.5a3.2 3.2 0 0 1 0 5.6M17.5 15.2c2 .6 3.5 2.1 3.5 4.8"/></symbol>
+</svg>
+
+<!-- ========== DEV BAR ========== -->
+<div class="devbar">
+  <b>Sadhana</b>
+  <span class="hint">Web portal · working prototype</span>
+  <div class="sep"></div>
+  <select id="screenPicker" onchange="go(this.value)">
+    <optgroup label="Public site (logged out)">
+      <option value="v-home">01 · Homepage</option>
+      <option value="v-notifs">02 · All notifications</option>
+      <option value="v-notif">03 · Notification detail</option>
+      <option value="v-exams">04 · Exam directory</option>
+      <option value="v-exam">05 · Exam hub page</option>
+      <option value="v-search">06 · Search results</option>
+      <option value="v-login">07 · Sign in</option>
+      <option value="v-otp">08 · Verify code</option>
+      <option value="v-profile-setup">09 · Profile setup</option>
+    </optgroup>
+    <optgroup label="Signed-in app">
+      <option value="v-dash">10 · Dashboard</option>
+      <option value="v-feed">11 · My feed</option>
+      <option value="v-saved">12 · Saved jobs</option>
+      <option value="v-quiz">13 · Daily quiz</option>
+      <option value="v-result">14 · Quiz result</option>
+      <option value="v-board">15 · Leaderboard</option>
+      <option value="v-library">16 · Material library</option>
+      <option value="v-reader">17 · Material reader</option>
+      <option value="v-doubts">18 · Doubts</option>
+      <option value="v-doubt">19 · Doubt detail</option>
+      <option value="v-settings">20 · Account settings</option>
+      <option value="v-privacy">21 · Privacy &amp; data</option>
+    </optgroup>
+    <optgroup label="Admin panel">
+      <option value="v-adm">22 · Admin dashboard</option>
+      <option value="v-adm-list">23 · Notification list</option>
+      <option value="v-adm-edit">24 · Notification editor</option>
+      <option value="v-adm-review">25 · Scraper review queue</option>
+      <option value="v-adm-questions">26 · Question bank</option>
+      <option value="v-adm-users">27 · Users</option>
+    </optgroup>
+    <optgroup label="States">
+      <option value="v-empty">28 · Empty state</option>
+      <option value="v-error">29 · Error &amp; offline</option>
+    </optgroup>
+  </select>
+  <div class="sep"></div>
+  <div class="tg"><button class="on" onclick="setLang(this,'en')">EN</button><button onclick="setLang(this,'te')">తెలుగు</button></div>
+  <div class="grow"></div>
+  <span class="hint">Modals:</span>
+  <select onchange="openModal(this.value);this.selectedIndex=0" style="max-width:180px">
+    <option value="">Open a modal…</option>
+    <option value="m-filter">Filter jobs</option>
+    <option value="m-report">Report an error</option>
+    <option value="m-share">Share result</option>
+    <option value="m-publish">Confirm publish</option>
+    <option value="m-delete">Delete account</option>
+    <option value="m-lang">Language</option>
+    <option value="m-push">Enable alerts</option>
+    <option value="m-upload">Upload notes</option>
+    <option value="m-session">Session expired</option>
+    <option value="m-moderate">Moderate post</option>
+  </select>
+</div>
+
+<div class="stage">
+
+<!-- ================= 01 HOMEPAGE ================= -->
+<div class="view on" id="v-home">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" href="#" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a class="on" onclick="go('v-home')">Home</a><a onclick="go('v-notifs')">Notifications</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search exams or jobs" onfocus="go('v-search')"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <button class="btn btn-pri btn-sm" onclick="go('v-login')">Sign in</button>
+  </div></div>
+
+  <div class="strip"><div class="strip-in">
+    <span class="badge b-urgent">Closing in 5 days</span>
+    <span>TS Police Constable 2026 — 16,614 posts. Applications close 12 September.</span>
+    <a onclick="go('v-notif')" style="margin-left:auto;font-weight:600;text-decoration:underline">View</a>
+  </div></div>
+
+  <div class="hero"><div class="container hero-grid">
+    <div>
+      <h1>Find out if you<br>actually qualify.</h1>
+      <p class="sub">Every government and private job notification for Telangana and Andhra Pradesh, in Telugu, checked against your own age, category and qualification.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-gold btn-lg" onclick="go('v-login')">Check my eligibility — free</button>
+        <button class="btn btn-lg" style="border:1.5px solid rgba(255,255,255,.35);color:#fff" onclick="go('v-notifs')">Browse all jobs</button>
+      </div>
+      <div class="hero-stats">
+        <div><b>41</b><span>Jobs open right now</span></div>
+        <div><b>38,204</b><span>Vacancies</span></div>
+        <div><b>1.2 lakh</b><span>Aspirants using Sadhana</span></div>
+      </div>
+    </div>
+    <div class="hero-check">
+      <div class="row" style="margin-bottom:14px"><h3 class="sub" style="margin:0">Am I eligible?</h3><span class="small">Takes 30 seconds</span></div>
+      <div class="field"><label>Date of birth</label><input class="input" value="14 / 08 / 2001"></div>
+      <div class="field"><label>Category</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip">General</span><span class="chip">OBC</span><span class="chip on">SC</span><span class="chip">ST</span><span class="chip">EWS</span></div>
+      </div>
+      <div class="field"><label>Highest qualification</label><select class="input"><option>Degree — any stream</option><option>Intermediate / 12th</option><option>B.Tech / B.E.</option></select></div>
+      <button class="btn btn-pri btn-full" onclick="toast('You qualify for 34 of 41 open jobs')">Check now</button>
+      <p class="hint" style="text-align:center">We never share your details. <a onclick="go('v-privacy')" style="text-decoration:underline">Privacy</a></p>
+    </div>
+  </div></div>
+
+  <div class="container" style="padding-top:52px;padding-bottom:52px">
+    <div class="row" style="margin-bottom:18px"><h2 class="sec" style="margin:0">Latest notifications</h2><a class="btn btn-ghost btn-sm" onclick="go('v-notifs')">See all 41</a></div>
+    <div class="split">
+      <div>
+        <a class="nrow" onclick="go('v-notif')">
+          <div class="row" style="align-items:flex-start"><div><div class="t">TS Police Constable (Civil &amp; AR) 2026</div><div class="o">Telangana Police Recruitment Board</div></div><span class="badge b-urgent">5 days left</span></div>
+          <div class="nmeta"><span><i>Vacancies</i><b>16,614</b></span><span><i>Qualification</i><b>Intermediate</b></span><span><i>Age</i><b>18–22</b></span><span><i>Closes</i><b style="color:var(--red)">12 Sep 2026</b></span></div>
+        </a>
+        <a class="nrow" onclick="go('v-notif')">
+          <div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Group 2 Services 2026</div><div class="o">Telangana Public Service Commission</div></div><span class="badge b-new">Posted today</span></div>
+          <div class="nmeta"><span><i>Vacancies</i><b>783</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–46</b></span><span><i>Closes</i><b>04 Oct 2026</b></span></div>
+        </a>
+        <a class="nrow" onclick="go('v-notif')">
+          <div class="row" style="align-items:flex-start"><div><div class="t">SSC Combined Graduate Level 2026 — Tier 1</div><div class="o">Staff Selection Commission</div></div></div>
+          <div class="nmeta"><span><i>Vacancies</i><b>17,727</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–32</b></span><span><i>Closes</i><b>24 Sep 2026</b></span></div>
+        </a>
+        <a class="nrow" onclick="go('v-notif')">
+          <div class="row" style="align-items:flex-start"><div><div class="t">APPSC Group 2 Services 2026</div><div class="o">Andhra Pradesh Public Service Commission</div></div></div>
+          <div class="nmeta"><span><i>Vacancies</i><b>412</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–42</b></span><span><i>Closes</i><b>18 Oct 2026</b></span></div>
+        </a>
+      </div>
+      <div>
+        <div class="card pad" style="background:var(--green);color:#fff;border:0;margin-bottom:16px">
+          <div class="te" style="font-size:14px;opacity:.85">రోజు ప్రశ్న</div>
+          <h3 class="sub" style="color:#fff;font-size:18px;margin:3px 0 8px">Today's 10 questions</h3>
+          <p style="font-size:13.5px;color:#C8E3D6;margin-bottom:14px">Free daily quiz in Telugu and English. 6,412 people took it this morning.</p>
+          <button class="btn btn-gold btn-full" onclick="go('v-quiz')">Start today's quiz</button>
+        </div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">Popular exams</h3>
+          <div class="dl">
+            <a class="r" onclick="go('v-exam')"><span>TGPSC Group 2</span><b>›</b></a>
+            <a class="r" onclick="go('v-exam')"><span>TS Police Constable</span><b>›</b></a>
+            <a class="r" onclick="go('v-exam')"><span>SSC CGL</span><b>›</b></a>
+            <a class="r" onclick="go('v-exam')"><span>RRB NTPC</span><b>›</b></a>
+            <a class="r" onclick="go('v-exam')"><span>DSC / TET</span><b>›</b></a>
+          </div>
+        </div>
+        <div class="card pad" style="border-style:dashed;text-align:center;background:var(--paper)">
+          <div class="small" style="margin-bottom:6px">Sponsored</div>
+          <b style="font-size:14px;display:block">Sri Chaitanya Study Circle</b>
+          <div class="small">Group 2 batch starts 15 September · Karimnagar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 02 ALL NOTIFICATIONS ================= -->
+<div class="view" id="v-notifs">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-home')">Home</a><a class="on">Notifications</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <button class="btn btn-pri btn-sm" onclick="go('v-login')">Sign in</button>
+  </div></div>
+  <div class="container" style="padding:32px 24px 60px">
+    <h1 class="page">Job notifications</h1>
+    <p class="lede" style="margin-bottom:24px">41 open right now. Sign in and we'll tell you which ones you qualify for.</p>
+    <div class="split-l">
+      <div class="sidenav">
+        <div class="card pad-s">
+          <h3 class="sub" style="font-size:13.5px">Filter</h3>
+          <div style="font-size:12px;font-weight:700;color:var(--faint);margin:10px 0 6px">QUALIFICATION</div>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" style="accent-color:var(--green)"> 10th / SSC</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" style="accent-color:var(--green)"> Intermediate</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" checked style="accent-color:var(--green)"> Degree</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" style="accent-color:var(--green)"> B.Tech</label>
+          <div style="font-size:12px;font-weight:700;color:var(--faint);margin:14px 0 6px">STATE</div>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" checked style="accent-color:var(--green)"> Telangana</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" style="accent-color:var(--green)"> Andhra Pradesh</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="checkbox" style="accent-color:var(--green)"> All-India</label>
+          <div style="font-size:12px;font-weight:700;color:var(--faint);margin:14px 0 6px">DEADLINE</div>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="radio" name="dl" style="accent-color:var(--green)"> This week</label>
+          <label style="display:block;font-size:13.5px;padding:3px 0"><input type="radio" name="dl" checked style="accent-color:var(--green)"> Any time</label>
+          <div class="divider" style="margin:14px 0"></div>
+          <button class="btn btn-sec btn-sm btn-full">Clear filters</button>
+        </div>
+      </div>
+      <div>
+        <div class="row" style="margin-bottom:14px">
+          <div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip on">Degree</span><span class="chip on">Telangana</span><span class="chip" onclick="openModal('m-filter')">+ More filters</span></div>
+          <select class="input" style="width:auto;padding:8px 11px;font-size:13px"><option>Newest first</option><option>Closing soonest</option><option>Most vacancies</option></select>
+        </div>
+        <div class="card pad-s" style="background:var(--gold-s);border-color:var(--gold);margin-bottom:14px">
+          <div class="row"><div><b style="color:var(--gold-d)">We can't tell if you qualify</b><div class="small" style="color:var(--gold-d)">Sign in and add your age, category and qualification once.</div></div><button class="btn btn-gold btn-sm" onclick="go('v-login')">Sign in</button></div>
+        </div>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TS Police Constable (Civil &amp; AR) 2026</div><div class="o">TGLPRB · Telangana</div></div><span class="badge b-urgent">5 days left</span></div><div class="nmeta"><span><i>Vacancies</i><b>16,614</b></span><span><i>Qualification</i><b>Intermediate</b></span><span><i>Age</i><b>18–22</b></span><span><i>Fee</i><b>₹800 / ₹400</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Group 2 Services 2026</div><div class="o">TGPSC · Telangana</div></div><span class="badge b-new">Posted today</span></div><div class="nmeta"><span><i>Vacancies</i><b>783</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–46</b></span><span><i>Closes</i><b>04 Oct</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="t">TGPSC Junior Assistant &amp; Typist 2026</div><div class="o">TGPSC · Telangana</div><div class="nmeta"><span><i>Vacancies</i><b>1,240</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–44</b></span><span><i>Closes</i><b>29 Sep</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="t">Singareni Collieries — Junior Assistant</div><div class="o">SCCL · Telangana</div><div class="nmeta"><span><i>Vacancies</i><b>316</b></span><span><i>Qualification</i><b>Degree</b></span><span><i>Age</i><b>18–34</b></span><span><i>Closes</i><b>11 Oct</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="t">TGSPDCL Junior Lineman 2026</div><div class="o">Southern Power Distribution Co · Telangana</div><div class="nmeta"><span><i>Vacancies</i><b>2,553</b></span><span><i>Qualification</i><b>ITI</b></span><span><i>Age</i><b>18–35</b></span><span><i>Closes</i><b>07 Oct</b></span></div></a>
+        <div style="text-align:center;padding:20px"><button class="btn btn-sec">Load 20 more</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 03 NOTIFICATION DETAIL ================= -->
+<div class="view" id="v-notif">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-home')">Home</a><a class="on" onclick="go('v-notifs')">Notifications</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <div class="avatar">RV</div>
+  </div></div>
+  <div class="container" style="padding:20px 24px 60px">
+    <div class="small" style="margin-bottom:14px"><a onclick="go('v-home')">Home</a> › <a onclick="go('v-notifs')">Notifications</a> › TS Police Constable 2026</div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:16px">
+          <div class="row" style="align-items:flex-start;margin-bottom:12px">
+            <div><h1 class="page" style="font-size:27px">TS Police Constable (Civil &amp; AR) 2026</h1><div class="small" style="font-size:14px">Telangana Police Recruitment Board · Notification No. 03/2026</div></div>
+            <div style="display:flex;gap:8px;flex-shrink:0"><button class="btn btn-sec btn-sm" onclick="toast('Saved. We\'ll remind you on 9 September.')"><svg width="14" height="14"><use href="#i-save"/></svg> Save</button><button class="btn btn-pri btn-sm">Apply on official site</button></div>
+          </div>
+          <div style="display:flex;gap:8px"><span class="badge b-elig">✓ You are eligible</span><span class="badge b-urgent">Closes in 5 days</span><span class="badge b-no">Last verified 6 Sep</span></div>
+        </div>
+
+        <div class="card pad" style="background:var(--green-s);border-color:var(--green);margin-bottom:16px">
+          <h2 class="sec" style="color:var(--green-d);font-size:17px">Why you qualify</h2>
+          <div class="crit"><span class="mk ok">✓</span><div><b>Qualification — Intermediate required</b><span>You have a Degree, which satisfies this</span></div></div>
+          <div class="crit"><span class="mk ok">✓</span><div><b>Age — you will be 25 on 1 July 2026</b><span>Limit is 18–22, plus 5 years SC relaxation = 27</span></div></div>
+          <div class="crit"><span class="mk ok">✓</span><div><b>Domicile — Telangana</b><span>This recruitment is restricted to Telangana candidates</span></div></div>
+          <div class="crit"><span class="mk ok">✓</span><div><b>Gender — open to all</b><span>33% of posts are reserved for women</span></div></div>
+          <p class="small" style="margin-top:12px;color:var(--green-d)">This check is a guide. Confirm every detail against the official notification before you apply.</p>
+        </div>
+
+        <div class="tabs">
+          <button class="on" onclick="tab(this,'t-vac')">Vacancies</button>
+          <button onclick="tab(this,'t-elig')">Eligibility</button>
+          <button onclick="tab(this,'t-dates')">Dates</button>
+          <button onclick="tab(this,'t-fee')">Fee &amp; salary</button>
+          <button onclick="tab(this,'t-how')">How to apply</button>
+        </div>
+        <div class="tabpane on" id="t-vac">
+          <table class="tbl"><thead><tr><th>Post</th><th>General</th><th>OBC</th><th>SC</th><th>ST</th><th>EWS</th><th>Total</th></tr></thead>
+          <tbody>
+            <tr><td><b>Civil Constable</b></td><td>5,392</td><td>3,546</td><td>2,102</td><td>1,182</td><td>920</td><td><b>13,142</b></td></tr>
+            <tr><td><b>Armed Reserve</b></td><td>1,193</td><td>785</td><td>465</td><td>261</td><td>204</td><td><b>2,908</b></td></tr>
+            <tr><td><b>SCT PC (Transport)</b></td><td>231</td><td>152</td><td>90</td><td>51</td><td>40</td><td><b>564</b></td></tr>
+            <tr style="background:var(--green-s)"><td><b>Total</b></td><td><b>6,816</b></td><td><b>4,483</b></td><td><b>2,657</b></td><td><b>1,494</b></td><td><b>1,164</b></td><td><b>16,614</b></td></tr>
+          </tbody></table>
+        </div>
+        <div class="tabpane" id="t-elig">
+          <div class="card pad"><div class="dl">
+            <div class="r"><span>Minimum qualification</span><b>Intermediate (10+2) or equivalent</b></div>
+            <div class="r"><span>Age as on 1 July 2026</span><b>18 to 22 years</b></div>
+            <div class="r"><span>OBC relaxation</span><b>+3 years</b></div>
+            <div class="r"><span>SC / ST relaxation</span><b>+5 years</b></div>
+            <div class="r"><span>Ex-servicemen</span><b>+3 years</b></div>
+            <div class="r"><span>Height — male</span><b>167.6 cm</b></div>
+            <div class="r"><span>Height — female</span><b>152.5 cm</b></div>
+            <div class="r"><span>Domicile</span><b>Telangana only</b></div>
+          </div></div>
+        </div>
+        <div class="tabpane" id="t-dates">
+          <div class="card pad"><div class="dl">
+            <div class="r"><span>Notification released</span><b>18 August 2026</b></div>
+            <div class="r"><span>Applications opened</span><b>18 August 2026</b></div>
+            <div class="r"><span>Last date to apply</span><b style="color:var(--red)">12 September 2026</b></div>
+            <div class="r"><span>Fee payment closes</span><b style="color:var(--red)">12 September 2026</b></div>
+            <div class="r"><span>Preliminary written test</span><b>8 November 2026</b></div>
+            <div class="r"><span>Physical measurement test</span><b>To be announced</b></div>
+          </div></div>
+        </div>
+        <div class="tabpane" id="t-fee">
+          <div class="grid2">
+            <div class="card pad"><h3 class="sub">Application fee</h3><div class="dl"><div class="r"><span>General / OBC / EWS</span><b>₹800</b></div><div class="r"><span>SC / ST / Ex-servicemen</span><b>₹400</b></div><div class="r"><span>Payment mode</span><b>Online only</b></div></div></div>
+            <div class="card pad"><h3 class="sub">Pay scale</h3><div class="dl"><div class="r"><span>Pay scale</span><b>₹25,220 – ₹80,910</b></div><div class="r"><span>Approx. gross</span><b>₹38,000 / month</b></div><div class="r"><span>Probation</span><b>2 years</b></div></div></div>
+          </div>
+        </div>
+        <div class="tabpane" id="t-how">
+          <div class="card pad">
+            <ol style="padding-left:19px;line-height:2;font-size:14px">
+              <li>Register on the official portal with your phone number and email</li>
+              <li>Fill the application form — keep your Intermediate marks memo ready</li>
+              <li>Upload a photo (3.5 × 4.5 cm) and signature, both under 50 KB</li>
+              <li>Pay the fee online and download the confirmation</li>
+              <li>Print the filled application for your records</li>
+            </ol>
+            <button class="btn btn-pri" style="margin-top:14px">Go to official application portal</button>
+          </div>
+        </div>
+
+        <div class="card pad" style="margin-top:20px;background:var(--paper)">
+          <div class="row">
+            <div><b style="font-size:14px">This information was verified on 6 September 2026</b><p class="small" style="margin-top:3px">Checked against the official notification PDF and the TGLPRB website. Always confirm before applying.</p></div>
+            <div style="display:flex;gap:8px;flex-shrink:0"><button class="btn btn-sec btn-sm"><svg width="14" height="14"><use href="#i-doc"/></svg> Official PDF</button><button class="btn btn-sec btn-sm" onclick="openModal('m-report')">Report an error</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">At a glance</h3>
+          <div class="dl">
+            <div class="r"><span>Vacancies</span><b>16,614</b></div>
+            <div class="r"><span>Qualification</span><b>Intermediate</b></div>
+            <div class="r"><span>Age limit</span><b>18–22</b></div>
+            <div class="r"><span>Fee</span><b>₹800 / ₹400</b></div>
+            <div class="r"><span>Salary</span><b>₹25,220+</b></div>
+            <div class="r"><span>Closes</span><b style="color:var(--red)">12 Sep 2026</b></div>
+          </div>
+          <button class="btn btn-pri btn-full" style="margin-top:14px">Apply on official site</button>
+          <button class="btn btn-sec btn-full btn-sm" style="margin-top:8px" onclick="toast('Reminder set for 9 September')">Remind me before it closes</button>
+        </div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">Prepare for this exam</h3>
+          <div class="dl">
+            <a class="r" onclick="go('v-exam')"><span>Full syllabus</span><b>›</b></a>
+            <a class="r" onclick="go('v-library')"><span>Previous papers</span><b>›</b></a>
+            <a class="r" onclick="go('v-library')"><span>Free study notes</span><b>›</b></a>
+            <a class="r" onclick="go('v-doubts')"><span>Doubts from other aspirants</span><b>›</b></a>
+          </div>
+        </div>
+        <div class="card pad">
+          <h3 class="sub">Similar jobs you qualify for</h3>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="go('v-notif')"><span>TS Police SI 2026</span><span class="badge b-elig" style="font-size:10.5px">✓</span></a>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px" onclick="go('v-notif')"><span>TGSPDCL Junior Lineman</span><span class="badge b-elig" style="font-size:10.5px">✓</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 04 EXAM DIRECTORY ================= -->
+<div class="view" id="v-exams">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-home')">Home</a><a onclick="go('v-notifs')">Notifications</a><a class="on">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <div class="avatar">RV</div>
+  </div></div>
+  <div class="container" style="padding:32px 24px 60px">
+    <h1 class="page">Exams</h1>
+    <p class="lede" style="margin-bottom:22px">Syllabus, previous papers, cutoff trends and current status for every exam that matters in Telangana and Andhra Pradesh.</p>
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap"><span class="chip on">All</span><span class="chip">Telangana</span><span class="chip">Andhra Pradesh</span><span class="chip">All-India</span><span class="chip">Banking</span><span class="chip">Railways</span></div>
+
+    <h2 class="sec">State Public Service Commission</h2>
+    <div class="grid3" style="margin-bottom:34px">
+      <a class="card pad" onclick="go('v-exam')"><div class="row" style="align-items:flex-start"><div><b style="font-size:15.5px">TGPSC Group 2</b><div class="small">Telangana PSC · 4 papers</div></div><span class="badge b-new">1 open</span></div><p class="small" style="margin-top:10px">Deputy Tahsildar, Sub-Registrar, ACTO and 7 other services.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">TGPSC Group 4</b><div class="small">Telangana PSC · 2 papers</div></div><p class="small" style="margin-top:10px">Junior Assistant, Typist, Bill Collector.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">APPSC Group 2</b><div class="small">Andhra Pradesh PSC · 3 papers</div></div><p class="small" style="margin-top:10px">Executive and non-executive posts across AP.</p></a>
+    </div>
+
+    <h2 class="sec">Police</h2>
+    <div class="grid3" style="margin-bottom:34px">
+      <a class="card pad" onclick="go('v-exam')"><div class="row" style="align-items:flex-start"><div><b style="font-size:15.5px">TS Police Constable</b><div class="small">TGLPRB · Prelims + Physical + Mains</div></div><span class="badge b-urgent">Closing</span></div><p class="small" style="margin-top:10px">Civil, Armed Reserve and Transport constable posts.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">TS Police SI</b><div class="small">TGLPRB · Prelims + Physical + Mains</div></div><p class="small" style="margin-top:10px">Sub-Inspector of Police, civil and AR.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">AP Police Constable</b><div class="small">APSLPRB</div></div><p class="small" style="margin-top:10px">Andhra Pradesh constable recruitment.</p></a>
+    </div>
+
+    <h2 class="sec">All-India</h2>
+    <div class="grid3">
+      <a class="card pad" onclick="go('v-exam')"><div class="row" style="align-items:flex-start"><div><b style="font-size:15.5px">SSC CGL</b><div class="small">Staff Selection Commission</div></div><span class="badge b-new">1 open</span></div><p class="small" style="margin-top:10px">Group B and C posts across central ministries.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">RRB NTPC</b><div class="small">Railway Recruitment Board</div></div><p class="small" style="margin-top:10px">Non-technical popular categories.</p></a>
+      <a class="card pad" onclick="go('v-exam')"><div><b style="font-size:15.5px">IBPS PO</b><div class="small">Institute of Banking Personnel Selection</div></div><p class="small" style="margin-top:10px">Probationary officer in public sector banks.</p></a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 05 EXAM HUB ================= -->
+<div class="view" id="v-exam">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-home')">Home</a><a onclick="go('v-notifs')">Notifications</a><a class="on" onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <div class="avatar">RV</div>
+  </div></div>
+  <div class="container" style="padding:20px 24px 60px">
+    <div class="small" style="margin-bottom:14px"><a onclick="go('v-home')">Home</a> › <a onclick="go('v-exams')">Exams</a> › TGPSC Group 2</div>
+    <h1 class="page">TGPSC Group 2 Services 2026</h1>
+    <p class="lede" style="margin-bottom:18px">The Telangana Public Service Commission conducts Group 2 for executive and non-executive posts including Deputy Tahsildar, Sub-Registrar and Assistant Commercial Tax Officer. Four papers of 150 marks each, followed by an interview.</p>
+    <div class="card pad" style="background:var(--green-s);border-color:var(--green);margin-bottom:24px">
+      <div class="row"><div><b style="color:var(--green-d);font-size:15px">Applications are open</b><div class="small" style="color:var(--green-d)">783 posts · closes 4 October 2026 · you are eligible</div></div><button class="btn btn-pri" onclick="go('v-notif')">View notification</button></div>
+    </div>
+
+    <div class="split">
+      <div>
+        <h2 class="sec">Exam pattern</h2>
+        <table class="tbl" style="margin-bottom:30px"><thead><tr><th>Paper</th><th>Subject</th><th>Questions</th><th>Marks</th><th>Duration</th></tr></thead><tbody>
+          <tr><td><b>I</b></td><td>General Studies &amp; Mental Ability</td><td>150</td><td>150</td><td>150 min</td></tr>
+          <tr><td><b>II</b></td><td>History, Polity and Society</td><td>150</td><td>150</td><td>150 min</td></tr>
+          <tr><td><b>III</b></td><td>Economy and Development</td><td>150</td><td>150</td><td>150 min</td></tr>
+          <tr><td><b>IV</b></td><td>Telangana Movement and State Formation</td><td>150</td><td>150</td><td>150 min</td></tr>
+          <tr style="background:var(--paper)"><td colspan="3"><b>Total</b></td><td><b>600</b></td><td><b>10 hours</b></td></tr>
+        </tbody></table>
+
+        <h2 class="sec">Syllabus</h2>
+        <div class="acc" style="margin-bottom:14px">
+          <div class="acc-h" onclick="acc(this)">Paper I — General Studies and Mental Ability <span>+</span></div>
+          <div class="acc-b">Current affairs, regional, national and international · General science and everyday applications · Environmental issues and disaster management · World geography and Indian geography · Indian constitution and polity · Logical reasoning, analytical ability and data interpretation</div>
+          <div class="acc-h open" onclick="acc(this)">Paper II — History, Polity and Society <span>−</span></div>
+          <div class="acc-b open">
+            <b>Section I — Socio-cultural history of India and Telangana</b><br>
+            Indus civilisation · Vedic age · Religious movements · Mauryan and Gupta periods · Kakatiya, Qutb Shahi and Asaf Jahi dynasties · Socio-cultural awakening in Telangana<br><br>
+            <b>Section II — Indian Constitution</b><br>
+            Nature of the Indian constitution · Fundamental rights and duties · Union and state governments · Centre–state relations · Constitutional bodies<br><br>
+            <b>Section III — Social structure and welfare</b><br>
+            Indian social structure · Caste, tribes and minorities · Social exclusion · Welfare programmes and rights issues
+          </div>
+          <div class="acc-h" onclick="acc(this)">Paper III — Economy and Development <span>+</span></div>
+          <div class="acc-b">Indian economy since independence · National income and public finance · Poverty, unemployment and inequality · Telangana economy · Agriculture and irrigation · Industry and services</div>
+          <div class="acc-h" onclick="acc(this)">Paper IV — Telangana Movement and State Formation <span>+</span></div>
+          <div class="acc-b">The idea of Telangana 1948–1970 · Mobilisation phase 1971–1990 · Towards formation of Telangana state 1991–2014 · Key personalities and organisations</div>
+        </div>
+        <button class="btn btn-sec btn-sm" style="margin-bottom:30px"><svg width="14" height="14"><use href="#i-doc"/></svg> Download the full syllabus (PDF, 620 KB)</button>
+
+        <h2 class="sec">Previous cutoffs — SC category</h2>
+        <div class="card pad" style="margin-bottom:14px">
+          <div class="chart">
+            <div class="b"><em>214</em><i style="height:64px"></i><b>2021</b></div>
+            <div class="b"><em>257</em><i style="height:78px"></i><b>2022</b></div>
+            <div class="b"><em>236</em><i style="height:71px"></i><b>2023</b></div>
+            <div class="b"><em>305</em><i style="height:93px"></i><b>2024</b></div>
+            <div class="b"><em>331</em><i style="height:101px;background:var(--gold)"></i><b>2025</b></div>
+          </div>
+          <p class="small" style="text-align:center;margin-top:10px">Cutoff out of 600. Compiled from official TGPSC result notifications. Varies by zone.</p>
+        </div>
+        <div style="display:flex;gap:7px;margin-bottom:30px;flex-wrap:wrap"><span class="chip on">SC</span><span class="chip">General</span><span class="chip">OBC</span><span class="chip">ST</span><span class="chip">EWS</span></div>
+
+        <h2 class="sec">Questions other aspirants asked</h2>
+        <div class="card" style="overflow:hidden">
+          <a class="acc-h" onclick="go('v-doubt')"><span class="te">గ్రూప్ 2 పేపర్ 2లో తెలంగాణ ఉద్యమం ఎన్ని మార్కులకు వస్తుంది?</span><span class="badge b-elig" style="font-size:10.5px">7 answers</span></a>
+          <a class="acc-h" onclick="go('v-doubt')"><span>Is there negative marking in Group 2?</span><span class="badge b-elig" style="font-size:10.5px">3 answers</span></a>
+          <a class="acc-h" onclick="go('v-doubt')" style="border-bottom:0"><span class="te">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా?</span><span class="badge b-elig" style="font-size:10.5px">12 answers</span></a>
+        </div>
+      </div>
+
+      <div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">Quick facts</h3>
+          <div class="dl">
+            <div class="r"><span>Conducted by</span><b>TGPSC</b></div>
+            <div class="r"><span>Frequency</span><b>Irregular</b></div>
+            <div class="r"><span>Qualification</span><b>Degree</b></div>
+            <div class="r"><span>Age</span><b>18–46</b></div>
+            <div class="r"><span>Papers</span><b>4 + interview</b></div>
+            <div class="r"><span>Total marks</span><b>600</b></div>
+            <div class="r"><span>Negative marking</span><b>No</b></div>
+            <div class="r"><span>Language</span><b>Telugu, English, Urdu</b></div>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">Free material</h3>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="go('v-reader')"><span>Telangana Movement notes</span><b>›</b></a>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="go('v-reader')"><span>Paper I — 2024 question paper</span><b>›</b></a>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px" onclick="go('v-reader')"><span>Indian Polity one-liners</span><b>›</b></a>
+        </div>
+        <div class="card pad" style="background:var(--gold-s);border-color:var(--gold)">
+          <h3 class="sub" style="color:var(--gold-d)">Practise daily</h3>
+          <p class="small" style="color:var(--gold-d);margin-bottom:12px">Ten questions every morning at 7, free, in Telugu and English.</p>
+          <button class="btn btn-gold btn-full btn-sm" onclick="go('v-quiz')">Today's quiz</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 06 SEARCH ================= -->
+<div class="view" id="v-search">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-home')">Home</a><a onclick="go('v-notifs')">Notifications</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch" style="width:340px"><svg><use href="#i-search"/></svg><input value="group 2" style="border-color:var(--green)"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <div class="avatar">RV</div>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <h1 class="page" style="font-size:26px">18 results for “group 2”</h1>
+    <div class="tabs" style="margin-top:18px"><button class="on">All</button><button>Exams (3)</button><button>Notifications (4)</button><button>Material (6)</button><button>Doubts (5)</button></div>
+    <div class="split">
+      <div>
+        <div class="small" style="font-weight:700;color:var(--faint);margin-bottom:9px">EXAMS</div>
+        <a class="nrow" onclick="go('v-exam')"><div class="t">TGPSC Group 2 Services</div><div class="o">Telangana Public Service Commission</div><p class="small">Syllabus, exam pattern, five years of cutoffs, previous papers.</p></a>
+        <a class="nrow" onclick="go('v-exam')"><div class="t">APPSC Group 2</div><div class="o">Andhra Pradesh Public Service Commission</div></a>
+        <div class="small" style="font-weight:700;color:var(--faint);margin:22px 0 9px">NOTIFICATIONS</div>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Group 2 Services 2026</div><div class="o">783 posts · closes 4 October</div></div><span class="badge b-elig">✓ Eligible</span></div></a>
+        <div class="small" style="font-weight:700;color:var(--faint);margin:22px 0 9px">DOUBTS</div>
+        <a class="nrow" onclick="go('v-doubt')"><div class="t te" style="font-size:15px">గ్రూప్ 2 పేపర్ 2లో తెలంగాణ ఉద్యమం ఎన్ని మార్కులకు వస్తుంది?</div><div class="o">7 answers · asked by Kiran</div></a>
+      </div>
+      <div>
+        <div class="card pad">
+          <h3 class="sub">Refine</h3>
+          <div class="dl">
+            <div class="r"><span>Only what I qualify for</span><input type="checkbox" checked style="accent-color:var(--green)"></div>
+            <div class="r"><span>Open applications only</span><input type="checkbox" style="accent-color:var(--green)"></div>
+            <div class="r"><span>Telugu content only</span><input type="checkbox" style="accent-color:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 07 LOGIN ================= -->
+<div class="view" id="v-login">
+  <div style="min-height:calc(100vh - 44px);display:grid;grid-template-columns:1fr 1fr">
+    <div style="background:var(--green);color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:center">
+      <a class="logo" style="color:#fff;margin-bottom:34px" onclick="go('v-home')"><i style="background:rgba(255,255,255,.18)">స</i>Sadhana</a>
+      <h1 style="font-family:var(--disp);font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.08;margin-bottom:14px">One profile.<br>Every job checked.</h1>
+      <p style="color:#C8E3D6;font-size:16px;max-width:38ch;line-height:1.7">Tell us your age, category and qualification once. We compare them against every notification, so you never read a 60-page PDF to find out you were never eligible.</p>
+      <div class="te" style="color:#9CCBB5;margin-top:26px;font-size:15px">తెలుగులో · ఉచితం · ఎప్పుడైనా ఆపవచ్చు</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:48px 24px">
+      <div style="width:100%;max-width:380px">
+        <h2 class="sec" style="font-size:24px">Sign in</h2>
+        <p class="small" style="margin-bottom:22px">No password. We send a code on WhatsApp.</p>
+        <div class="field"><label>Mobile number</label>
+          <div style="display:flex;gap:9px"><span style="padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;font-weight:600;background:var(--paper)">+91</span><input class="input" value="98480 12345"></div>
+          <div class="hint">We'll send a 6-digit code. Standard rates apply.</div>
+        </div>
+        <button class="btn btn-pri btn-full btn-lg" onclick="go('v-otp')">Send code</button>
+        <p class="small" style="margin-top:18px;line-height:1.7">By continuing you agree to our <a style="text-decoration:underline">Terms</a> and <a onclick="go('v-privacy')" style="text-decoration:underline">Privacy notice</a>. We never share your number with anyone.</p>
+        <div class="divider"></div>
+        <p class="small" style="text-align:center">Just browsing? <a onclick="go('v-notifs')" style="color:var(--green);font-weight:600">See all jobs without signing in</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 08 OTP ================= -->
+<div class="view" id="v-otp">
+  <div style="min-height:calc(100vh - 44px);display:grid;grid-template-columns:1fr 1fr">
+    <div style="background:var(--green);color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:center">
+      <a class="logo" style="color:#fff;margin-bottom:34px" onclick="go('v-home')"><i style="background:rgba(255,255,255,.18)">స</i>Sadhana</a>
+      <h1 style="font-family:var(--disp);font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.08">Check WhatsApp.</h1>
+      <p style="color:#C8E3D6;font-size:16px;margin-top:12px">The code arrives in a few seconds.</p>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:48px 24px">
+      <div style="width:100%;max-width:380px">
+        <h2 class="sec" style="font-size:24px">Enter the 6-digit code</h2>
+        <p class="small" style="margin-bottom:22px">Sent to +91 98480 12345 · <a onclick="go('v-login')" style="color:var(--green);font-weight:600">Change number</a></p>
+        <div style="display:flex;gap:9px;margin-bottom:16px">
+          <input class="input" value="4" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0;border-color:var(--green)">
+          <input class="input" value="1" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0;border-color:var(--green)">
+          <input class="input" value="7" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0;border-color:var(--green)">
+          <input class="input" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0;border-color:var(--ink)">
+          <input class="input" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0">
+          <input class="input" style="text-align:center;font-size:22px;font-weight:700;padding:14px 0">
+        </div>
+        <div class="row" style="margin-bottom:20px"><span class="small">Didn't get the code?</span><span class="small" style="font-weight:600">Resend in 0:24</span></div>
+        <button class="btn btn-pri btn-full btn-lg" onclick="go('v-profile-setup')">Verify and continue</button>
+        <p class="hint" style="text-align:center;margin-top:14px">Wrong code? You have 4 attempts left.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 09 PROFILE SETUP ================= -->
+<div class="view" id="v-profile-setup">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-home')"><i>స</i>Sadhana</a><div style="flex:1"></div><span class="small">Step 2 of 3</span></div></div>
+  <div class="narrow" style="padding:36px 24px 60px;max-width:720px">
+    <div class="bar" style="margin-bottom:26px"><i style="width:66%"></i></div>
+    <h1 class="page">Your education and location</h1>
+    <p class="lede" style="margin-bottom:26px">These two answers decide which of the 41 open jobs you can actually apply for.</p>
+    <div class="card pad">
+      <div class="field">
+        <label>Highest qualification completed</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <label class="chip" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" style="accent-color:var(--green)"> 10th / SSC</label>
+          <label class="chip" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" style="accent-color:var(--green)"> Intermediate / 12th</label>
+          <label class="chip" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" style="accent-color:var(--green)"> ITI or Diploma</label>
+          <label class="chip on" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" checked style="accent-color:#fff"> Degree — any stream</label>
+          <label class="chip" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" style="accent-color:var(--green)"> B.Tech / B.E.</label>
+          <label class="chip" style="justify-content:flex-start;padding:12px 15px;border-radius:9px;display:flex;gap:10px;align-items:center"><input type="radio" name="q" style="accent-color:var(--green)"> Post graduation</label>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Stream or specialisation</label><input class="input" value="B.Sc — Computer Science"></div>
+        <div class="field"><label>Year of completion</label><input class="input" value="2023"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>State</label><select class="input"><option>Telangana</option><option>Andhra Pradesh</option></select></div>
+        <div class="field"><label>District</label><select class="input"><option>Karimnagar</option></select><div class="hint">Some jobs are restricted by district</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="row"><button class="btn btn-sec" onclick="go('v-otp')">Back</button><div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="go('v-dash')">Skip for now</button><button class="btn btn-pri" onclick="go('v-dash')">Continue</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP SHELL VIEWS ================= -->
+<!-- 10 DASHBOARD -->
+<div class="view" id="v-dash">
+  <div class="pubnav"><div class="pubnav-in">
+    <a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a>
+    <nav><a class="on">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search" onfocus="go('v-search')"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div>
+    <button class="btn btn-sec btn-sm" onclick="openModal('m-push')"><svg width="15" height="15"><use href="#i-bell"/></svg></button>
+    <div class="avatar" onclick="go('v-settings')" style="cursor:pointer">RV</div>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <div class="row" style="margin-bottom:22px"><div><h1 class="page" style="font-size:28px">Good morning, Ravi</h1><p class="small">Sunday, 6 September 2026 · Karimnagar</p></div></div>
+    <div class="grid4" style="margin-bottom:24px">
+      <div class="kpi"><b style="color:var(--green)">34</b><span>Jobs you qualify for</span></div>
+      <div class="kpi"><b>6</b><span>Saved · 1 closing this week</span></div>
+      <div class="kpi"><b style="color:var(--gold-d)">14</b><span>Day quiz streak</span></div>
+      <div class="kpi"><b>#284</b><span>In Karimnagar this week</span></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="background:var(--green);color:#fff;border:0;margin-bottom:20px">
+          <div class="row">
+            <div><div class="te" style="opacity:.85;font-size:14px">రోజు ప్రశ్న</div><h2 class="sec" style="color:#fff;margin:2px 0 4px">Today's quiz is ready</h2><p style="color:#C8E3D6;font-size:13.5px">10 questions · about 6 minutes · keep your 14-day streak alive</p></div>
+            <button class="btn btn-gold" onclick="go('v-quiz')">Start now</button>
+          </div>
+        </div>
+        <div class="row" style="margin-bottom:14px"><h2 class="sec" style="margin:0">New for you</h2><a class="btn btn-ghost btn-sm" onclick="go('v-feed')">See all</a></div>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TS Police Constable 2026</div><div class="o">TGLPRB · Telangana</div></div><div style="display:flex;gap:7px"><span class="badge b-elig">✓ Eligible</span><span class="badge b-urgent">5 days</span></div></div><div class="nmeta"><span><i>Vacancies</i><b>16,614</b></span><span><i>Closes</i><b style="color:var(--red)">12 Sep</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Group 2 Services 2026</div><div class="o">TGPSC · Telangana</div></div><span class="badge b-elig">✓ Eligible</span></div><div class="nmeta"><span><i>Vacancies</i><b>783</b></span><span><i>Closes</i><b>04 Oct</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Assistant Engineer (Civil)</div><div class="o">TGPSC · Telangana</div></div><span class="badge b-part">2 of 4 match</span></div><div class="nmeta"><span><i>Vacancies</i><b>108</b></span><span><i>Needs</i><b>B.Tech Civil</b></span></div></a>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:16px">
+          <div class="row" style="margin-bottom:12px"><h3 class="sub" style="margin:0">Your streak</h3><svg width="18" height="18" style="color:var(--gold)"><use href="#i-flame"/></svg></div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px">
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-size:11px;font-weight:700;color:#3B2A08">M</span>
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-size:11px;font-weight:700;color:#3B2A08">T</span>
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--blue-s);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--blue)">W</span>
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-size:11px;font-weight:700;color:#3B2A08">T</span>
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-size:11px;font-weight:700;color:#3B2A08">F</span>
+            <span style="aspect-ratio:1;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-size:11px;font-weight:700;color:#3B2A08">S</span>
+            <span style="aspect-ratio:1;border-radius:6px;border:1.5px dashed var(--gold);display:grid;place-items:center;font-size:11px;color:var(--muted)">S</span>
+          </div>
+          <p class="small">Wednesday used your monthly freeze. Longest streak: 31 days.</p>
+        </div>
+        <div class="card pad" style="margin-bottom:16px">
+          <h3 class="sub">Closing soon</h3>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="go('v-notif')"><span>TS Police Constable</span><b style="color:var(--red)">5 days</b></a>
+          <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px" onclick="go('v-notif')"><span>SSC CGL Tier 1</span><b>17 days</b></a>
+        </div>
+        <div class="card pad">
+          <h3 class="sub">Work on this</h3>
+          <p class="small" style="margin-bottom:12px">You missed both Indian Polity questions this week.</p>
+          <button class="btn btn-sec btn-sm btn-full" onclick="go('v-reader')">Open free Polity notes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 MY FEED -->
+<div class="view" id="v-feed">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a>
+    <nav><a onclick="go('v-dash')">Dashboard</a><a class="on">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav>
+    <div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search"></div>
+    <div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <div class="row" style="margin-bottom:18px">
+      <div><h1 class="page" style="font-size:28px">My feed</h1><p class="small">34 of 41 open jobs match your profile</p></div>
+      <button class="btn btn-sec btn-sm" onclick="go('v-settings')">Edit my exams</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+      <span class="chip on">Eligible for me</span><span class="chip">Closing soon</span><span class="chip">My 3 exams</span><span class="chip">Karimnagar</span><span class="chip" onclick="openModal('m-filter')">+ More</span>
+    </div>
+    <div class="split">
+      <div>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TS Police Constable (Civil &amp; AR) 2026</div><div class="o">TGLPRB · Telangana</div></div><div style="display:flex;gap:7px"><span class="badge b-elig">✓ Eligible</span><span class="badge b-urgent">5 days left</span></div></div><div class="nmeta"><span><i>Vacancies</i><b>16,614</b></span><span><i>Age</i><b>18–22 (+5 for you)</b></span><span><i>Fee</i><b>₹400 for you</b></span><span><i>Closes</i><b style="color:var(--red)">12 Sep</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Group 2 Services 2026</div><div class="o">TGPSC · Telangana</div></div><span class="badge b-elig">✓ Eligible</span></div><div class="nmeta"><span><i>Vacancies</i><b>783</b></span><span><i>Age</i><b>18–46</b></span><span><i>Closes</i><b>04 Oct</b></span></div></a>
+        <div class="card pad-s" style="border-style:dashed;background:var(--paper);text-align:center;margin-bottom:12px"><div class="small" style="margin-bottom:3px">Sponsored</div><b>Sri Chaitanya Study Circle, Karimnagar</b><div class="small">Group 2 batch starts 15 September · 40 seats</div></div>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">SSC Combined Graduate Level 2026</div><div class="o">Staff Selection Commission</div></div><span class="badge b-elig">✓ Eligible</span></div><div class="nmeta"><span><i>Vacancies</i><b>17,727</b></span><span><i>Closes</i><b>24 Sep</b></span></div></a>
+        <a class="nrow" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TGPSC Assistant Engineer (Civil) 2026</div><div class="o">TGPSC · Telangana</div></div><span class="badge b-part">2 of 4 match</span></div><div class="nmeta"><span><i>Missing</i><b style="color:var(--red)">B.Tech Civil</b></span><span><i>Missing</i><b style="color:var(--red)">2 years experience</b></span></div></a>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:16px"><h3 class="sub">Your profile</h3><div class="dl"><div class="r"><span>Age on 1 Jul 2026</span><b>25</b></div><div class="r"><span>Category</span><b>SC</b></div><div class="r"><span>Qualification</span><b>Degree (B.Sc)</b></div><div class="r"><span>District</span><b>Karimnagar</b></div></div><button class="btn btn-sec btn-sm btn-full" style="margin-top:12px" onclick="go('v-settings')">Update</button></div>
+        <div class="card pad"><h3 class="sub">Alerts</h3><p class="small" style="margin-bottom:12px">You get a WhatsApp message when a job matching your 3 exams opens.</p><button class="btn btn-sec btn-sm btn-full" onclick="go('v-settings')">Manage alerts</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 12 SAVED -->
+<div class="view" id="v-saved">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <h1 class="page">Saved jobs</h1>
+    <p class="lede" style="margin-bottom:26px">We remind you three days before each deadline, and again the day before.</p>
+    <h2 class="sec" style="color:var(--red);font-size:16px">Closing this week</h2>
+    <a class="nrow" style="border-left:3px solid var(--red)" onclick="go('v-notif')"><div class="row" style="align-items:flex-start"><div><div class="t">TS Police Constable 2026</div><div class="o">Reminder set for 9 September</div></div><span class="badge b-urgent">12 Sep · 5 days</span></div></a>
+    <h2 class="sec" style="color:var(--gold-d);font-size:16px;margin-top:26px">Later this month</h2>
+    <a class="nrow" onclick="go('v-notif')"><div class="row"><div class="t">SSC CGL 2026 — Tier 1</div><b class="small">24 Sep · 17 days</b></div></a>
+    <a class="nrow" onclick="go('v-notif')"><div class="row"><div class="t">TGPSC Group 2 Services</div><b class="small">04 Oct · 27 days</b></div></a>
+    <h2 class="sec" style="color:var(--muted);font-size:16px;margin-top:26px">Marked as applied</h2>
+    <a class="nrow" style="opacity:.7" onclick="go('v-notif')"><div class="row"><div><div class="t">RRB NTPC 2026</div><div class="o">Applied on 2 September</div></div><span class="badge b-no">Applied</span></div></a>
+  </div>
+</div>
+
+<!-- 13 QUIZ -->
+<div class="view" id="v-quiz">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><div style="flex:1"></div><span class="small">Question 6 of 10</span><button class="btn btn-sec btn-sm" onclick="go('v-dash')">Save and exit</button></div></div>
+  <div class="narrow" style="padding:28px 24px 60px;max-width:760px">
+    <div class="bar" style="margin-bottom:24px"><i style="width:60%"></i></div>
+    <div class="card pad">
+      <div class="row" style="margin-bottom:18px">
+        <span class="badge b-new">Current affairs</span>
+        <div style="display:flex;align-items:center;gap:12px"><span class="small">0:24</span><div class="langsw"><button>EN</button><button class="on te">తెలుగు</button></div></div>
+      </div>
+      <p class="te" style="font-size:19px;font-weight:600;line-height:1.9;margin-bottom:22px">2026లో తెలంగాణ రాష్ట్ర ప్రభుత్వం ప్రారంభించిన 'ఇందిరమ్మ ఇళ్లు' పథకం కింద మొదటి దశలో ఎన్ని ఇళ్లు మంజూరు చేశారు?</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label class="chip te" style="justify-content:flex-start;padding:15px 18px;border-radius:11px;display:flex;gap:12px;align-items:center;font-size:15px"><span style="width:26px;height:26px;border-radius:99px;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">అ</span> 3.5 లక్షలు</label>
+        <label class="chip te" style="justify-content:flex-start;padding:15px 18px;border-radius:11px;display:flex;gap:12px;align-items:center;font-size:15px"><span style="width:26px;height:26px;border-radius:99px;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">ఆ</span> 4.5 లక్షలు</label>
+        <label class="chip te" style="justify-content:flex-start;padding:15px 18px;border-radius:11px;display:flex;gap:12px;align-items:center;font-size:15px;border-color:var(--green);background:var(--green-s)"><span style="width:26px;height:26px;border-radius:99px;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">ఇ</span> 5.0 లక్షలు</label>
+        <label class="chip te" style="justify-content:flex-start;padding:15px 18px;border-radius:11px;display:flex;gap:12px;align-items:center;font-size:15px"><span style="width:26px;height:26px;border-radius:99px;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">ఈ</span> 6.0 లక్షలు</label>
+      </div>
+      <div class="card pad-s" style="background:var(--green-s);border-color:var(--green);margin-top:18px">
+        <b style="color:var(--green-d);font-size:14px">Correct — 5.0 లక్షలు</b>
+        <p class="te" style="color:var(--green-d);font-size:13.5px;margin-top:5px">మొదటి దశలో ప్రతి నియోజకవర్గానికి 3,500 ఇళ్ల చొప్పున మొత్తం 5 లక్షల ఇళ్లు మంజూరు చేశారు.</p>
+      </div>
+      <div class="row" style="margin-top:20px"><button class="btn btn-ghost">Skip</button><button class="btn btn-pri" onclick="go('v-result')">Next question</button></div>
+    </div>
+    <p class="small" style="text-align:center;margin-top:16px">Once you answer, it locks. 6,412 people have taken today's quiz.</p>
+  </div>
+</div>
+
+<!-- 14 RESULT -->
+<div class="view" id="v-result">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><div style="flex:1"></div><div class="avatar">RV</div></div></div>
+  <div class="narrow" style="padding:28px 24px 60px;max-width:820px">
+    <div class="card" style="overflow:hidden;margin-bottom:20px">
+      <div style="background:var(--green);color:#fff;padding:34px;text-align:center">
+        <div style="font-family:var(--disp);font-size:58px;font-weight:800;line-height:1">8<span style="font-size:26px;opacity:.6">/10</span></div>
+        <p style="color:#C8E3D6;margin-top:6px">Better than 71% of people today</p>
+        <div style="display:flex;justify-content:center;gap:44px;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18)">
+          <div><div style="font-family:var(--disp);font-size:24px;font-weight:700">15</div><div style="font-size:12px;color:#9CCBB5">day streak</div></div>
+          <div><div style="font-family:var(--disp);font-size:24px;font-weight:700">5:42</div><div style="font-size:12px;color:#9CCBB5">time taken</div></div>
+          <div><div style="font-family:var(--disp);font-size:24px;font-weight:700">#284</div><div style="font-size:12px;color:#9CCBB5">in Karimnagar</div></div>
+        </div>
+      </div>
+      <div class="pad" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="openModal('m-share')">Share your score</button>
+        <button class="btn btn-sec">Review all 10 answers</button>
+        <button class="btn btn-sec" onclick="go('v-board')">See leaderboard</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card pad" style="background:var(--gold-s);border-color:var(--gold)">
+        <h3 class="sub" style="color:var(--gold-d)">Work on: Indian Polity</h3>
+        <p class="small" style="color:var(--gold-d);margin-bottom:14px">You missed both Polity questions this week, and 4 of your last 10.</p>
+        <button class="btn btn-sm" style="background:var(--gold-d);color:#fff" onclick="go('v-reader')">Open free Polity notes</button>
+      </div>
+      <div class="card pad">
+        <h3 class="sub">Where you're strong</h3>
+        <div style="margin-bottom:10px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Telangana Movement</span><b>92%</b></div><div class="bar"><i style="width:92%"></i></div></div>
+        <div style="margin-bottom:10px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Current affairs</span><b>78%</b></div><div class="bar"><i style="width:78%"></i></div></div>
+        <div><div class="row" style="font-size:13px;margin-bottom:4px"><span>Indian Polity</span><b style="color:var(--red)">41%</b></div><div class="bar"><i style="width:41%;background:var(--red)"></i></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 15 LEADERBOARD -->
+<div class="view" id="v-board">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="narrow" style="padding:28px 24px 60px;max-width:760px">
+    <h1 class="page">Leaderboard</h1>
+    <p class="lede" style="margin-bottom:20px">This week's quiz scores. Resets every Monday at 7 AM.</p>
+    <div style="display:flex;gap:8px;margin-bottom:20px"><span class="chip">Telangana</span><span class="chip on">Karimnagar</span><span class="chip">TGPSC Group 2</span></div>
+    <div class="card" style="overflow:hidden">
+      <table class="tbl">
+        <thead><tr><th style="width:60px">Rank</th><th>Name</th><th>Streak</th><th style="text-align:right">Score</th></tr></thead>
+        <tbody>
+          <tr><td><b>1</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="background:var(--gold);color:#3B2A08">SR</span> Srinivas R</div></td><td>41 days</td><td style="text-align:right"><b>68</b></td></tr>
+          <tr><td><b>2</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">PK</span> Praveen K</div></td><td>29 days</td><td style="text-align:right"><b>66</b></td></tr>
+          <tr><td><b>3</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">AL</span> Anusha L</div></td><td>52 days</td><td style="text-align:right"><b>65</b></td></tr>
+          <tr><td><b>4</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">MV</span> Madhavi V</div></td><td>18 days</td><td style="text-align:right"><b>63</b></td></tr>
+          <tr><td><b>5</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">KS</span> Kiran S</div></td><td>22 days</td><td style="text-align:right"><b>61</b></td></tr>
+          <tr><td colspan="4" style="text-align:center;color:var(--faint);padding:6px">· · ·</td></tr>
+          <tr><td>282</td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">NB</span> Naveen B</div></td><td>9 days</td><td style="text-align:right"><b>42</b></td></tr>
+          <tr><td>283</td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">SD</span> Swathi D</div></td><td>11 days</td><td style="text-align:right"><b>42</b></td></tr>
+          <tr style="background:var(--gold-s)"><td><b>284</b></td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="background:var(--gold-d);color:#fff">RV</span> <b>You</b></div></td><td>15 days</td><td style="text-align:right"><b>41</b></td></tr>
+          <tr><td>285</td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">HP</span> Harish P</div></td><td>6 days</td><td style="text-align:right"><b>41</b></td></tr>
+          <tr><td>286</td><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">LM</span> Lakshmi M</div></td><td>3 days</td><td style="text-align:right"><b>40</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small" style="text-align:center;margin-top:16px">Score three more this week to enter the top 250 in Karimnagar.</p>
+  </div>
+</div>
+
+<!-- 16 LIBRARY -->
+<div class="view" id="v-library">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a class="on">Material</a><a onclick="go('v-doubts')">Doubts</a></nav><div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search notes"></div><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <div class="row" style="margin-bottom:18px">
+      <div><h1 class="page">Study material</h1><p class="small">Government documents and notes written by aspirants. Nothing scanned from books.</p></div>
+      <button class="btn btn-pri" onclick="openModal('m-upload')">Upload your notes</button>
+    </div>
+    <div class="split-l">
+      <div class="sidenav">
+        <a class="on">All material</a><a>Official documents</a><a>Student notes</a><a>Previous papers</a><a>Downloaded</a>
+        <div class="grp">BY SUBJECT</div>
+        <a>Indian Polity</a><a>Telangana Movement</a><a>Economy</a><a>History</a><a>Current affairs</a>
+      </div>
+      <div>
+        <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap"><span class="chip on">All</span><span class="chip">Telugu</span><span class="chip">English</span><span class="chip">Group 2</span></div>
+        <div class="grid2">
+          <div class="card pad">
+            <div class="row" style="align-items:flex-start;margin-bottom:8px"><div><b style="font-size:15px">Telangana Movement — full notes</b><div class="small">Official TGPSC syllabus document</div></div><span class="badge b-elig">Official</span></div>
+            <div class="nmeta" style="margin-bottom:12px"><span><i>Size</i><b>2.4 MB</b></span><span><i>Pages</i><b>84</b></span><span><i>Downloads</i><b>1,204</b></span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-pri btn-sm" onclick="go('v-reader')">Read online</button><button class="btn btn-sec btn-sm">Download PDF</button></div>
+          </div>
+          <div class="card pad">
+            <div class="row" style="align-items:flex-start;margin-bottom:8px"><div><b class="te" style="font-size:15px">ఇండియన్ పాలిటీ — నా నోట్స్</b><div class="small">By Ravi K · own work, verified</div></div><span class="badge b-part">Notes</span></div>
+            <div class="nmeta" style="margin-bottom:12px"><span><i>Size</i><b>890 KB</b></span><span><i>Pages</i><b>32</b></span><span><i>Downloads</i><b>642</b></span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-pri btn-sm" onclick="go('v-reader')">Read online</button><button class="btn btn-sec btn-sm">Download PDF</button></div>
+          </div>
+          <div class="card pad">
+            <div class="row" style="align-items:flex-start;margin-bottom:8px"><div><b style="font-size:15px">Group 2 Paper I — 2024 paper</b><div class="small">With official answer key</div></div><span class="badge b-elig">Official</span></div>
+            <div class="nmeta" style="margin-bottom:12px"><span><i>Size</i><b>1.1 MB</b></span><span><i>Downloads</i><b>3,118</b></span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-pri btn-sm" onclick="go('v-reader')">Read online</button><button class="btn btn-sec btn-sm">Download PDF</button></div>
+          </div>
+          <div class="card pad">
+            <div class="row" style="align-items:flex-start;margin-bottom:8px"><div><b style="font-size:15px">Economy one-liners 2026</b><div class="small">By Anusha L · own work, verified</div></div><span class="badge b-part">Notes</span></div>
+            <div class="nmeta" style="margin-bottom:12px"><span><i>Size</i><b>410 KB</b></span><span><i>Downloads</i><b>988</b></span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-pri btn-sm" onclick="go('v-reader')">Read online</button><button class="btn btn-sec btn-sm">Download PDF</button></div>
+          </div>
+        </div>
+        <div class="card pad-s" style="background:var(--paper);margin-top:16px"><p class="small">We host only government documents and notes people wrote themselves. Scanned coaching books are removed and the account is blocked.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 17 READER -->
+<div class="view" id="v-reader">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><div style="flex:1"></div><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><button class="btn btn-sec btn-sm">Download PDF</button><button class="btn btn-sec btn-sm" onclick="toast('Saved for offline reading')">Save offline</button></div></div>
+  <div class="narrow" style="padding:26px 24px 60px;max-width:1000px">
+    <div class="split">
+      <div>
+        <div class="small" style="margin-bottom:12px"><a onclick="go('v-library')">Material</a> › Telangana Movement</div>
+        <h1 class="page">Telangana Movement and State Formation</h1>
+        <p class="small" style="margin-bottom:22px">Official TGPSC syllabus document · 84 pages · last updated 12 August 2026</p>
+        <div class="card pad" style="font-size:15px;line-height:1.9">
+          <h2 class="sec">1. The idea of Telangana, 1948–1970</h2>
+          <p style="margin-bottom:14px">The demand for a separate Telangana state has roots in the merger of the Hyderabad State with the Indian Union in 1948 and the subsequent formation of Andhra Pradesh in 1956. The Gentlemen's Agreement of 1956 laid out safeguards for the Telangana region in employment, education and revenue allocation.</p>
+          <h3 class="sub">1.1 The Gentlemen's Agreement, 1956</h3>
+          <p style="margin-bottom:14px">Signed on 20 February 1956, the agreement provided for a Regional Council, reservation of posts for Telangana candidates, and the retention of surplus Telangana revenues within the region. Its incomplete implementation became the central grievance of the movement.</p>
+          <div class="card pad-s" style="background:var(--gold-s);border-color:var(--gold);margin:18px 0"><b style="color:var(--gold-d);font-size:13.5px">Frequently asked in Paper IV</b><p class="small" style="color:var(--gold-d);margin-top:4px">The date, signatories and the six main provisions of the Gentlemen's Agreement have appeared in four of the last five Group 2 papers.</p></div>
+          <h3 class="sub">1.2 The 1969 agitation</h3>
+          <p>Beginning with a student hunger strike in Khammam in January 1969, the agitation spread across the region and led to the formation of the Telangana Praja Samithi. Over 350 people died in police action during the year.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="position:sticky;top:124px">
+          <h3 class="sub">Contents</h3>
+          <a class="r" style="display:block;padding:7px 0;font-size:13.5px;color:var(--green);font-weight:600">1. The idea of Telangana</a>
+          <a class="r" style="display:block;padding:7px 0;font-size:13.5px">2. Mobilisation, 1971–1990</a>
+          <a class="r" style="display:block;padding:7px 0;font-size:13.5px">3. Towards statehood, 1991–2014</a>
+          <a class="r" style="display:block;padding:7px 0;font-size:13.5px">4. Key personalities</a>
+          <a class="r" style="display:block;padding:7px 0;font-size:13.5px">5. Practice questions</a>
+          <div class="divider" style="margin:14px 0"></div>
+          <div class="row" style="font-size:13px"><span>Reading progress</span><b>18%</b></div>
+          <div class="bar" style="margin-top:6px"><i style="width:18%"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 18 DOUBTS -->
+<div class="view" id="v-doubts">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a class="on">Doubts</a></nav><div class="navsearch"><svg><use href="#i-search"/></svg><input placeholder="Search doubts"></div><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <div class="row" style="margin-bottom:18px"><div><h1 class="page">Doubts</h1><p class="small">Ask in Telugu or English. Answered by aspirants and by people who cleared the exam.</p></div><button class="btn btn-pri">Ask a doubt</button></div>
+    <div class="split-l">
+      <div class="sidenav">
+        <a class="on">Unanswered</a><a>Newest</a><a>Most answered</a><a>My exams</a><a>My doubts</a>
+        <div class="grp">SUBJECT</div>
+        <a>Eligibility</a><a>Indian Polity</a><a>Telangana Movement</a><a>Economy</a><a>Exam pattern</a>
+      </div>
+      <div>
+        <a class="nrow" onclick="go('v-doubt')"><div class="row" style="align-items:flex-start"><div><div class="t te" style="font-size:15.5px">గ్రూప్ 2 పేపర్ 2లో తెలంగాణ ఉద్యమం ఎన్ని మార్కులకు వస్తుంది?</div><div class="o">Kiran M · 2 hours ago · TGPSC Group 2</div></div><span class="badge b-part">No answers</span></div></a>
+        <a class="nrow" onclick="go('v-doubt')"><div class="row" style="align-items:flex-start"><div><div class="t te" style="font-size:15.5px">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా లెక్కిస్తారు?</div><div class="o">Ravi K · 5 hours ago · Eligibility</div></div><span class="badge b-elig">7 answers</span></div></a>
+        <a class="nrow" onclick="go('v-doubt')"><div class="row" style="align-items:flex-start"><div><div class="t">Is negative marking applicable in Group 2 Paper I?</div><div class="o">Sailaja P · 1 day ago · Exam pattern</div></div><span class="badge b-elig">3 answers</span></div></a>
+        <a class="nrow" onclick="go('v-doubt')"><div class="row" style="align-items:flex-start"><div><div class="t te" style="font-size:15.5px">కానిస్టేబుల్ ఫిజికల్ టెస్ట్‌కి ఎలా ప్రిపేర్ అవ్వాలి?</div><div class="o">Naveen B · 1 day ago · TS Police Constable</div></div><span class="badge b-elig">12 answers</span></div></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 19 DOUBT DETAIL -->
+<div class="view" id="v-doubt">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a class="on" onclick="go('v-doubts')">Doubts</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="narrow" style="padding:26px 24px 60px;max-width:900px">
+    <div class="small" style="margin-bottom:14px"><a onclick="go('v-doubts')">Doubts</a> › Eligibility</div>
+    <div class="card pad" style="margin-bottom:20px">
+      <h1 class="page te" style="font-size:23px;line-height:1.7">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా లెక్కిస్తారు?</h1>
+      <div class="row" style="margin-top:12px"><div class="small">Asked by Ravi K · 5 hours ago · 1,412 views</div><div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">▲ 12</button><button class="btn btn-sec btn-sm" onclick="openModal('m-report')">Report</button></div></div>
+    </div>
+    <h2 class="sec">7 answers</h2>
+    <div class="card pad" style="border-left:3px solid var(--green);margin-bottom:14px">
+      <div class="row" style="margin-bottom:12px">
+        <div style="display:flex;gap:11px;align-items:center"><span class="avatar">PS</span><div><b style="font-size:14px">Prasad S</b><div class="small">Cleared Group 2 in 2024 · 4,820 points</div></div></div>
+        <span class="badge b-elig">✓ Best answer</span>
+      </div>
+      <p class="te" style="font-size:14.5px;line-height:1.9">నోటిఫికేషన్‌లో ఇచ్చిన కట్-ఆఫ్ తేదీ ఆధారంగానే లెక్కిస్తారు. చాలా TGPSC నోటిఫికేషన్లలో అది జూలై 1. దరఖాస్తు చివరి తేదీ కాదు — ఇది చాలా మంది చేసే పొరపాటు. ప్రతి నోటిఫికేషన్‌లో "as on" అనే పదం వెతకండి.</p>
+      <div class="row" style="margin-top:14px"><div class="small">2 hours ago</div><div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">▲ 24</button><button class="btn btn-ghost btn-sm">Reply</button></div></div>
+    </div>
+    <div class="card pad" style="margin-bottom:14px">
+      <div style="display:flex;gap:11px;align-items:center;margin-bottom:12px"><span class="avatar" style="background:var(--line2);color:var(--muted)">AK</span><div><b style="font-size:14px">Anil K</b><div class="small">1,240 points</div></div></div>
+      <p class="te" style="font-size:14.5px;line-height:1.9">అవును, ప్రతి నోటిఫికేషన్‌లో "as on" తేదీ ఉంటుంది. Sadhana లో ఆ తేదీ ఆధారంగానే అర్హత చూపిస్తారు.</p>
+      <div class="row" style="margin-top:14px"><div class="small">3 hours ago</div><div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">▲ 8</button><button class="btn btn-ghost btn-sm">Reply</button></div></div>
+    </div>
+    <div class="card pad">
+      <h3 class="sub">Your answer</h3>
+      <textarea class="input" placeholder="Answer in Telugu or English. Say where your information comes from."></textarea>
+      <div class="row" style="margin-top:12px"><div style="display:flex;gap:8px"><button class="btn btn-sec btn-sm">Add photo</button><button class="btn btn-sec btn-sm">Record voice note</button></div><button class="btn btn-pri" onclick="toast('Answer posted')">Post answer</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 20 SETTINGS -->
+<div class="view" id="v-settings">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <h1 class="page">Settings</h1>
+    <div class="split-l" style="margin-top:22px">
+      <div class="sidenav">
+        <a class="on"><svg><use href="#i-user"/></svg> Profile</a>
+        <a onclick="go('v-settings')"><svg><use href="#i-book"/></svg> My exams</a>
+        <a onclick="go('v-settings')"><svg><use href="#i-bell"/></svg> Notifications</a>
+        <a onclick="go('v-privacy')"><svg><use href="#i-gear"/></svg> Privacy &amp; data</a>
+        <a onclick="go('v-saved')"><svg><use href="#i-save"/></svg> Saved jobs</a>
+        <div class="grp">ACCOUNT</div>
+        <a onclick="openModal('m-lang')">Language</a>
+        <a onclick="go('v-home')">Sign out</a>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:18px">
+          <h2 class="sec">Your details</h2>
+          <p class="small" style="margin-bottom:18px">These are the only things we use to check your eligibility.</p>
+          <div class="grid2">
+            <div class="field"><label>Full name</label><input class="input" value="Ravi Varma"></div>
+            <div class="field"><label>Mobile number</label><input class="input" value="+91 98480 12345" disabled style="background:var(--paper);color:var(--muted)"><div class="hint">Contact support to change this</div></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Date of birth</label><input class="input" value="14 / 08 / 2001"></div>
+            <div class="field"><label>Category</label><select class="input"><option>SC</option><option>General</option><option>OBC</option><option>ST</option><option>EWS</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Highest qualification</label><select class="input"><option>Degree — any stream</option></select></div>
+            <div class="field"><label>District</label><select class="input"><option>Karimnagar</option></select></div>
+          </div>
+          <div class="field"><label style="display:flex;gap:9px;align-items:center;font-weight:400"><input type="checkbox" style="accent-color:var(--green);width:17px;height:17px"> I have a benchmark disability certificate</label></div>
+          <div class="row"><span class="small">Changing these re-checks all 41 open jobs.</span><button class="btn btn-pri" onclick="toast('Saved. 34 of 41 jobs now match.')">Save changes</button></div>
+        </div>
+
+        <div class="card pad" style="margin-bottom:18px">
+          <h2 class="sec">Notifications</h2>
+          <p class="small" style="margin-bottom:16px">We send at most 5 a day, and never between 10 PM and 6 AM.</p>
+          <div class="dl">
+            <div class="r"><div><b>Daily quiz</b><div class="small">7:00 AM every day</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>New jobs for my exams</b><div class="small">Within an hour of release</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>Deadline reminders</b><div class="small">3 days and 1 day before</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>Streak reminder</b><div class="small">9 PM, only if you haven't studied</div></div><input type="checkbox" style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>Replies to my doubts</b><div class="small">Batched, at most once every 4 hours</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+          </div>
+          <div class="divider"></div>
+          <h3 class="sub">Where</h3>
+          <div class="dl">
+            <div class="r"><div><b>WhatsApp</b><div class="small">+91 98480 12345 · reply STOP any time</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>Browser notifications</b><div class="small">Chrome on this device</div></div><input type="checkbox" checked style="accent-color:var(--green);width:19px;height:19px"></div>
+            <div class="r"><div><b>Email</b><div class="small">Weekly digest only</div></div><input type="checkbox" style="accent-color:var(--green);width:19px;height:19px"></div>
+          </div>
+        </div>
+
+        <div class="card pad">
+          <h2 class="sec">My exams</h2>
+          <p class="small" style="margin-bottom:14px">These float to the top of your feed and trigger WhatsApp alerts.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="chip on">TGPSC Group 2 ✕</span><span class="chip on">TS Police Constable ✕</span><span class="chip on">SSC CGL ✕</span><span class="chip">+ Add an exam</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 21 PRIVACY -->
+<div class="view" id="v-privacy">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a onclick="go('v-feed')">My feed</a><a onclick="go('v-exams')">Exams</a><a onclick="go('v-library')">Material</a><a onclick="go('v-doubts')">Doubts</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <h1 class="page">Privacy and your data</h1>
+    <div class="split-l" style="margin-top:22px">
+      <div class="sidenav">
+        <a onclick="go('v-settings')"><svg><use href="#i-user"/></svg> Profile</a>
+        <a onclick="go('v-settings')"><svg><use href="#i-bell"/></svg> Notifications</a>
+        <a class="on"><svg><use href="#i-gear"/></svg> Privacy &amp; data</a>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:18px">
+          <h2 class="sec">What we hold about you</h2>
+          <table class="tbl"><thead><tr><th>Data</th><th>Why we have it</th><th>Since</th></tr></thead><tbody>
+            <tr><td><b>Name and phone</b></td><td>Signing you in and sending alerts</td><td>12 Aug 2026</td></tr>
+            <tr><td><b>Date of birth</b></td><td>Calculating age eligibility on each notification</td><td>12 Aug 2026</td></tr>
+            <tr><td><b>Category</b></td><td>Applying age relaxation and fee concession</td><td>12 Aug 2026</td></tr>
+            <tr><td><b>Qualification</b></td><td>Matching against the minimum qualification</td><td>12 Aug 2026</td></tr>
+            <tr><td><b>District</b></td><td>District-restricted jobs and local ads</td><td>12 Aug 2026</td></tr>
+            <tr><td><b>Quiz history</b></td><td>Your streak, score and weak areas</td><td>13 Aug 2026</td></tr>
+          </tbody></table>
+          <p class="small" style="margin-top:14px">We do not collect Aadhaar, caste certificates, addresses or income details, and we never will.</p>
+        </div>
+        <div class="card pad" style="margin-bottom:18px">
+          <h2 class="sec">What you agreed to</h2>
+          <div class="dl">
+            <div class="r"><div><b>Eligibility checking</b><div class="small">Agreed 12 Aug 2026 · consent v2.1</div></div><span class="badge b-elig">On · required</span></div>
+            <div class="r"><div><b>WhatsApp alerts</b><div class="small">Agreed 12 Aug 2026 · consent v2.1</div></div><span class="badge b-elig">On</span></div>
+            <div class="r"><div><b>Personalised advertising</b><div class="small">Never agreed</div></div><span class="badge b-no">Off</span></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card pad">
+            <h3 class="sub">Download your data</h3>
+            <p class="small" style="margin-bottom:14px">A JSON file with everything we hold — profile, saved jobs, quiz history, doubts and answers. Ready in about a minute.</p>
+            <button class="btn btn-sec" onclick="toast('Preparing your file — we\'ll message you when it\'s ready')">Download everything</button>
+          </div>
+          <div class="card pad" style="border-color:var(--red)">
+            <h3 class="sub" style="color:var(--red)">Delete your account</h3>
+            <p class="small" style="margin-bottom:14px">Removes your profile, saved jobs, streak and quiz history within 30 days. Answers you posted stay, shown as anonymous.</p>
+            <button class="btn" style="background:var(--red-s);color:var(--red)" onclick="openModal('m-delete')">Delete my account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 22 ADMIN DASHBOARD ================= -->
+<div class="view" id="v-adm">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a class="on"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a onclick="go('v-adm-review')"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-book"/></svg> Exams</a>
+      <a onclick="go('v-adm-questions')"><svg width="17" height="17"><use href="#i-quiz"/></svg> Question bank</a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-doc"/></svg> Material <span class="cnt">3</span></a>
+      <div class="grp">COMMUNITY</div>
+      <a onclick="go('v-adm-users')"><svg width="17" height="17"><use href="#i-users"/></svg> Users</a>
+      <a onclick="openModal('m-moderate')"><svg width="17" height="17"><use href="#i-chat"/></svg> Moderation <span class="cnt">2</span></a>
+      <div class="grp">SYSTEM</div>
+      <a>Scrapers</a><a>Translations</a><a>Ad campaigns</a><a>Settings</a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top">
+        <div><h1 class="page" style="font-size:26px">Dashboard</h1><p class="small">Sunday, 6 September 2026 · 7:42 AM</p></div>
+        <div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">Export report</button><button class="btn btn-pri btn-sm" onclick="go('v-adm-edit')">New notification</button></div>
+      </div>
+      <div class="grid4" style="margin-bottom:20px">
+        <div class="kpi"><b>18,402</b><span>Daily active users <em style="color:var(--green)">▲ 6.2%</em></span></div>
+        <div class="kpi"><b>24.1%</b><span>D7 retention <em style="color:var(--green)">▲ above 20% target</em></span></div>
+        <div class="kpi"><b style="color:var(--gold-d)">34 min</b><span>Notification publish latency <em style="color:var(--muted)">target under 60</em></span></div>
+        <div class="kpi"><b style="color:var(--red)">7</b><span>Awaiting review <em style="color:var(--red)">2 over SLA</em></span></div>
+      </div>
+      <div class="split">
+        <div>
+          <div class="card pad" style="margin-bottom:18px">
+            <div class="row" style="margin-bottom:16px"><h2 class="sec" style="margin:0">Daily active users</h2><select class="input" style="width:auto;padding:6px 10px;font-size:12.5px"><option>Last 7 days</option></select></div>
+            <div class="chart">
+              <div class="b"><em>15.2k</em><i style="height:74px"></i><b>Mon</b></div>
+              <div class="b"><em>16.1k</em><i style="height:79px"></i><b>Tue</b></div>
+              <div class="b"><em>15.8k</em><i style="height:77px"></i><b>Wed</b></div>
+              <div class="b"><em>17.4k</em><i style="height:85px"></i><b>Thu</b></div>
+              <div class="b"><em>19.9k</em><i style="height:98px;background:var(--gold)"></i><b>Fri</b></div>
+              <div class="b"><em>17.2k</em><i style="height:84px"></i><b>Sat</b></div>
+              <div class="b"><em>18.4k</em><i style="height:90px"></i><b>Sun</b></div>
+            </div>
+            <p class="small" style="margin-top:12px">Friday's spike is the TS Police Constable notification going live at 10:04 AM.</p>
+          </div>
+          <div class="card pad">
+            <h2 class="sec">Scraper health</h2>
+            <table class="tbl"><thead><tr><th>Source</th><th>Last run</th><th>Last success</th><th>Found today</th><th>Status</th></tr></thead><tbody>
+              <tr><td><b>TGPSC</b></td><td>7:30 AM</td><td>7:30 AM</td><td>2</td><td><span class="badge b-elig">Healthy</span></td></tr>
+              <tr><td><b>APPSC</b></td><td>7:30 AM</td><td>7:30 AM</td><td>1</td><td><span class="badge b-elig">Healthy</span></td></tr>
+              <tr><td><b>SSC</b></td><td>7:15 AM</td><td>7:15 AM</td><td>0</td><td><span class="badge b-elig">Healthy</span></td></tr>
+              <tr><td><b>TGLPRB</b></td><td>7:28 AM</td><td>Yesterday 6:00 PM</td><td>—</td><td><span class="badge b-part">2 failures</span></td></tr>
+              <tr><td><b>RRB Secunderabad</b></td><td>7:00 AM</td><td>4 Sep</td><td>—</td><td><span class="badge b-urgent">Broken · layout changed</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div>
+          <div class="card pad" style="margin-bottom:16px"><h3 class="sub">Needs you now</h3>
+            <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="go('v-adm-review')"><span>7 notifications to review</span><span class="badge b-urgent">2 late</span></a>
+            <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px" onclick="openModal('m-moderate')"><span>2 flagged posts</span><b>›</b></a>
+            <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13.5px"><span>3 uploads awaiting check</span><b>›</b></a>
+            <a class="r" style="display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px"><span>1 broken scraper</span><span class="badge b-urgent">RRB</span></a>
+          </div>
+          <div class="card pad" style="margin-bottom:16px"><h3 class="sub">Content gaps</h3>
+            <div class="dl">
+              <div class="r"><span>Questions with no Telugu</span><b style="color:var(--red)">41</b></div>
+              <div class="r"><span>Quiz pool depth</span><b>18 days</b></div>
+              <div class="r"><span>Exams missing cutoffs</span><b>6</b></div>
+              <div class="r"><span>Translation review queue</span><b>12</b></div>
+            </div>
+          </div>
+          <div class="card pad"><h3 class="sub">Today's ad revenue</h3><div style="font-family:var(--disp);font-size:27px;font-weight:700">₹4,182</div><p class="small">3 direct campaigns live · AdSense RPM ₹38</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 23 ADMIN NOTIFICATION LIST ================= -->
+<div class="view" id="v-adm-list">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a onclick="go('v-adm')"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a onclick="go('v-adm-review')"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a class="on"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <a><svg width="17" height="17"><use href="#i-book"/></svg> Exams</a>
+      <a onclick="go('v-adm-questions')"><svg width="17" height="17"><use href="#i-quiz"/></svg> Question bank</a>
+      <a><svg width="17" height="17"><use href="#i-doc"/></svg> Material <span class="cnt">3</span></a>
+      <div class="grp">COMMUNITY</div>
+      <a onclick="go('v-adm-users')"><svg width="17" height="17"><use href="#i-users"/></svg> Users</a>
+      <a onclick="openModal('m-moderate')"><svg width="17" height="17"><use href="#i-chat"/></svg> Moderation <span class="cnt">2</span></a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top">
+        <div><h1 class="page" style="font-size:26px">Notifications</h1><p class="small">248 total · 41 published and open · 7 awaiting review</p></div>
+        <button class="btn btn-pri btn-sm" onclick="go('v-adm-edit')">New notification</button>
+      </div>
+      <div class="card pad-s" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="input" placeholder="Search by title or organisation" style="flex:1;min-width:200px;padding:9px 12px">
+        <select class="input" style="width:auto;padding:9px 12px"><option>All statuses</option><option>Pending review</option><option>Published</option><option>Draft</option><option>Expired</option></select>
+        <select class="input" style="width:auto;padding:9px 12px"><option>All exams</option></select>
+        <label style="display:flex;gap:7px;align-items:center;font-size:13px;white-space:nowrap"><input type="checkbox" style="accent-color:var(--green)"> Missing Telugu</label>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table class="tbl">
+          <thead><tr><th style="width:34px"><input type="checkbox" style="accent-color:var(--green)"></th><th>Title</th><th>Exam</th><th>Vacancies</th><th>Closes</th><th>Locales</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TGPSC Junior Assistant 2026</b><div class="small">Scraped 34 min ago from tgpsc.gov.in</div></td><td>TGPSC Group 4</td><td>1,240</td><td>29 Sep</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-no" style="font-size:10.5px">TE</span></td><td><span class="badge b-part">Pending review</span></td><td><button class="btn btn-sec btn-sm" onclick="go('v-adm-review')">Review</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TS Police Constable 2026</b><div class="small">Published 18 Aug · 412k views</div></td><td>TS Police Constable</td><td>16,614</td><td><b style="color:var(--red)">12 Sep</b></td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-elig" style="font-size:10.5px">TE</span></td><td><span class="badge b-elig">Published</span></td><td><button class="btn btn-sec btn-sm" onclick="go('v-adm-edit')">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TGPSC Group 2 Services 2026</b><div class="small">Published today 6:12 AM · 88k views</div></td><td>TGPSC Group 2</td><td>783</td><td>04 Oct</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-elig" style="font-size:10.5px">TE</span></td><td><span class="badge b-elig">Published</span></td><td><button class="btn btn-sec btn-sm" onclick="go('v-adm-edit')">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>SCCL Junior Assistant 2026</b><div class="small">Draft · created by Sailaja</div></td><td>—</td><td>316</td><td>11 Oct</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-no" style="font-size:10.5px">TE</span></td><td><span class="badge b-draft">Draft</span></td><td><button class="btn btn-sec btn-sm" onclick="go('v-adm-edit')">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>RRB NTPC 2026</b><div class="small">Expired 2 Sep</div></td><td>RRB NTPC</td><td>11,558</td><td>02 Sep</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-elig" style="font-size:10.5px">TE</span></td><td><span class="badge b-no">Expired</span></td><td><button class="btn btn-sec btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:14px"><span class="small">Showing 5 of 248</span><div style="display:flex;gap:8px"><button class="btn btn-sec btn-sm">Previous</button><button class="btn btn-sec btn-sm">Next</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 24 ADMIN EDITOR ================= -->
+<div class="view" id="v-adm-edit">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a onclick="go('v-adm')"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a onclick="go('v-adm-review')"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a class="on" onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <a onclick="go('v-adm-questions')"><svg width="17" height="17"><use href="#i-quiz"/></svg> Question bank</a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top">
+        <div><div class="small" style="margin-bottom:5px"><a onclick="go('v-adm-list')">Notifications</a> › Edit</div><h1 class="page" style="font-size:24px">TS Police Constable 2026</h1></div>
+        <div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">Preview</button><button class="btn btn-sec btn-sm">Save draft</button><button class="btn btn-pri btn-sm" onclick="openModal('m-publish')">Publish</button></div>
+      </div>
+      <div class="split">
+        <div>
+          <div class="card pad" style="margin-bottom:16px">
+            <h2 class="sec">Basic</h2>
+            <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు <span class="dot"></span></button><button style="opacity:.5">हिन्दी</button></div>
+            <div class="field"><label>Title <span style="color:var(--red)">*</span></label><input class="input" value="TS Police Constable (Civil &amp; AR) 2026"></div>
+            <div class="field"><label>Description</label><textarea class="input">The Telangana Police Recruitment Board invites applications for 16,614 constable posts across Civil, Armed Reserve and Transport wings.</textarea></div>
+            <div class="grid2">
+              <div class="field"><label>Slug <span class="small">(never translated)</span></label><input class="input" value="ts-police-constable-2026" style="font-family:ui-monospace,monospace;font-size:13px"></div>
+              <div class="field"><label>Organisation</label><input class="input" value="Telangana Police Recruitment Board"></div>
+            </div>
+          </div>
+
+          <div class="card pad" style="margin-bottom:16px">
+            <h2 class="sec">Eligibility <span class="badge b-urgent" style="font-size:10.5px;vertical-align:middle">Human verification required</span></h2>
+            <div class="grid2">
+              <div class="field"><label>Minimum qualification</label><select class="input"><option>Intermediate / 12th</option></select></div>
+              <div class="field"><label>Age reference date</label><input class="input" value="01 / 07 / 2026"><div class="hint">Age is calculated on this date, not the closing date</div></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Minimum age</label><input class="input" value="18"></div>
+              <div class="field"><label>Maximum age</label><input class="input" value="22"></div>
+            </div>
+            <div class="field"><label>Age relaxation by category (years)</label>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:9px">
+                <div><div class="hint" style="margin:0 0 4px">OBC</div><input class="input" value="3" style="padding:9px"></div>
+                <div><div class="hint" style="margin:0 0 4px">SC</div><input class="input" value="5" style="padding:9px"></div>
+                <div><div class="hint" style="margin:0 0 4px">ST</div><input class="input" value="5" style="padding:9px"></div>
+                <div><div class="hint" style="margin:0 0 4px">PwD</div><input class="input" value="10" style="padding:9px"></div>
+                <div><div class="hint" style="margin:0 0 4px">Ex-serv.</div><input class="input" value="3" style="padding:9px"></div>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Restricted to states</label><input class="input" value="Telangana"></div>
+              <div class="field"><label>Gender restriction</label><select class="input"><option>Open to all</option></select></div>
+            </div>
+          </div>
+
+          <div class="card pad">
+            <h2 class="sec">Dates and fees</h2>
+            <div class="grid2">
+              <div class="field"><label>Applications open</label><input class="input" value="18 / 08 / 2026"></div>
+              <div class="field"><label>Last date <span style="color:var(--red)">*</span></label><input class="input" value="12 / 09 / 2026" style="border-color:var(--gold)"><div class="hint" style="color:var(--gold-d)">Verify this against the official PDF</div></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Fee — General / OBC</label><input class="input" value="800"></div>
+              <div class="field"><label>Fee — SC / ST</label><input class="input" value="400"></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Official PDF URL</label><input class="input" value="https://tgprb.in/notification-03-2026.pdf" style="font-size:13px"></div>
+              <div class="field"><label>Apply URL</label><input class="input" value="https://tgprb.in/apply" style="font-size:13px"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card pad" style="margin-bottom:16px">
+            <h3 class="sub">Status</h3>
+            <div class="dl">
+              <div class="r"><span>Current</span><span class="badge b-elig">Published</span></div>
+              <div class="r"><span>Published</span><b>18 Aug, 10:04 AM</b></div>
+              <div class="r"><span>Verified by</span><b>Sailaja P</b></div>
+              <div class="r"><span>Verified on</span><b>6 Sep 2026</b></div>
+              <div class="r"><span>Views</span><b>412,388</b></div>
+              <div class="r"><span>Saves</span><b>28,104</b></div>
+            </div>
+          </div>
+          <div class="card pad" style="margin-bottom:16px">
+            <h3 class="sub">Translation</h3>
+            <div class="dl">
+              <div class="r"><span>English</span><span class="badge b-elig">Complete</span></div>
+              <div class="r"><span>Telugu</span><span class="badge b-part">3 fields pending</span></div>
+            </div>
+            <button class="btn btn-sec btn-sm btn-full" style="margin-top:12px">Open translation review</button>
+          </div>
+          <div class="card pad" style="background:var(--gold-s);border-color:var(--gold)">
+            <h3 class="sub" style="color:var(--gold-d)">Before publishing</h3>
+            <p class="small" style="color:var(--gold-d)">Dates, eligibility and fees are never auto-published from the scraper or AI extraction. A person confirms them against the official PDF every time.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 25 REVIEW QUEUE ================= -->
+<div class="view" id="v-adm-review">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a onclick="go('v-adm')"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a class="on"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <a onclick="go('v-adm-questions')"><svg width="17" height="17"><use href="#i-quiz"/></svg> Question bank</a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top">
+        <div><h1 class="page" style="font-size:26px">Review queue</h1><p class="small">7 waiting · oldest is 2h 14m old · SLA is 2 hours</p></div>
+        <div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">Skip</button><button class="btn btn-sec btn-sm">Reject</button><button class="btn btn-pri btn-sm" onclick="openModal('m-publish')">Approve and publish</button></div>
+      </div>
+      <div class="card pad-s" style="background:var(--red-s);border-color:var(--red);margin-bottom:14px"><p class="small" style="color:var(--red)"><b>2 items are past the 2-hour SLA.</b> Scraped notifications lose search ranking if we publish after other sites do.</p></div>
+      <div class="review">
+        <div class="review-l">
+          <div class="row" style="margin-bottom:14px"><b style="font-family:var(--disp);font-size:16px">Extracted fields</b><span class="badge b-part">1 of 7 · scraped 2h 14m ago</span></div>
+          <div class="field"><label>Title</label><input class="input" value="TGPSC Junior Assistant &amp; Typist 2026"></div>
+          <div class="grid2">
+            <div class="field"><label>Vacancies</label><input class="input" value="1,240"></div>
+            <div class="field"><label>Qualification</label><select class="input"><option>Degree</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Min age</label><input class="input" value="18"></div>
+            <div class="field"><label>Max age</label><input class="input" value="44"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Applications open</label><input class="input" value="04 / 09 / 2026"></div>
+            <div class="field"><label>Last date</label><input class="input err" value="29 / 09 / 2026"><div class="hint err">AI was unsure — confirm on page 3</div></div>
+          </div>
+          <div class="field"><label>Age reference date</label><input class="input" value="Not stated" style="color:var(--muted)"><div class="hint">Left empty by the extractor. Never guessed.</div></div>
+          <div class="divider"></div>
+          <b style="font-size:13.5px;display:block;margin-bottom:8px">Confirm before publishing</b>
+          <div class="checklist">
+            <label><input type="checkbox"> All dates match the official PDF</label>
+            <label><input type="checkbox"> Eligibility and age relaxation match</label>
+            <label><input type="checkbox"> Fee amounts match</label>
+            <label><input type="checkbox"> Official link opens correctly</label>
+          </div>
+        </div>
+        <div class="review-r">
+          <div class="row" style="margin-bottom:11px"><b style="font-family:var(--disp);font-size:14px">Source PDF</b><a class="small" style="color:var(--green);font-weight:600">Open on tgpsc.gov.in ↗</a></div>
+          <div class="pdfmock">
+            <h5>TELANGANA PUBLIC SERVICE COMMISSION</h5>
+            <p style="text-align:center;margin-bottom:14px">NOTIFICATION NO. 22/2026<br>JUNIOR ASSISTANT &amp; TYPIST</p>
+            <p style="margin-bottom:10px">Applications are invited online from qualified candidates through the proforma application to be made available on Commission's WEBSITE to the post of Junior Assistant and Typist in various departments.</p>
+            <p style="margin-bottom:10px"><b>1. VACANCIES:</b> The number of vacancies notified is <b>1,240</b>, distributed across zones as detailed in Annexure-I.</p>
+            <p style="margin-bottom:10px"><b>2. EDUCATIONAL QUALIFICATION:</b> Must possess a Bachelor's Degree from any University in India recognised by the UGC.</p>
+            <p style="margin-bottom:10px"><b>3. AGE:</b> Minimum 18 years and maximum 44 years. The age is reckoned as on 01/07/2026. Relaxation of age is admissible as per rules.</p>
+            <p style="margin-bottom:10px"><b>4. IMPORTANT DATES:</b> Submission of online application commences from <b>04/09/2026</b>. The last date for submission of online application is <b>29/09/2026</b> up to 5:00 PM.</p>
+            <p><b>5. FEE:</b> Application processing fee of Rs. 200/- and examination fee of Rs. 120/-. SC, ST, BC and PH candidates are exempted from examination fee.</p>
+          </div>
+          <div class="card pad-s" style="margin-top:11px;background:var(--gold-s);border-color:var(--gold)"><p class="small" style="color:var(--gold-d)">The reference date <b>01/07/2026</b> is stated on this page but the extractor left it blank. Add it before publishing — age eligibility depends on it.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 26 QUESTION BANK ================= -->
+<div class="view" id="v-adm-questions">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a onclick="go('v-adm')"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a onclick="go('v-adm-review')"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <a class="on"><svg width="17" height="17"><use href="#i-quiz"/></svg> Question bank</a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top">
+        <div><h1 class="page" style="font-size:26px">Question bank</h1><p class="small">2,418 questions · 18 days of quiz pool remaining</p></div>
+        <div style="display:flex;gap:10px"><button class="btn btn-sec btn-sm">Import CSV</button><button class="btn btn-pri btn-sm">Add question</button></div>
+      </div>
+      <div class="grid4" style="margin-bottom:18px">
+        <div class="kpi"><b>2,418</b><span>Total questions</span></div>
+        <div class="kpi"><b style="color:var(--red)">41</b><span>Missing Telugu</span></div>
+        <div class="kpi"><b>18</b><span>Days of pool left</span></div>
+        <div class="kpi"><b>612</b><span>Never served</span></div>
+      </div>
+      <div class="card pad-s" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <input class="input" placeholder="Search questions" style="flex:1;min-width:180px;padding:9px 12px">
+        <select class="input" style="width:auto;padding:9px 12px"><option>All subjects</option></select>
+        <select class="input" style="width:auto;padding:9px 12px"><option>All difficulty</option></select>
+        <label style="display:flex;gap:7px;align-items:center;font-size:13px"><input type="checkbox" checked style="accent-color:var(--green)"> Missing Telugu only</label>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table class="tbl">
+          <thead><tr><th style="width:34px"><input type="checkbox" style="accent-color:var(--green)"></th><th>Question</th><th>Subject</th><th>Difficulty</th><th>Served</th><th>Correct %</th><th>Locales</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:380px">Which committee recommended the formation of Telangana Regional Council in 1956?</td><td>Telangana Movement</td><td>Medium</td><td>412</td><td>62%</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-no" style="font-size:10.5px">TE</span></td><td><button class="btn btn-sec btn-sm">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:380px" class="te">భారత రాజ్యాంగంలోని ఏ అధికరణ 'రాజ్యాంగ పరిహారాల హక్కు'కు సంబంధించినది?</td><td>Indian Polity</td><td>Easy</td><td>1,204</td><td>78%</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-elig" style="font-size:10.5px">TE</span></td><td><button class="btn btn-sec btn-sm">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:380px">The Mission Bhagiratha project is associated with which sector?</td><td>Current affairs</td><td>Easy</td><td>0</td><td>—</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-no" style="font-size:10.5px">TE</span></td><td><button class="btn btn-sec btn-sm">Edit</button></td></tr>
+            <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:380px" class="te">తెలంగాణ రాష్ట్ర ఆవిర్భావ దినోత్సవం ఏ తేదీన జరుపుకుంటారు?</td><td>Telangana Movement</td><td>Easy</td><td>2,102</td><td>94%</td><td><span class="badge b-elig" style="font-size:10.5px">EN</span> <span class="badge b-elig" style="font-size:10.5px">TE</span></td><td><button class="btn btn-sec btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card pad-s" style="margin-top:14px;background:var(--gold-s);border-color:var(--gold)"><p class="small" style="color:var(--gold-d)"><b>41 questions have no Telugu translation.</b> These are excluded from the daily quiz automatically — a half-English quiz breaks the promise of the product.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 27 USERS ================= -->
+<div class="view" id="v-adm-users">
+  <div class="adm">
+    <div class="adm-side">
+      <div class="lg"><i>స</i>Sadhana</div>
+      <a onclick="go('v-adm')"><svg width="17" height="17"><use href="#i-chart"/></svg> Dashboard</a>
+      <div class="grp">CONTENT</div>
+      <a onclick="go('v-adm-review')"><svg width="17" height="17"><use href="#i-inbox"/></svg> Review queue <span class="cnt">7</span></a>
+      <a onclick="go('v-adm-list')"><svg width="17" height="17"><use href="#i-bell"/></svg> Notifications</a>
+      <div class="grp">COMMUNITY</div>
+      <a class="on"><svg width="17" height="17"><use href="#i-users"/></svg> Users</a>
+      <a onclick="openModal('m-moderate')"><svg width="17" height="17"><use href="#i-chat"/></svg> Moderation <span class="cnt">2</span></a>
+    </div>
+    <div class="adm-main">
+      <div class="adm-top"><div><h1 class="page" style="font-size:26px">Users</h1><p class="small">142,806 registered · 18,402 active today</p></div></div>
+      <div class="card pad-s" style="background:var(--red-s);border-color:var(--red);margin-bottom:14px"><p class="small" style="color:var(--red)"><b>Every profile you open is logged.</b> Personal details are visible only where a support ticket requires it, and the access is recorded in the audit trail.</p></div>
+      <div class="card pad-s" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <input class="input" placeholder="Search by phone or name" style="flex:1;min-width:200px;padding:9px 12px">
+        <select class="input" style="width:auto;padding:9px 12px"><option>All districts</option></select>
+        <select class="input" style="width:auto;padding:9px 12px"><option>All statuses</option><option>Suspended</option><option>Verified selected</option></select>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table class="tbl">
+          <thead><tr><th>User</th><th>District</th><th>Exams</th><th>Streak</th><th>Points</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">PS</span><div><b>Prasad S</b><div class="small">•••• 4412</div></div></div></td><td>Hyderabad</td><td>2</td><td>62</td><td>4,820</td><td>4 Mar 2026</td><td><span class="badge b-elig">Verified selected</span></td><td><button class="btn btn-sec btn-sm">View</button></td></tr>
+            <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">RV</span><div><b>Ravi Varma</b><div class="small">•••• 2345</div></div></div></td><td>Karimnagar</td><td>3</td><td>15</td><td>1,240</td><td>12 Aug 2026</td><td><span class="badge b-no">Active</span></td><td><button class="btn btn-sec btn-sm">View</button></td></tr>
+            <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">AL</span><div><b>Anusha L</b><div class="small">•••• 8890</div></div></div></td><td>Warangal</td><td>4</td><td>52</td><td>3,104</td><td>19 Jan 2026</td><td><span class="badge b-no">Active</span></td><td><button class="btn btn-sec btn-sm">View</button></td></tr>
+            <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="background:var(--red-s);color:var(--red)">XX</span><div><b>Suspended user</b><div class="small">•••• 1102</div></div></div></td><td>Nizamabad</td><td>1</td><td>0</td><td>-40</td><td>2 Sep 2026</td><td><span class="badge b-urgent">Blocked · piracy</span></td><td><button class="btn btn-sec btn-sm">View</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 28 EMPTY ================= -->
+<div class="view" id="v-empty">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><nav><a onclick="go('v-dash')">Dashboard</a><a class="on">My feed</a><a onclick="go('v-exams')">Exams</a></nav><div class="langsw"><button class="on">EN</button><button class="te">తె</button></div><div class="avatar">RV</div></div></div>
+  <div class="container" style="padding:28px 24px 60px">
+    <h1 class="page">My feed</h1>
+    <div style="display:flex;gap:8px;margin:18px 0"><span class="chip on">Eligible for me ✕</span><span class="chip on">Karimnagar ✕</span><span class="chip on">Banking ✕</span></div>
+    <div class="card" style="padding:64px 24px;text-align:center">
+      <div style="width:64px;height:64px;border-radius:99px;background:var(--green-s);color:var(--green);display:grid;place-items:center;margin:0 auto 18px"><svg width="28" height="28"><use href="#i-search"/></svg></div>
+      <h2 class="sec" style="font-size:20px">Nothing matches all three filters</h2>
+      <p class="lede" style="margin:0 auto 20px;max-width:44ch">There are 12 banking jobs open right now, but none of them are restricted to Karimnagar.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn btn-pri" onclick="go('v-feed')">Remove the district filter</button><button class="btn btn-sec" onclick="go('v-feed')">Clear all filters</button></div>
+    </div>
+    <div style="margin-top:34px">
+      <h2 class="sec">You might be interested in</h2>
+      <div class="grid3">
+        <a class="card pad" onclick="go('v-notif')"><b>IBPS PO 2026</b><div class="small">All-India · Degree · 4,455 posts</div><span class="badge b-elig" style="margin-top:9px">✓ Eligible</span></a>
+        <a class="card pad" onclick="go('v-notif')"><b>SBI Clerk 2026</b><div class="small">All-India · Degree · 8,283 posts</div><span class="badge b-elig" style="margin-top:9px">✓ Eligible</span></a>
+        <a class="card pad" onclick="go('v-notif')"><b>TS Cooperative Bank</b><div class="small">Telangana · Degree · 442 posts</div><span class="badge b-elig" style="margin-top:9px">✓ Eligible</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 29 ERROR / OFFLINE ================= -->
+<div class="view" id="v-error">
+  <div class="pubnav"><div class="pubnav-in"><a class="logo" onclick="go('v-dash')"><i>స</i>Sadhana</a><div style="flex:1"></div><div class="avatar">RV</div></div></div>
+  <div style="background:var(--gold-s);border-bottom:1px solid var(--gold);padding:11px 0"><div class="container" style="display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--gold-d)"><b>You're offline.</b> Showing what you saved. New jobs will appear when you're back online.<button class="btn btn-sm" style="margin-left:auto;background:var(--gold-d);color:#fff">Try again</button></div></div>
+  <div class="container" style="padding:36px 24px 60px">
+    <div class="grid2" style="margin-bottom:34px">
+      <div class="card" style="padding:44px 28px;text-align:center">
+        <div style="width:56px;height:56px;border-radius:99px;background:var(--red-s);color:var(--red);display:grid;place-items:center;margin:0 auto 16px;font-size:24px;font-weight:700">!</div>
+        <h2 class="sec">This page didn't load</h2>
+        <p class="small" style="max-width:38ch;margin:0 auto 18px">Something on our side failed. We've been told automatically and are looking at it.</p>
+        <div style="display:flex;gap:9px;justify-content:center"><button class="btn btn-pri btn-sm">Try again</button><button class="btn btn-sec btn-sm" onclick="go('v-dash')">Back to dashboard</button></div>
+        <p class="small" style="margin-top:16px">If it's urgent, the official notification is at <a style="text-decoration:underline">tgprb.in</a></p>
+      </div>
+      <div class="card pad">
+        <h2 class="sec">Available offline</h2>
+        <a class="r" style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line2)" onclick="go('v-saved')"><div><b>6 saved jobs</b><div class="small">Last updated 7:12 AM today</div></div><b>›</b></a>
+        <a class="r" style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line2)" onclick="go('v-quiz')"><div><b>Today's quiz</b><div class="small">Downloaded · answers sync when you reconnect</div></div><b>›</b></a>
+        <a class="r" style="display:flex;justify-content:space-between;padding:12px 0" onclick="go('v-reader')"><div><b>3 downloaded notes</b><div class="small">Polity, Telangana Movement, Economy</div></div><b>›</b></a>
+      </div>
+    </div>
+    <div class="card pad" style="background:var(--gold-s);border-color:var(--gold)">
+      <h2 class="sec" style="color:var(--gold-d)">Degraded mode — notification day</h2>
+      <p style="color:var(--gold-d);font-size:14px;max-width:70ch">When traffic goes 50× on a big notification day, personalised eligibility is switched off first so the site stays up for everyone. The facts stay; the personalisation returns within minutes.</p>
+      <div class="card pad-s" style="margin-top:14px;background:var(--card)">
+        <div class="row"><div><b>TS Police Constable 2026</b><div class="small">TGLPRB · 16,614 vacancies · closes 12 Sep</div><div class="small" style="margin-top:5px">Intermediate · Age 18–22 · SC/ST +5 years · ₹800 / ₹400</div></div><span class="badge b-no">Check eligibility yourself</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /stage -->
+
+<!-- ================= MODALS ================= -->
+<div class="scrim" id="m-filter" onclick="closeModal(event)"><div class="modal wide" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Filter jobs</h3><p class="small">41 jobs open · 34 match your profile</p></div>
+  <div class="modal-b">
+    <div class="grid2">
+      <div><h3 class="sub">Qualification</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip">10th</span><span class="chip">Intermediate</span><span class="chip on">Degree</span><span class="chip">B.Tech</span><span class="chip">PG</span></div></div>
+      <div><h3 class="sub">Department</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip on">Police</span><span class="chip">Revenue</span><span class="chip">Railways</span><span class="chip">Banking</span><span class="chip">Teaching</span></div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="grid2">
+      <div><h3 class="sub">District</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip on">Karimnagar</span><span class="chip">Hyderabad</span><span class="chip">Warangal</span><span class="chip">All districts</span></div></div>
+      <div><h3 class="sub">Deadline</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="chip">This week</span><span class="chip on">This month</span><span class="chip">Any time</span></div></div>
+    </div>
+    <div class="divider"></div>
+    <label style="display:flex;gap:10px;align-items:center;font-size:14px"><input type="checkbox" checked style="accent-color:var(--green);width:18px;height:18px"> Only show jobs I qualify for</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost">Clear all</button><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Showing 12 results')">Show 12 results</button></div>
+</div></div>
+
+<div class="scrim" id="m-report" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>What's wrong here?</h3><p class="small">We check every report within two hours. Wrong dates are the most damaging mistake we can make.</p></div>
+  <div class="modal-b">
+    <label style="display:flex;gap:10px;align-items:center;padding:9px 0"><input type="radio" name="rep" checked style="accent-color:var(--green)"> A date is wrong</label>
+    <label style="display:flex;gap:10px;align-items:center;padding:9px 0"><input type="radio" name="rep" style="accent-color:var(--green)"> Eligibility details are wrong</label>
+    <label style="display:flex;gap:10px;align-items:center;padding:9px 0"><input type="radio" name="rep" style="accent-color:var(--green)"> The official link is broken</label>
+    <label style="display:flex;gap:10px;align-items:center;padding:9px 0"><input type="radio" name="rep" style="accent-color:var(--green)"> This notification was cancelled</label>
+    <div class="field" style="margin-top:12px"><label>Tell us more (optional)</label><textarea class="input" placeholder="Which date, and what should it be?"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Report sent. We\'ll check it within two hours.')">Send report</button></div>
+</div></div>
+
+<div class="scrim" id="m-share" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Share your score</h3></div>
+  <div class="modal-b">
+    <div style="background:var(--green);border-radius:12px;padding:34px 22px;text-align:center;color:#fff;max-width:220px;margin:0 auto 18px;aspect-ratio:9/16;display:flex;flex-direction:column;justify-content:center">
+      <div class="te" style="font-size:13px;opacity:.8;margin-bottom:6px">ఈరోజు రోజు ప్రశ్న</div>
+      <div style="font-family:var(--disp);font-size:48px;font-weight:800;line-height:1">8/10</div>
+      <div style="width:34px;height:3px;background:var(--gold);margin:16px auto"></div>
+      <div style="font-family:var(--disp);font-size:19px;font-weight:700">15 రోజులు</div>
+      <div class="te" style="font-size:11px;opacity:.75">వరుసగా</div>
+      <div style="margin-top:auto;padding-top:22px;font-size:12px;font-weight:600">sadhana.study</div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn btn-sec btn-sm">WhatsApp</button><button class="btn btn-sec btn-sm">Status</button><button class="btn btn-sec btn-sm">Telegram</button><button class="btn btn-sec btn-sm">Download</button>
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Close</button></div>
+</div></div>
+
+<div class="scrim" id="m-publish" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Publish this notification?</h3><p class="small">It goes live immediately and 12,400 users with matching exam preferences get a WhatsApp alert.</p></div>
+  <div class="modal-b">
+    <div class="card pad-s" style="background:var(--gold-s);border-color:var(--gold);margin-bottom:16px"><p style="font-size:13.5px;color:var(--gold-d)"><b>Have you verified the dates and eligibility against the official PDF?</b> A wrong date means someone misses an exam.</p></div>
+    <div class="checklist">
+      <label><input type="checkbox" checked> All dates match the official PDF</label>
+      <label><input type="checkbox" checked> Eligibility and age relaxation match</label>
+      <label><input type="checkbox" checked> Fee amounts match</label>
+      <label><input type="checkbox"> Official link opens correctly</label>
+    </div>
+    <div class="field" style="margin-top:14px"><label>Verified by</label><input class="input" value="Sailaja P" disabled style="background:var(--paper);color:var(--muted)"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Not yet</button><button class="btn btn-dis" title="Tick every box first">Publish and alert 12,400 users</button></div>
+</div></div>
+
+<div class="scrim" id="m-delete" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Delete your account?</h3></div>
+  <div class="modal-b">
+    <p style="margin-bottom:14px"><b>Removed within 30 days:</b> your profile, saved jobs, quiz history and 15-day streak.</p>
+    <p style="margin-bottom:14px"><b>Kept:</b> answers you posted in Doubts, shown as anonymous, so other people's questions stay answered.</p>
+    <p style="margin-bottom:16px">This cannot be undone.</p>
+    <div class="field"><label>Type DELETE to confirm</label><input class="input" placeholder="DELETE"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Keep my account</button><button class="btn btn-dis">Delete permanently</button></div>
+</div></div>
+
+<div class="scrim" id="m-lang" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Language</h3><p class="small">Switching keeps you on the page you were reading.</p></div>
+  <div class="modal-b">
+    <label class="r" style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line2);cursor:pointer"><div><div class="te" style="font-size:17px;font-weight:600">తెలుగు</div><span class="small">Telugu</span></div><input type="radio" name="lg" checked style="accent-color:var(--green);width:18px;height:18px"></label>
+    <label class="r" style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line2);cursor:pointer"><div><div style="font-size:17px;font-weight:600">English</div><span class="small te">ఇంగ్లీష్</span></div><input type="radio" name="lg" style="accent-color:var(--green);width:18px;height:18px"></label>
+    <div class="r" style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line2);opacity:.45"><div><div style="font-size:17px;font-weight:600">हिन्दी</div><span class="small">Hindi · coming soon</span></div></div>
+    <div class="r" style="display:flex;justify-content:space-between;padding:13px 0;opacity:.45"><div><div style="font-size:17px;font-weight:600">தமிழ்</div><span class="small">Tamil · coming soon</span></div></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Language changed to Telugu')">Save</button></div>
+</div></div>
+
+<div class="scrim" id="m-push" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Want tomorrow's quiz at 7 AM?</h3></div>
+  <div class="modal-b">
+    <p style="margin-bottom:14px">We'll send one reminder each morning, and an alert when a job you qualify for opens. At most five messages a day, never between 10 PM and 6 AM.</p>
+    <div class="card pad-s" style="background:var(--paper)"><p class="small">You can turn any of these off individually in Settings, and stop WhatsApp messages by replying STOP.</p></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Not now</button><button class="btn btn-pri" onclick="closeAll();toast('Alerts on. See you at 7 AM.')">Yes, remind me</button></div>
+</div></div>
+
+<div class="scrim" id="m-upload" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Upload your notes</h3><p class="small">Only notes you wrote yourself. Scanned coaching books are removed and the account is blocked.</p></div>
+  <div class="modal-b">
+    <div style="border:2px dashed var(--line);border-radius:11px;padding:30px;text-align:center;margin-bottom:16px">
+      <svg width="30" height="30" style="color:var(--muted)"><use href="#i-doc"/></svg>
+      <p style="font-size:14px;font-weight:600;margin-top:9px">Drop a PDF or image here</p>
+      <p class="small">Up to 25 MB · PDF, JPG or PNG</p>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Title</label><input class="input" placeholder="Indian Polity — my notes"></div>
+      <div class="field"><label>Exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Subject</label><select class="input"><option>Indian Polity</option></select></div>
+      <div class="field"><label>Language</label><select class="input"><option>Telugu</option><option>English</option></select></div>
+    </div>
+    <label style="display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.6;background:var(--gold-s);padding:12px;border-radius:9px"><input type="checkbox" style="accent-color:var(--green);width:18px;height:18px;margin-top:2px"> <span style="color:var(--gold-d)"><b>I wrote this myself</b> and I have the right to share it. I understand that uploading copyrighted material gets my account blocked.</span></label>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Uploaded. A moderator checks it within 24 hours.')">Upload for review</button></div>
+</div></div>
+
+<div class="scrim" id="m-session" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>You've been signed out</h3></div>
+  <div class="modal-b"><p>For your security we sign you out after 60 days. Your saved jobs, streak and quiz history are untouched.</p></div>
+  <div class="modal-f"><button class="btn btn-pri btn-full" onclick="closeAll();go('v-login')">Sign in with your phone</button></div>
+</div></div>
+
+<div class="scrim" id="m-moderate" onclick="closeModal(event)"><div class="modal wide" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Flagged post</h3><p class="small">Reported 3 times by users with over 300 reputation · auto-hidden 14 minutes ago</p></div>
+  <div class="modal-b">
+    <div class="card pad" style="margin-bottom:16px">
+      <div style="display:flex;gap:11px;align-items:center;margin-bottom:11px"><span class="avatar" style="background:var(--red-s);color:var(--red)">??</span><div><b>Anonymous user</b><div class="small">Joined 2 September · 1 post · -40 points</div></div></div>
+      <p style="font-size:14px">Group 2 material PDFs available. All coaching institute books scanned. Contact 98•••••••• for full set at ₹200.</p>
+    </div>
+    <div class="card pad-s" style="background:var(--red-s);border-color:var(--red);margin-bottom:14px"><p class="small" style="color:var(--red)"><b>Two policy violations detected:</b> distributing copyrighted material, and posting a phone number in a public post.</p></div>
+    <div class="field"><label>Reason shown to the user</label><textarea class="input">Your post offered scanned coaching books, which is copyright infringement. Posting phone numbers publicly is also not allowed. This account is permanently blocked.</textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Dismiss report</button><button class="btn btn-sec" onclick="closeAll()">Remove post only</button><button class="btn btn-danger" onclick="closeAll();toast('Post removed and account blocked')">Remove and block</button></div>
+</div></div>
+
+<div class="toast" id="toast"><svg width="16" height="16"><use href="#i-check"/></svg><span id="toastMsg"></span></div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  var el=document.getElementById(id);
+  if(el){el.classList.add('on');}
+  var sel=document.getElementById('screenPicker');
+  if(sel && sel.value!==id){ for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===id){sel.selectedIndex=i;break;} } }
+  window.scrollTo({top:0,behavior:'instant'});
+  location.hash=id;
+}
+function openModal(id){ if(!id)return; document.getElementById(id).classList.add('on'); }
+function closeModal(e){ if(e.target.classList.contains('scrim')) e.target.classList.remove('on'); }
+function closeAll(){ document.querySelectorAll('.scrim').forEach(s=>s.classList.remove('on')); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeAll(); });
+
+function tab(btn,pane){
+  var wrap=btn.parentElement;
+  wrap.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  var p=document.getElementById(pane);
+  var parent=p.parentElement;
+  parent.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
+  p.classList.add('on');
+}
+function acc(h){
+  var body=h.nextElementSibling;
+  var open=body.classList.toggle('open');
+  h.classList.toggle('open',open);
+  h.querySelector('span').textContent=open?'−':'+';
+}
+function setLang(btn,l){
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  toast(l==='te'?'తెలుగుకి మార్చబడింది':'Switched to English');
+}
+var tTimer;
+function toast(msg){
+  var t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('on');
+  clearTimeout(tTimer);
+  tTimer=setTimeout(()=>t.classList.remove('on'),2800);
+}
+document.querySelectorAll('.langsw button').forEach(b=>{
+  b.addEventListener('click',function(){ setLang(this,this.classList.contains('te')?'te':'en'); });
+});
+if(location.hash && document.getElementById(location.hash.slice(1))) go(location.hash.slice(1));
+</script>
+</body>
+</html>

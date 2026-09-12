@@ -1,0 +1,48 @@
+# --- PHP / Laravel ---
+/apps/web/vendor/
+/apps/web/node_modules/
+/apps/web/public/build/
+/apps/web/public/hot
+/apps/web/public/storage
+/apps/web/storage/*.key
+/apps/web/storage/framework/cache/*
+/apps/web/storage/framework/sessions/*
+/apps/web/storage/framework/views/*
+/apps/web/storage/logs/*
+/apps/web/bootstrap/cache/*
+/apps/web/.phpunit.result.cache
+/apps/web/.phpunit.cache
+/apps/web/auth.json
+
+# --- Python AI service ---
+/apps/ai/.venv/
+/apps/ai/__pycache__/
+**/__pycache__/
+*.py[cod]
+/apps/ai/.pytest_cache/
+/apps/ai/.ruff_cache/
+/apps/ai/dist/
+
+# --- Environment & secrets: NEVER commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/storage/oauth-*.key.example
+/infra/**/secrets/
+
+# --- Local infra volumes ---
+/infra/docker/data/
+/.data/
+
+# --- Editors / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- Build artefacts ---
+/apps/web/storage/app/public/
+/coverage/

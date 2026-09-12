@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sadhana — Integration Map &amp; Data Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12211C;--ink2:#33463E;--muted:#6B7C74;--faint:#9AA8A1;
+  --line:#DDE3DF;--line2:#EDF1EE;--paper:#F7F8F5;--card:#FFF;
+  --green:#0F6B4F;--green-d:#0A4E39;--green-s:#E3F0EA;
+  --gold:#E8A33D;--gold-d:#B67A1F;--gold-s:#FCF1DE;
+  --red:#C4362B;--red-s:#FBE7E4;--blue:#2C5F8A;--blue-s:#E4EDF4;
+  --ai:#5B4B8A;--ai-d:#40356A;--ai-s:#EEEAF7;--ai-b:#C9BEE6;
+  --sans:"Noto Sans","Noto Sans Telugu",system-ui,sans-serif;
+  --disp:"Gabarito","Noto Sans Telugu",system-ui,sans-serif;
+  --te:"Noto Sans Telugu","Noto Sans",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.te{font-family:var(--te);line-height:1.8}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:0;background:none}
+code,.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+
+.devbar{position:fixed;top:0;left:0;right:0;height:42px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;z-index:900;font-size:12.5px}
+.devbar b{font-family:var(--disp);font-size:13px}
+.devbar select{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:12.5px;max-width:300px}
+.devbar select option{background:#1A2B24}
+.devbar .grow{flex:1}.devbar .h{color:rgba(255,255,255,.42);font-size:11.5px}
+@media(max-width:900px){.devbar .h{display:none}}
+
+.view{display:none;padding-top:42px}.view.on{display:block}
+.wrap{max-width:1240px;margin:0 auto;padding:26px 24px 64px}
+
+h1{font-family:var(--disp);font-size:27px;font-weight:700;letter-spacing:-.025em;line-height:1.12}
+h2{font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:-.018em;margin:28px 0 12px}
+h2:first-of-type{margin-top:0}
+h3{font-family:var(--disp);font-size:15px;font-weight:700;margin-bottom:8px}
+.lede{font-size:15.5px;color:var(--ink2);max-width:70ch;line-height:1.7}
+.sub{font-size:12.5px;color:var(--muted)}
+.top{margin-bottom:24px}
+.hr{height:1px;background:var(--line);margin:22px 0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.pad{padding:18px}.pad-s{padding:13px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.b-ok{background:var(--green-s);color:var(--green-d)}
+.b-warn{background:var(--gold-s);color:var(--gold-d)}
+.b-bad{background:var(--red-s);color:var(--red)}
+.b-neutral{background:var(--line2);color:var(--muted)}
+.b-info{background:var(--blue-s);color:var(--blue)}
+.b-ai{background:var(--ai-s);color:var(--ai-d)}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{text-align:left;padding:9px 11px;font-size:11.5px;font-weight:700;color:var(--muted);border-bottom:1.5px solid var(--line);background:var(--paper);white-space:nowrap;vertical-align:bottom}
+table.tbl td{padding:10px 11px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.tbl tbody tr:last-child td{border-bottom:0}
+table.tbl tbody tr:hover{background:var(--paper)}
+.tsub{font-size:11.5px;color:var(--muted);line-height:1.55}
+.tc{text-align:center}
+.rw{font-weight:700;font-size:11px}
+.r-r{color:var(--blue)}.r-w{color:var(--gold-d)}.r-rw{color:var(--ai)}
+
+.note{border-radius:9px;padding:13px 15px;font-size:13px;line-height:1.7;margin:14px 0}
+.note-warn{background:var(--gold-s);border:1px solid var(--gold);color:var(--gold-d)}
+.note-bad{background:var(--red-s);border:1px solid var(--red);color:var(--red)}
+.note-ok{background:var(--green-s);border:1px solid var(--green);color:var(--green-d)}
+.note-ai{background:var(--ai-s);border:1px solid var(--ai-b);color:var(--ai-d)}
+.note-info{background:var(--blue-s);border:1px solid var(--blue);color:var(--blue)}
+
+.pre{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.85;background:var(--ink);color:#B9C8C1;border-radius:10px;padding:16px;overflow:auto;white-space:pre}
+.pre.light{background:var(--paper);color:var(--ink2);border:1px solid var(--line)}
+.pre .k{color:#8FD3B4;font-weight:700}
+.pre .s{color:var(--gold)}
+.pre .c{color:#5D716A}
+.pre .b{color:#F09085}
+.pre.light .k{color:var(--green-d)}
+.pre.light .s{color:var(--gold-d)}
+.pre.light .c{color:var(--faint)}
+.pre.light .b{color:var(--red)}
+
+.gap{display:flex;gap:14px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:12px}
+.gap.crit{border-color:var(--red);background:linear-gradient(180deg,var(--red-s) 0%,#fff 46%)}
+.gap.warn{border-color:var(--gold);background:linear-gradient(180deg,var(--gold-s) 0%,#fff 46%)}
+.gap .n{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:13px;flex-shrink:0;background:var(--line2);color:var(--ink2)}
+.gap.crit .n{background:var(--red);color:#fff}
+.gap.warn .n{background:var(--gold);color:#3B2A08}
+.gap b{font-size:14.5px;display:block;margin-bottom:3px}
+.gap p{font-size:13px;color:var(--ink2);line-height:1.7}
+.gap .fix{margin-top:9px;padding:9px 11px;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:12.5px;line-height:1.65}
+.gap .fix b{font-size:12px;color:var(--green-d);margin-bottom:2px}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:9px;height:9px;border-radius:99px;display:inline-block}
+
+.kpi b{font-family:var(--disp);font-size:26px;font-weight:700;display:block;line-height:1;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--muted);display:block;margin-top:5px}
+
+@media(max-width:1000px){.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="devbar">
+  <b>Integration Map &amp; Data Audit</b><span class="h">Sadhana</span>
+  <select id="pick" onchange="go(this.value)">
+    <option value="v-spine">01 · The data spine — one source of truth per fact</option>
+    <option value="v-user">02 · Where AI appears in the user portal</option>
+    <option value="v-admin">03 · Where AI appears in the admin portal</option>
+    <option value="v-matrix">04 · Read/write matrix — every table, every feature</option>
+    <option value="v-flows">05 · Four end-to-end flows, traced</option>
+    <option value="v-audit">06 · Audit — 12 gaps found</option>
+    <option value="v-schema">07 · Schema corrections</option>
+    <option value="v-order">08 · Corrected build order</option>
+  </select>
+  <div class="grow"></div>
+  <span class="h">Read alongside Vol 2 (schema) and the AI Layer prototype</span>
+</div>
+
+<!-- ============ 01 SPINE ============ -->
+<div class="view on" id="v-spine">
+<div class="wrap">
+  <div class="top">
+    <h1>The data spine</h1>
+    <p class="lede" style="margin-top:8px">Before wiring AI into anything, one question has to be answered for every fact in the product: where does it live, who is allowed to write it, and who reads it. Get this wrong and the same number ends up in three places, drifting apart.</p>
+  </div>
+
+  <div class="note note-bad"><b>The rule that makes this a commercial product rather than a demo.</b> Every fact has exactly one owner table. AI never becomes an owner — it only proposes into a draft table, and a human write promotes it. If an AI feature needs a fact nobody owns, that is a schema gap, not a prompt problem.</div>
+
+  <h2>Owner map</h2>
+  <div class="card" style="overflow:auto">
+    <table class="tbl">
+      <thead><tr><th>Fact</th><th>Owner table</th><th>Written by</th><th>Read by</th><th>AI may</th></tr></thead>
+      <tbody>
+        <tr><td><b>Eligibility criteria</b><div class="tsub">age, qualification, relaxation, domicile</div></td><td><code>notifications</code></td><td>Content lead only, after PDF verification</td><td>Eligibility engine · feed · detail page · Ask Sadhana retrieval</td><td><span class="badge b-warn">Propose into review queue only</span></td></tr>
+        <tr><td><b>Eligibility outcome</b><div class="tsub">is this person eligible</div></td><td><i>none — computed</i></td><td><code>EligibilityService</code>, deterministic</td><td>Feed · detail · dashboard · study plan</td><td><span class="badge b-bad">Never — routed away from the model</span></td></tr>
+        <tr><td><b>Dates and fees</b></td><td><code>notifications</code></td><td>Content lead only</td><td>Everything</td><td><span class="badge b-warn">Extract into draft only</span></td></tr>
+        <tr><td><b>Syllabus structure</b></td><td><code>exams.syllabus</code></td><td>Content team</td><td>Exam page · notes generator · question generator · study plan</td><td><span class="badge b-bad">Read only</span></td></tr>
+        <tr><td><b>Cutoff history</b></td><td><code>exam_cutoffs</code></td><td>Content team, source URL required</td><td>Exam page · Ask Sadhana</td><td><span class="badge b-bad">Read only · never predicts</span></td></tr>
+        <tr><td><b>Questions and answer keys</b></td><td><code>questions</code></td><td>Content team after key verification</td><td>Daily quiz · flashcards · practice</td><td><span class="badge b-warn">Draft into <code>ai_drafts</code></span></td></tr>
+        <tr><td><b>Current affairs items</b></td><td><code>news_items</code> <span class="badge b-bad">missing</span></td><td>Pipeline draft → human approve</td><td>Digest page · question generator · Ask Sadhana</td><td><span class="badge b-warn">Draft only</span></td></tr>
+        <tr><td><b>Study material</b></td><td><code>materials</code></td><td>Upload + moderation, or generated + edited</td><td>Library · reader · Explain · notes generator</td><td><span class="badge b-warn">Draft only</span></td></tr>
+        <tr><td><b>User profile</b></td><td><code>profiles</code></td><td>The user</td><td>Eligibility · feed · study plan · mock interview</td><td><span class="badge b-bad">Read only</span></td></tr>
+        <tr><td><b>Quiz performance</b></td><td><code>quiz_attempts</code></td><td>System on submission</td><td>Streaks · leaderboard · study plan · flashcards</td><td><span class="badge b-bad">Read only</span></td></tr>
+        <tr><td><b>Retrieval corpus</b></td><td><code>ai_chunks</code> <span class="badge b-bad">missing</span></td><td>Derived — rebuilt from owners</td><td>Every retrieval feature</td><td><span class="badge b-info">Derived, never authoritative</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How the corpus stays honest</h2>
+  <div class="card pad">
+    <div class="pre light">
+<span class="k">OWNER TABLES</span>                    <span class="k">DERIVED</span>                <span class="k">SERVED</span>
+exams.syllabus        ─┐
+exam_cutoffs          ─┤
+notifications         ─┼──►  <span class="s">ai_chunks</span>  ──────►  retrieval  ──►  AI answer
+materials             ─┤     (embedded)              │
+questions             ─┤                             │
+posts + answers       ─┤                             ▼
+news_items            ─┘                    <span class="b">no chunk = no answer</span>
+
+<span class="c">Any write to an owner table fires ReindexChunks for that record.</span>
+<span class="c">Delete an owner row and its chunks go with it — no orphans, so the</span>
+<span class="c">assistant can never quote a notification that was cancelled.</span>
+    </div>
+    <div class="note note-ai"><b>This is the single most important wiring decision in the whole AI layer.</b> The corpus is derived, never authored. It means a correction made once in the admin panel propagates to every AI answer within a minute — and it means nobody can ever "fix" an AI answer by editing something the rest of the product does not see.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 02 USER PORTAL ============ -->
+<div class="view" id="v-user">
+<div class="wrap">
+  <div class="top">
+    <h1>Where AI appears in the user portal</h1>
+    <p class="lede" style="margin-top:8px">Not a separate "AI" tab. Each feature sits inside the screen where the need already exists, so a person meets it at the moment it helps rather than having to go looking for it.</p>
+  </div>
+
+  <div class="note note-warn"><b>The mistake to avoid.</b> Putting everything behind an "AI" menu item makes AI the product. It is not — the product is finding a job and preparing for it. AI is how some of those screens get better. Only one feature earns its own destination, and that is the assistant.</div>
+
+  <div class="card" style="overflow:auto;margin-bottom:20px">
+    <table class="tbl">
+      <thead><tr><th>Screen in the web portal</th><th>AI feature placed there</th><th>Entry point</th><th>Reads</th><th>Writes</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><b>Global — top nav</b></td><td>Ask Sadhana</td><td>Persistent icon beside search, plus <code>/te/ask</code></td><td><code>ai_chunks</code></td><td><code>ai_requests</code></td><td><span class="badge b-bad">Nav slot missing</span></td></tr>
+        <tr><td><b>Dashboard</b><div class="tsub">screen 10</div></td><td>Study plan card · current affairs card</td><td>Two new cards in the right rail</td><td><code>quiz_attempts</code> <code>study_plans</code> <code>news_items</code></td><td>—</td><td><span class="badge b-bad">Cards not designed</span></td></tr>
+        <tr><td><b>Notification detail</b><div class="tsub">screen 03</div></td><td>“Ask about this job”</td><td>Button beside Report an error, pre-scoped to this notification</td><td><code>notifications</code> chunk</td><td><code>ai_requests</code></td><td><span class="badge b-warn">Button missing</span></td></tr>
+        <tr><td><b>Exam hub</b><div class="tsub">screen 05</div></td><td>Notes generator · flashcards</td><td>Per syllabus section: “Make notes”, “Flashcards”</td><td><code>exams.syllabus</code> <code>questions</code></td><td><code>materials</code> (personal) <code>flashcards</code></td><td><span class="badge b-warn">Buttons missing</span></td></tr>
+        <tr><td><b>Material reader</b><div class="tsub">screen 17</div></td><td>Explain this simpler</td><td>Text selection → floating action</td><td>selected passage</td><td><code>ai_cache</code></td><td><span class="badge b-warn">Selection UI missing</span></td></tr>
+        <tr><td><b>Doubt detail</b><div class="tsub">screen 19</div></td><td>AI doubt solver</td><td>Auto-answers on post, ranked below humans</td><td><code>ai_chunks</code></td><td><code>answers</code> with <code>is_ai=1</code></td><td><span class="badge b-bad">No <code>is_ai</code> column</span></td></tr>
+        <tr><td><b>Quiz result</b><div class="tsub">screen 14</div></td><td>Weak-area → flashcards · study plan</td><td>“Work on this” card gets two AI actions</td><td><code>quiz_attempts</code></td><td><code>flashcards</code></td><td><span class="badge b-warn">Actions missing</span></td></tr>
+        <tr><td><b>New — Current affairs</b></td><td>Daily digest</td><td>New nav item, own URL, indexable</td><td><code>news_items</code></td><td>—</td><td><span class="badge b-bad">Screen and route missing</span></td></tr>
+        <tr><td><b>New — My flashcards</b></td><td>Spaced repetition</td><td>Under the quiz tab</td><td><code>flashcards</code></td><td><code>flashcards.ease</code></td><td><span class="badge b-bad">Screen missing</span></td></tr>
+        <tr><td><b>New — Answer practice</b></td><td>Answer evaluation</td><td>Premium · Group 1 only</td><td><code>mains_questions</code> <span class="badge b-bad">missing</span></td><td><code>answer_evaluations</code></td><td><span class="badge b-bad">Phase 3</span></td></tr>
+        <tr><td><b>New — Mock interview</b></td><td>Interview practice</td><td>Premium · Group 1 only</td><td><code>profiles</code> + bio-data</td><td><code>interview_sessions</code> <span class="badge b-bad">missing</span></td><td><span class="badge b-bad">Phase 3</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Corrected navigation</h2>
+  <div class="g2">
+    <div class="card pad">
+      <h3>Top nav — signed in</h3>
+      <div class="pre light">Dashboard   My feed   Exams   <span class="s">Current affairs</span>   Material   Doubts
+                                    <span class="c">↑ new</span>
+right side:  [🔍 search]  <span class="s">[✦ Ask]</span>  [🔔]  [avatar]
+                          <span class="c">↑ new · persistent, every page</span></div>
+      <p class="sub" style="margin-top:10px">Ask sits beside search because it is the same intent — "I have a question" — expressed two ways. A person who cannot find it in search should fall into it naturally.</p>
+    </div>
+    <div class="card pad">
+      <h3>Quiz tab — sub-navigation</h3>
+      <div class="pre light">Today's quiz   Leaderboard   <span class="s">Flashcards</span>   <span class="s">Answer practice</span>
+                              <span class="c">↑ new</span>        <span class="c">↑ new · premium</span></div>
+      <p class="sub" style="margin-top:10px">Flashcards belong under practice, not under material — they come out of quiz mistakes and feed back into quiz performance.</p>
+      <div class="note note-info" style="margin-top:12px">Mock interview is not in the main nav. It lives on the Group 1 exam hub page only, because it is meaningless to the 90% of users who will never reach an interview.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 03 ADMIN ============ -->
+<div class="view" id="v-admin">
+<div class="wrap">
+  <div class="top">
+    <h1>Where AI appears in the admin portal</h1>
+    <p class="lede" style="margin-top:8px">The admin portal as designed has thirty screens and no home for any AI pipeline. Five screens and one nav group need to be added, and three existing screens need AI wired into them rather than sitting beside them.</p>
+  </div>
+
+  <div class="note note-bad"><b>Found in the audit.</b> The AI Layer prototype has five admin screens — question generator, newsroom, material generator, guardrails, cost. None of them appear in the admin portal's sidebar. They currently have no route, no permission and no place in the information architecture.</div>
+
+  <h2>Corrected sidebar</h2>
+  <div class="g2" style="margin-bottom:20px">
+    <div class="card pad">
+      <div class="pre light">Dashboard
+
+<span class="k">CONTENT</span>
+  Review queue          <span class="c">← AI extraction lands here</span>
+  Notifications
+  Exams
+  Material              <span class="c">← AI generation lands here</span>
+
+<span class="k">QUIZ</span>
+  Question bank
+  Quiz scheduler
+
+<span class="s">AI</span>                        <span class="c">← new group</span>
+  <span class="s">Newsroom</span>              <span class="c">badge: 3 pending</span>
+  <span class="s">Question generator</span>
+  <span class="s">Material generator</span>
+  <span class="s">Guardrails &amp; prompts</span>
+  <span class="s">Usage &amp; cost</span>
+
+<span class="k">LOCALISATION</span>
+  Translations          <span class="c">← AI drafts land here</span>
+  Glossary              <span class="c">← feeds every AI prompt</span>
+
+<span class="k">COMMUNITY</span>  <span class="k">GROWTH</span>  <span class="k">SYSTEM</span>
+  …unchanged, plus:
+  System › <span class="s">Corpus &amp; embeddings</span>   <span class="c">← new</span></div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px">
+        <h3>Why AI is its own group, not scattered</h3>
+        <p class="sub" style="line-height:1.8">Because the permission boundary is different. A content editor can draft a notification but must not be able to change a prompt or read the cost dashboard. Grouping the pipelines lets the whole group be gated behind Content lead and Owner, which is one rule instead of five.</p>
+      </div>
+      <div class="card pad">
+        <h3>Where AI is wired in, not added</h3>
+        <table class="tbl"><tbody>
+          <tr><td><b>Review queue</b></td><td class="tsub">Already receives AI extraction. No change needed — it was built for this.</td></tr>
+          <tr><td><b>Translations</b></td><td class="tsub">Already receives AI drafts. Add a “regenerate with glossary” action.</td></tr>
+          <tr><td><b>Question bank</b></td><td class="tsub">Add “Generate questions for this topic” on any topic with thin coverage.</td></tr>
+          <tr><td><b>Quiz scheduler</b></td><td class="tsub">The pool-dry warning should link straight to the generator, pre-filled with the depleted subject.</td></tr>
+          <tr><td><b>Material</b></td><td class="tsub">The “42 topics with no material” figure should be a button that generates one.</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <h2>Permission matrix — corrected</h2>
+  <div class="card" style="overflow:auto">
+    <table class="tbl">
+      <thead><tr><th>AI capability</th><th>Owner</th><th>Content lead</th><th>Content editor</th><th>Moderator</th><th>Translator</th></tr></thead>
+      <tbody>
+        <tr><td>Run a generation</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><b>Approve generated questions</b></td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><b>Approve a news item</b></td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td>Publish generated material</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td>Approve standard translation</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">✓</td></tr>
+        <tr><td><b>Approve critical translation</b></td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><b>Edit a prompt</b></td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><b>Change a guardrail threshold</b></td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td>See usage and cost</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td>Rebuild the corpus</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td>Review reported bad answers</td><td class="tc">✓</td><td class="tc">✓</td><td class="tc">—</td><td class="tc">✓</td><td class="tc">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note note-warn"><b>Prompt editing is Owner-only, deliberately.</b> A prompt is not content — it silently changes the behaviour of every answer the product gives. Treating it like a text field a content editor can adjust is how a product's voice drifts without anyone noticing.</div>
+</div>
+</div>
+
+<!-- ============ 04 MATRIX ============ -->
+<div class="view" id="v-matrix">
+<div class="wrap">
+  <div class="top">
+    <h1>Read / write matrix</h1>
+    <p class="lede" style="margin-top:8px">Every AI feature against every table it touches. This is the document to check before writing a migration, because it shows what a schema change would break.</p>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--blue)"></span> <b class="r-r">R</b> reads</span>
+    <span><span class="dot" style="background:var(--gold)"></span> <b class="r-w">W</b> writes</span>
+    <span><span class="dot" style="background:var(--ai)"></span> <b class="r-rw">D</b> writes a draft a human must approve</span>
+    <span><span class="badge b-bad">red</span> table does not exist yet</span>
+  </div>
+
+  <div class="card" style="overflow:auto;margin-bottom:20px">
+    <table class="tbl" style="font-size:12px">
+      <thead><tr>
+        <th style="min-width:150px">Table</th>
+        <th class="tc">Ask</th><th class="tc">Doubt<br>solver</th><th class="tc">Explain</th><th class="tc">Notes</th><th class="tc">Plan</th><th class="tc">Eval</th><th class="tc">Cards</th><th class="tc">Q-gen</th><th class="tc">News</th><th class="tc">Mat-gen</th><th class="tc">Extract</th><th class="tc">Trans</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><code>ai_chunks</code> <span class="badge b-bad">new</span></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>ai_requests</code> <span class="badge b-bad">new</span></td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td><td class="tc r-w">W</td></tr>
+        <tr><td><code>ai_cache</code> <span class="badge b-bad">new</span></td><td class="tc r-rw">RW</td><td class="tc">—</td><td class="tc r-rw">RW</td><td class="tc r-rw">RW</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">RW</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">RW</td></tr>
+        <tr><td><code>ai_drafts</code> <span class="badge b-bad">new</span></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td></tr>
+        <tr><td><code>notifications</code></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td></tr>
+        <tr><td><code>exams</code></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-rw">D</td></tr>
+        <tr><td><code>exam_cutoffs</code></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>questions</code></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc r-rw">D</td><td class="tc r-rw">D</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">D</td></tr>
+        <tr><td><code>quiz_attempts</code></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>profiles</code></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>materials</code></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-w">W</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">D</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>posts</code> <code>answers</code></td><td class="tc r-r">R</td><td class="tc r-w">W</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>news_items</code> <span class="badge b-bad">new</span></td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-rw">D</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>flashcards</code> <span class="badge b-bad">new</span></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-rw">RW</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>study_plans</code> <span class="badge b-bad">new</span></td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-w">W</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td><td class="tc">—</td></tr>
+        <tr><td><code>glossary</code> <span class="badge b-bad">new</span></td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc">—</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc r-r">R</td><td class="tc">—</td><td class="tc r-r">R</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g3">
+    <div class="card pad"><h3>What this reveals — 1</h3><p class="sub" style="line-height:1.8">Nine of twelve features read <code>ai_chunks</code>. It is the single hardest dependency in the AI layer, and nothing works before it exists and is populated.</p></div>
+    <div class="card pad"><h3>What this reveals — 2</h3><p class="sub" style="line-height:1.8"><code>glossary</code> is read by ten features but was only ever designed as an admin screen with no table behind it. It needs to become real, first.</p></div>
+    <div class="card pad"><h3>What this reveals — 3</h3><p class="sub" style="line-height:1.8">Only one feature writes directly to a user-facing table without review: the doubt solver, into <code>answers</code>. That is why it needs an <code>is_ai</code> flag and a rank that keeps it below every human answer.</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 05 FLOWS ============ -->
+<div class="view" id="v-flows">
+<div class="wrap">
+  <div class="top">
+    <h1>Four flows, traced end to end</h1>
+    <p class="lede" style="margin-top:8px">Each one crosses the admin portal, the database and the user portal. If a step has no owner, no screen or no table, it shows up here.</p>
+  </div>
+
+  <h2>Flow 1 — News becomes a quiz question in under 24 hours</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre light">
+04:00  <span class="k">ScanNews</span> job          412 articles       ──►  news_items <span class="s">status=scanned</span>
+04:12  <span class="k">ClassifyRelevance</span>      small model        ──►  <span class="s">status=candidate</span>  (34)
+04:26  <span class="k">DraftDigest</span>           large model        ──►  <span class="s">status=drafted</span>   (19)
+                                    + 2 draft questions each ──►  ai_drafts
+04:40  two-source check            auto                ──►  news_sources_check
+       ┌─────────────────────────────────────────────────────────────────┐
+05:00  │ <span class="b">ADMIN › AI › Newsroom</span>        Sailaja P reviews 11            │
+       │ approves 8 · rejects 3 · edits 2 facts                          │
+       └─────────────────────────────────────────────────────────────────┘
+                                                       ──►  <span class="s">status=approved</span>
+       ┌─────────────────────────────────────────────────────────────────┐
+05:20  │ <span class="b">ADMIN › AI › Question generator</span>   16 keys verified          │
+       └─────────────────────────────────────────────────────────────────┘
+                                                       ──►  questions (live)
+06:20  digest published            ──►  <span class="b">USER › Current affairs</span>  <span class="c">← screen missing</span>
+06:45  <span class="k">PublishDailyQuiz</span>            picks 5 of them    ──►  daily_quizzes
+07:00  push                        ──►  <span class="b">USER › Daily quiz</span>
+       reindex                     ──►  ai_chunks  ──► answerable in Ask Sadhana
+    </div>
+    <div class="note note-bad"><b>Two things break this flow today.</b> There is no <code>news_items</code> table, and there is no user-facing current affairs screen or route — so the digest has nowhere to be published to. Both are in the schema corrections.</div>
+  </div>
+
+  <h2>Flow 2 — A notification PDF becomes a personalised alert</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre light">
+07:30  <span class="k">ScrapeSource</span>              tgpsc.gov.in
+       <span class="k">NotificationExtractor</span>     large model  <span class="c">// never guesses a date</span>
+                                    ──►  notifications <span class="s">status=pending_review</span>
+       ┌─────────────────────────────────────────────────────────────────┐
+09:44  │ <span class="b">ADMIN › Review queue</span>   split view, PDF on the right         │
+       │ 4 checkboxes ticked · reference date added by hand              │
+       └─────────────────────────────────────────────────────────────────┘
+                                    ──►  <span class="s">status=published</span>
+       │
+       ├──► <span class="k">EligibilityService</span>   deterministic  <span class="c">// AI never touches this</span>
+       │         └──► 34,208 users match · 12,400 follow this exam
+       ├──► <span class="k">SendNotificationAlert</span>  staggered waves, push budget respected
+       ├──► <span class="k">IndexSearchable</span>       meilisearch, per locale
+       ├──► <span class="k">ReindexChunks</span>         ──► ai_chunks  <span class="c">// now answerable</span>
+       └──► <span class="k">TranslateContent</span>      ──► ai_drafts <span class="s">critical=1</span>
+                                    ──►  <span class="b">ADMIN › Translations</span>  human required
+       │
+       ▼
+  <span class="b">USER › Feed</span>  green badge · <span class="b">USER › Detail</span>  criteria explained
+  <span class="b">USER › Ask</span>   "am I eligible for the constable job?"
+                 └──► intent router ──► <span class="b">deterministic engine</span>, not the model
+    </div>
+    <div class="note note-ok"><b>This flow is fully wired already.</b> Every step has an owner, a screen and a table. The only addition is <code>ReindexChunks</code> — without it, a notification published at 9:44 would be invisible to the assistant until the next full rebuild.</div>
+  </div>
+
+  <div class="g2">
+    <div class="card pad">
+      <h2 style="margin-top:0">Flow 3 — A doubt gets answered twice</h2>
+      <div class="pre light">USER posts a doubt
+     │
+     ├──► similar-question search (Meilisearch)
+     │      └── if a strong match: show it, do not post
+     │
+     ├──► <span class="k">DoubtSolver</span>  retrieval over ai_chunks
+     │      ├── confidence &lt; 0.62 ──► <span class="b">no answer</span>
+     │      │      "ask the community"
+     │      └── else ──► answers row <span class="s">is_ai=1</span>
+     │                    ranked below every human
+     │
+     └──► notify 41 followers of this subject
+            └──► human answer arrives
+                   └──► sorts above the AI answer
+                          asker marks best answer
+                                 │
+                                 ▼
+                          <span class="k">ReindexChunks</span>
+                          the answered doubt joins the corpus
+                          and answers the next person for free</div>
+      <div class="note note-warn"><b>Missing:</b> <code>answers.is_ai</code> column, and the sort rule that keeps AI below humans.</div>
+    </div>
+    <div class="card pad">
+      <h2 style="margin-top:0">Flow 4 — A wrong quiz answer becomes a study plan</h2>
+      <div class="pre light">quiz_attempts  <span class="s">answers JSON</span>
+     │
+     ├──► weak-subject rollup  (nightly)
+     │      └──► <span class="b">USER › Quiz result</span>  "work on Polity"
+     │
+     ├──► <span class="k">FlashcardMaker</span>
+     │      └──► flashcards deck from wrong answers
+     │             └──► <span class="b">USER › Flashcards</span>  <span class="c">← screen missing</span>
+     │
+     └──► <span class="k">StudyPlanner</span>
+            reads: weak areas + syllabus weights
+                 + <span class="b">target exam date</span>  <span class="c">← not stored anywhere</span>
+            └──► study_plans
+                   └──► <span class="b">USER › Dashboard</span> card  <span class="c">← card missing</span></div>
+      <div class="note note-bad"><b>Blocked.</b> The study planner needs to know which exam the user is aiming at and when it is. <code>user_exam_preferences</code> stores the exam but not a target date.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 06 AUDIT ============ -->
+<div class="view" id="v-audit">
+<div class="wrap">
+  <div class="top">
+    <h1>Audit — twelve gaps</h1>
+    <p class="lede" style="margin-top:8px">Found by tracing every AI feature against the schema in Volume 2 and the screens in both portals. Five are blocking, four need a screen, three are policy holes.</p>
+  </div>
+
+  <div class="g4" style="margin-bottom:20px">
+    <div class="card pad kpi"><b style="color:var(--red)">5</b><span>Blocking · nothing ships without these</span></div>
+    <div class="card pad kpi"><b style="color:var(--gold-d)">4</b><span>Missing screens or routes</span></div>
+    <div class="card pad kpi"><b style="color:var(--gold-d)">3</b><span>Policy and permission holes</span></div>
+    <div class="card pad kpi"><b style="color:var(--green)">2</b><span>Flows already correct</span></div>
+  </div>
+
+  <h2>Blocking</h2>
+  <div class="gap crit"><div class="n">1</div><div>
+    <b>The retrieval corpus does not exist</b>
+    <p>Nine of the twelve AI features read <code>ai_chunks</code>, and Volume 2's schema has no such table, no embedding column and no reindex job. Every retrieval feature is blocked on this one object.</p>
+    <div class="fix"><b>Fix</b> Add <code>ai_chunks</code> with a vector column. Add a <code>ReindexChunks</code> job fired by observers on exams, notifications, materials, questions, answers and news_items. Backfill once, then keep it incremental.</div>
+  </div></div>
+
+  <div class="gap crit"><div class="n">2</div><div>
+    <b>The glossary is a screen with no table</b>
+    <p>Ten features inject the glossary into their prompt, and the translation reviewer checks compliance against it. But it was only ever designed as an admin screen — there is no <code>glossary</code> table, so there is nothing to inject.</p>
+    <div class="fix"><b>Fix</b> Create <code>glossary(term_en, term_te, rule, category, note)</code> and load it in <code>PromptRegistry</code>. This is small and it is a hard dependency for translation quality, which is the entire product thesis.</div>
+  </div></div>
+
+  <div class="gap crit"><div class="n">3</div><div>
+    <b>Nothing stores a target exam date</b>
+    <p>The study planner needs "28 days to Group 2" to allocate time. <code>user_exam_preferences</code> stores which exams a person follows but not which one they are actually writing next, or when.</p>
+    <div class="fix"><b>Fix</b> Add <code>user_exam_preferences.target_date</code> and <code>is_primary</code>. Ask for it in profile step 3 — "which one are you writing next?" — which also improves feed ranking and push relevance, not just the study plan.</div>
+  </div></div>
+
+  <div class="gap crit"><div class="n">4</div><div>
+    <b>Per-user AI caps have nowhere to count</b>
+    <p>The guardrails screen sets 30 questions a day and 30 notes a month. Nothing in the schema counts them, so the cap cannot be enforced and one user could cost what a thousand do.</p>
+    <div class="fix"><b>Fix</b> Count from <code>ai_requests</code> with an index on <code>(user_id, feature, created_at)</code>, cached in Redis per user per day. No new table needed — but the index is not optional at this volume.</div>
+  </div></div>
+
+  <div class="gap crit"><div class="n">5</div><div>
+    <b>AI answers cannot be distinguished from human ones</b>
+    <p>The doubt solver writes into <code>answers</code>, which has no <code>is_ai</code> column. Without it the UI cannot label the answer, cannot rank it below humans, and reputation points would be awarded to a machine.</p>
+    <div class="fix"><b>Fix</b> Add <code>answers.is_ai</code> and <code>answers.ai_request_id</code>. Sort AI answers last regardless of votes. Exclude them from reputation and from "best answer" eligibility.</div>
+  </div></div>
+
+  <h2>Missing screens and routes</h2>
+  <div class="gap warn"><div class="n">6</div><div>
+    <b>Current affairs has no home</b>
+    <p>The pipeline produces a daily digest and there is no screen, no route and no nav item to publish it to. It is also the most SEO-valuable page type the product could have — daily fresh Telugu content on high-volume queries.</p>
+    <div class="fix"><b>Fix</b> Add <code>/{locale}/current-affairs</code> and <code>/{locale}/current-affairs/{date}</code>, a nav item, a dashboard card, and a monthly compilation PDF. Treat it as a first-class content type with its own sitemap.</div>
+  </div></div>
+
+  <div class="gap warn"><div class="n">7</div><div>
+    <b>Ask Sadhana has no entry point</b>
+    <p>It is designed as a full screen but appears in neither portal's navigation. A feature nobody can find is a feature nobody uses.</p>
+    <div class="fix"><b>Fix</b> Persistent icon beside search on every page, its own route, and a context-scoped "Ask about this job" button on notification detail.</div>
+  </div></div>
+
+  <div class="gap warn"><div class="n">8</div><div>
+    <b>Flashcards have no screen and no scheduler</b>
+    <p>The deck exists in the design but there is no route, no <code>flashcards</code> table, and no job to move cards through their intervals. Spaced repetition without a scheduler is just a list.</p>
+    <div class="fix"><b>Fix</b> Add the table with <code>ease</code>, <code>interval_days</code> and <code>due_at</code>, a nightly job to surface due cards, and a screen under the quiz tab.</div>
+  </div></div>
+
+  <div class="gap warn"><div class="n">9</div><div>
+    <b>The five AI admin screens are not in the sidebar</b>
+    <p>Newsroom, question generator, material generator, guardrails and cost have no route, no nav entry and no permission gate. They exist as designs with nowhere to live.</p>
+    <div class="fix"><b>Fix</b> Add an AI group to the admin sidebar, gated to Content lead and Owner, with prompt editing and guardrails restricted to Owner alone.</div>
+  </div></div>
+
+  <h2>Policy holes</h2>
+  <div class="gap warn"><div class="n">10</div><div>
+    <b>The push budget does not know about AI content</b>
+    <p>The cap is five pushes a day. Current affairs is a new daily push that was never counted in that five, so the real ceiling would quietly become six.</p>
+    <div class="fix"><b>Fix</b> Register current affairs as a push type inside <code>PushBudget</code> with its own user preference toggle, and decide its priority against a deadline reminder rather than adding it on top.</div>
+  </div></div>
+
+  <div class="gap warn"><div class="n">11</div><div>
+    <b>Generated material is not labelled on the public page</b>
+    <p>The material generator produces library content and the library shows "Official" or "Notes" badges only. A reader cannot tell that a page was AI-drafted and human-edited.</p>
+    <div class="fix"><b>Fix</b> Add <code>materials.source_type = 'ai_assisted'</code> and a third badge with the editor's name. Readers deserve to know, and the named editor creates accountability.</div>
+  </div></div>
+
+  <div class="gap warn"><div class="n">12</div><div>
+    <b>The DPDP export does not include AI data</b>
+    <p><code>DataExportService</code> returns profile, quiz attempts, posts and saved jobs. It does not include AI conversations, generated study plans or flashcard decks — all of which are personal data the user is entitled to.</p>
+    <div class="fix"><b>Fix</b> Extend the export to cover <code>ai_requests</code>, <code>study_plans</code>, <code>flashcards</code> and <code>answer_evaluations</code>, and include all four in the deletion routine.</div>
+  </div></div>
+
+  <div class="note note-ok"><b>Two flows came through clean.</b> Notification extraction to personalised alert, and translation drafting to human approval, are both fully wired — every step has an owner table, an admin screen and a user destination. They were designed with review built in from the start, which is exactly why they hold up.</div>
+</div>
+</div>
+
+<!-- ============ 07 SCHEMA ============ -->
+<div class="view" id="v-schema">
+<div class="wrap">
+  <div class="top">
+    <h1>Schema corrections</h1>
+    <p class="lede" style="margin-top:8px">Everything the audit turned up, as migrations. Five new tables, six column additions, four observers.</p>
+  </div>
+
+  <h2>New tables</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre">
+<span class="c">-- 1 · the retrieval corpus. Derived from owner tables, never authored.</span>
+<span class="k">ai_chunks</span>
+  id, source_type, source_id, source_locale, chunk_index,
+  content TEXT, embedding VECTOR(1536), token_count,
+  created_at, updated_at
+  UNIQUE (source_type, source_id, source_locale, chunk_index)
+  INDEX  (source_type, source_id)
+  VECTOR INDEX (embedding)
+
+<span class="c">-- 2 · read by ten features, checked on every translation review</span>
+<span class="k">glossary</span>
+  id, term_en, term_te, term_hi,
+  rule ENUM('translate','transliterate','do_not_translate','latin_only'),
+  category, note, created_at, updated_at
+  UNIQUE (term_en)
+
+<span class="c">-- 3 · current affairs, with the two-source rule enforced in data</span>
+<span class="k">news_items</span>
+  id, source_name, source_url, published_at, raw_text,
+  title JSON, summary JSON, why_it_matters JSON,   <span class="c">// translatable</span>
+  relevance_score, dedupe_group, exam_tags JSON,
+  probability ENUM('high','medium','low'),
+  status ENUM('scanned','candidate','drafted','verified',
+              'approved','rejected','published'),
+  approved_by, approved_at, published_at,
+  created_at, updated_at
+  INDEX (status, published_at), INDEX (dedupe_group)
+
+<span class="k">news_item_sources</span>
+  id, news_item_id, source_url, source_name, verified_by, verified_at
+  <span class="c">// publish blocked below 2 rows for any factual claim</span>
+
+<span class="c">-- 4 · spaced repetition</span>
+<span class="k">flashcards</span>
+  id, user_id, deck, front JSON, back JSON, locale,
+  source_type ENUM('ai_topic','ai_news','wrong_answer','manual'),
+  source_ref, ease DECIMAL(3,2) DEFAULT 2.50,
+  interval_days INT DEFAULT 0, due_at DATE, review_count,
+  created_at, updated_at
+  INDEX (user_id, due_at)
+
+<span class="c">-- 5 · generated plans</span>
+<span class="k">study_plans</span>
+  id, user_id, exam_id, target_date, plan JSON,
+  weak_subjects JSON, generated_at, superseded_at
+  INDEX (user_id, superseded_at)
+    </div>
+  </div>
+
+  <h2>Column additions</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre">
+<span class="k">user_exam_preferences</span>
+  + target_date DATE NULL           <span class="c">// when they actually write it</span>
+  + is_primary  TINYINT(1) DEFAULT 0 <span class="c">// the one the study plan targets</span>
+
+<span class="k">answers</span>
+  + is_ai         TINYINT(1) DEFAULT 0
+  + ai_request_id BIGINT NULL
+  <span class="c">// sort: is_ai ASC, is_best DESC, upvotes DESC</span>
+  <span class="c">// AI answers earn no reputation and cannot be marked best</span>
+
+<span class="k">materials</span>
+  + source_type   <span class="c">// add 'ai_assisted' to the existing enum</span>
+  + edited_by     BIGINT NULL   <span class="c">// named editor, shown publicly</span>
+
+<span class="k">ai_requests</span>
+  INDEX (user_id, feature, created_at)   <span class="c">// makes the daily cap countable</span>
+    </div>
+  </div>
+
+  <h2>Observers — what triggers a reindex</h2>
+  <div class="card" style="overflow:auto;margin-bottom:20px">
+    <table class="tbl">
+      <thead><tr><th>Model</th><th>Event</th><th>Action</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><code>ExamNotification</code></td><td>published, updated, deleted</td><td><code>ReindexChunks</code> + purge cache</td><td class="tsub">Without it the assistant quotes a cancelled notification, or misses one published an hour ago</td></tr>
+        <tr><td><code>Exam</code></td><td>syllabus or pattern saved</td><td><code>ReindexChunks</code></td><td class="tsub">A corrected syllabus must reach notes and question generation immediately</td></tr>
+        <tr><td><code>Material</code></td><td>approved, unpublished</td><td><code>ReindexChunks</code></td><td class="tsub">Rejected material must leave the corpus, or a copyright removal is only half done</td></tr>
+        <tr><td><code>Answer</code></td><td>marked best</td><td><code>ReindexChunks</code></td><td class="tsub">This is how the community archive compounds — each answered doubt answers the next person for free</td></tr>
+        <tr><td><code>NewsItem</code></td><td>published</td><td><code>ReindexChunks</code></td><td class="tsub">Makes today's current affairs answerable today, not tomorrow</td></tr>
+        <tr><td><code>Profile</code></td><td>saved</td><td>Invalidate eligibility cache + mark study plan stale</td><td class="tsub">A changed qualification changes 41 eligibility results and the whole plan</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note note-bad"><b>The deletion observer is the one people forget.</b> If a material file is removed after a copyright complaint but its chunks stay in the corpus, the assistant keeps quoting it. The takedown is then incomplete in exactly the way that matters legally.</div>
+</div>
+</div>
+
+<!-- ============ 08 ORDER ============ -->
+<div class="view" id="v-order">
+<div class="wrap">
+  <div class="top">
+    <h1>Corrected build order</h1>
+    <p class="lede" style="margin-top:8px">Dependencies rearranged after the audit. Two AI features move earlier because they pay for themselves in content velocity; four move later because they need a corpus that does not exist yet.</p>
+  </div>
+
+  <div class="note note-warn"><b>The sequencing error worth naming.</b> The original AI plan put Ask Sadhana in month 5. But Ask Sadhana reads <code>ai_chunks</code>, and <code>ai_chunks</code> is only worth building once exam pages, syllabi and past papers exist — which is the end of Sprint 1. Shipping the assistant against a thin corpus produces confident empty answers, and that first impression is very hard to undo.</div>
+
+  <div class="card" style="overflow:auto;margin-bottom:20px">
+    <table class="tbl">
+      <thead><tr><th>When</th><th>Ship</th><th>Requires</th><th>Why here</th></tr></thead>
+      <tbody>
+        <tr><td><b>Sprint 0</b></td><td><code>glossary</code> table + seed 142 terms</td><td>Nothing</td><td class="tsub">Half a day. Ten features depend on it, and translation quality is the whole product thesis.</td></tr>
+        <tr><td><b>Sprint 2</b></td><td>Notification extraction <span class="badge b-ok">already planned</span></td><td>Review queue</td><td class="tsub">Unchanged. Pays for itself in publish latency from the first week.</td></tr>
+        <tr><td><b>Sprint 2</b></td><td>Translation drafting <span class="badge b-ok">already planned</span></td><td>Glossary</td><td class="tsub">Unchanged, but now actually has a glossary to use.</td></tr>
+        <tr><td><b>Sprint 3</b></td><td><b>Current affairs pipeline</b> <span class="badge b-warn">moved earlier</span></td><td><code>news_items</code> · newsroom screen</td><td class="tsub">Current affairs is the binding constraint on the daily quiz, and the daily quiz is the retention engine. This unblocks the metric the whole business rests on.</td></tr>
+        <tr><td><b>Sprint 3</b></td><td><b>Question generator</b> <span class="badge b-warn">moved earlier</span></td><td>Question bank · <code>ai_drafts</code></td><td class="tsub">Same reason. 500 questions written by hand is weeks; generated and verified it is days.</td></tr>
+        <tr><td><b>Month 4</b></td><td>Corpus: <code>ai_chunks</code> + observers + backfill</td><td>Exam pages populated</td><td class="tsub">Only worth building once there is something worth retrieving. This is the gate for everything below.</td></tr>
+        <tr><td><b>Month 4</b></td><td>Ask Sadhana · Explain simpler</td><td>Corpus</td><td class="tsub">Explain is 92% cacheable, so it costs almost nothing and ships alongside for free.</td></tr>
+        <tr><td><b>Month 5</b></td><td>Material generator</td><td>Corpus · moderation queue</td><td class="tsub">Fills the 42 topics with no material, which then deepens the corpus itself.</td></tr>
+        <tr><td><b>Phase 2</b></td><td>Doubt solver · flashcards</td><td>Community live · <code>answers.is_ai</code></td><td class="tsub">The doubt solver is meaningless before the community exists. Flashcards need the scheduler job.</td></tr>
+        <tr><td><b>Phase 2</b></td><td>Study plan</td><td><code>target_date</code> · 30+ days of quiz history</td><td class="tsub">A plan built on five attempts is noise. It needs a real performance record to read.</td></tr>
+        <tr><td><b>Phase 3</b></td><td>Answer evaluation · mock interview</td><td>Mains question bank · rubrics · premium</td><td class="tsub">₹0.93 and ₹1.10 per use. These belong behind premium, where the Group 1 aspirants who need them will pay.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="card pad">
+      <h3>The one thing to build first</h3>
+      <p class="sub" style="line-height:1.85">The <code>glossary</code> table. It is half a day of work, it has no dependencies, and ten downstream features silently degrade without it. Every AI feature shipped before it exists will need reworking afterwards — and translation quality is not a detail here, it is the reason the product beats Adda247 in Telugu at all.</p>
+    </div>
+    <div class="card pad">
+      <h3>The one thing not to rush</h3>
+      <p class="sub" style="line-height:1.85">The corpus. Building <code>ai_chunks</code> before exam pages, syllabi and past papers are populated gives you an assistant with nothing to read. It will answer anyway — fluently and emptily — and the people who try it in that state will not come back to try it again.</p>
+    </div>
+  </div>
+
+  <div class="note note-ai"><b>What this map is for.</b> Before any AI migration, check it against the read/write matrix. Before any AI screen, check it against the placement table. The twelve gaps here were all found by tracing paper against paper — which is much cheaper than finding them in production, on a notification day, with 18,000 people on the site.</div>
+</div>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});
+  var el=document.getElementById(id); if(!el)return;
+  el.classList.add('on');
+  var s=document.getElementById('pick');
+  for(var i=0;i<s.options.length;i++){if(s.options[i].value===id){s.selectedIndex=i;break;}}
+  window.scrollTo(0,0); location.hash=id;
+}
+if(location.hash && document.getElementById(location.hash.slice(1))) go(location.hash.slice(1));
+</script>
+</body>
+</html>

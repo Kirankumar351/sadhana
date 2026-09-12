@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sadhana — AI Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12211C;--ink2:#33463E;--muted:#6B7C74;--faint:#9AA8A1;
+  --line:#DDE3DF;--line2:#EDF1EE;--paper:#F7F8F5;--card:#FFF;
+  --green:#0F6B4F;--green-d:#0A4E39;--green-s:#E3F0EA;
+  --gold:#E8A33D;--gold-d:#B67A1F;--gold-s:#FCF1DE;
+  --red:#C4362B;--red-s:#FBE7E4;--blue:#2C5F8A;--blue-s:#E4EDF4;
+  --ai:#5B4B8A;--ai-d:#40356A;--ai-s:#EEEAF7;--ai-b:#C9BEE6;
+  --sans:"Noto Sans","Noto Sans Telugu",system-ui,sans-serif;
+  --disp:"Gabarito","Noto Sans Telugu",system-ui,sans-serif;
+  --te:"Noto Sans Telugu","Noto Sans",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.te{font-family:var(--te);line-height:1.8}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+code,.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+
+.devbar{position:fixed;top:0;left:0;right:0;height:42px;background:var(--ai-d);color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;z-index:900;font-size:12.5px}
+.devbar b{font-family:var(--disp);font-size:13px}
+.devbar select{background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:12.5px;max-width:290px}
+.devbar select option{background:#2C2450}
+.devbar .grow{flex:1}.devbar .h{color:rgba(255,255,255,.45);font-size:11.5px}
+@media(max-width:900px){.devbar .h{display:none}}
+
+.view{display:none;padding-top:42px}.view.on{display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 24px 60px}
+.narrow{max-width:820px;margin:0 auto;padding:26px 24px 60px}
+
+h1{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:-.024em;line-height:1.14}
+h2{font-family:var(--disp);font-size:19px;font-weight:700;letter-spacing:-.018em;margin-bottom:12px}
+h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:8px}
+.crumb{font-size:12.5px;color:var(--muted);margin-bottom:5px}
+.sub{font-size:12.5px;color:var(--muted)}
+.lede{font-size:15.5px;color:var(--ink2);max-width:66ch;line-height:1.7}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+.hr{height:1px;background:var(--line);margin:20px 0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.pad{padding:18px}.pad-s{padding:13px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.split{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+.btn{font-size:13px;font-weight:600;border-radius:8px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;line-height:1.25;white-space:nowrap}
+.btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-d)}
+.btn-ai{background:var(--ai);color:#fff}.btn-ai:hover{background:var(--ai-d)}
+.btn-sec{border:1.5px solid var(--line);color:var(--ink);background:var(--card)}.btn-sec:hover{border-color:var(--ink2)}
+.btn-gold{background:var(--gold);color:#3B2A08}
+.btn-danger{background:var(--red);color:#fff}
+.btn-soft-danger{background:var(--red-s);color:var(--red)}
+.btn-ghost{color:var(--green);padding:8px 4px}
+.btn-dis{background:var(--line2);color:var(--faint);cursor:not-allowed}
+.btn-xs{font-size:12px;padding:5px 10px;border-radius:6px}
+.btn-full{width:100%;justify-content:center}
+.btn-lg{font-size:15px;padding:12px 22px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.b-ok{background:var(--green-s);color:var(--green-d)}
+.b-warn{background:var(--gold-s);color:var(--gold-d)}
+.b-bad{background:var(--red-s);color:var(--red)}
+.b-neutral{background:var(--line2);color:var(--muted)}
+.b-info{background:var(--blue-s);color:var(--blue)}
+.b-ai{background:var(--ai-s);color:var(--ai-d)}
+
+/* the AI mark — every generated thing wears it */
+.aimark{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--ai-s);color:var(--ai-d);letter-spacing:.02em}
+.aimark svg{width:12px;height:12px}
+.aibox{border:1.5px solid var(--ai-b);border-radius:12px;background:linear-gradient(180deg,var(--ai-s) 0%,#fff 58%);padding:16px}
+.aibox .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.srcpill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:99px;border:1.2px solid var(--line);background:#fff;color:var(--ink2);margin:3px 4px 0 0}
+.srcpill i{font-style:normal;color:var(--ai);font-weight:800}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.field label .req{color:var(--red)}.field label .opt{font-weight:400;color:var(--faint)}
+.input{width:100%;font-family:inherit;font-size:13.5px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.input:focus{outline:none;border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-s)}
+textarea.input{resize:vertical;min-height:80px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{text-align:left;padding:9px 11px;font-size:11.5px;font-weight:700;color:var(--muted);border-bottom:1.5px solid var(--line);background:var(--paper);white-space:nowrap}
+table.tbl td{padding:11px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.tbl tbody tr:last-child td{border-bottom:0}
+table.tbl tbody tr:hover{background:var(--paper)}
+.tsub{font-size:11.5px;color:var(--muted)}
+
+.note{border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.65}
+.note-warn{background:var(--gold-s);border:1px solid var(--gold);color:var(--gold-d)}
+.note-bad{background:var(--red-s);border:1px solid var(--red);color:var(--red)}
+.note-ok{background:var(--green-s);border:1px solid var(--green);color:var(--green-d)}
+.note-ai{background:var(--ai-s);border:1px solid var(--ai-b);color:var(--ai-d)}
+.note-info{background:var(--blue-s);border:1px solid var(--blue);color:var(--blue)}
+
+.dl .r{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.dl .r:last-child{border-bottom:0}
+.dl .r span{color:var(--muted)}.dl .r b{font-weight:600;text-align:right}
+
+.kpi b{font-family:var(--disp);font-size:26px;font-weight:700;display:block;line-height:1;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--muted);display:block;margin-top:5px}
+
+.bar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--green)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{padding:10px 14px;font-size:13.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button.on{color:var(--ai);border-bottom-color:var(--ai);font-weight:600}
+.pane{display:none}.pane.on{display:block}
+
+.checklist label{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;padding:6px 0;cursor:pointer}
+.checklist input{margin-top:2px;width:15px;height:15px;accent-color:var(--green);flex-shrink:0}
+
+.chat{display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:11px;max-width:88%}
+.msg .av{width:30px;height:30px;border-radius:99px;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex-shrink:0}
+.msg.u{align-self:flex-end;flex-direction:row-reverse}
+.msg.u .bub{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.msg.u .av{background:var(--green-s);color:var(--green-d)}
+.msg.a .av{background:var(--ai);color:#fff}
+.msg .bub{padding:12px 14px;border-radius:12px 12px 12px 3px;background:var(--card);border:1px solid var(--line);font-size:13.5px;line-height:1.75}
+
+.pre{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.8;background:var(--ink);color:#B9C8C1;border-radius:9px;padding:14px;overflow:auto;white-space:pre-wrap}
+.pre .k{color:#8FD3B4}.pre .s{color:var(--gold)}.pre .c{color:#5D716A}
+
+.feat{display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--line2)}
+.feat:last-child{border-bottom:0}
+.feat .n{width:30px;height:30px;border-radius:8px;background:var(--ai-s);color:var(--ai-d);display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:13px;flex-shrink:0}
+.feat b{font-size:14.5px;display:block;margin-bottom:2px}
+.feat p{font-size:12.5px;color:var(--muted);line-height:1.65}
+
+.scrim{position:fixed;inset:0;background:rgba(18,33,28,.55);z-index:950;display:none;align-items:center;justify-content:center;padding:22px}
+.scrim.on{display:flex}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:470px;box-shadow:0 24px 60px -12px rgba(18,33,28,.5);max-height:88vh;overflow:auto}
+.modal.wide{max-width:760px}
+.modal-h{padding:18px 20px 0}.modal-h h3{font-family:var(--disp);font-size:17px;font-weight:700;margin-bottom:5px}
+.modal-b{padding:12px 20px 18px;font-size:13.5px;color:var(--ink2);line-height:1.7}
+.modal-f{padding:13px 20px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end;background:var(--paper);border-radius:0 0 14px 14px;flex-wrap:wrap}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(140%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:980;transition:transform .28s cubic-bezier(.2,.8,.3,1);display:flex;gap:9px;align-items:center}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1000px){.g2,.g3,.g4,.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<symbol id="i-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.6L18 9.2l-4.4 1.6L12 15.4l-1.6-4.6L6 9.2l4.4-1.6z"/><path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10.5 14M21 3l-6.5 18-4-8-8-4z"/></symbol>
+</svg>
+
+<div class="devbar">
+  <b>Sadhana AI Layer</b><span class="h">working prototype</span>
+  <select id="pick" onchange="go(this.value)">
+    <optgroup label="Start here">
+      <option value="v-overview">00 · The 11 AI features &amp; the rules</option>
+    </optgroup>
+    <optgroup label="Student-facing">
+      <option value="v-ask">01 · Ask Sadhana (grounded chat)</option>
+      <option value="v-doubt">02 · AI doubt solver</option>
+      <option value="v-explain">03 · Explain this simpler</option>
+      <option value="v-affairs">04 · Daily current affairs</option>
+      <option value="v-notes">05 · AI notes generator</option>
+      <option value="v-plan">06 · Personal study plan</option>
+      <option value="v-eval">07 · Answer evaluation (mains)</option>
+      <option value="v-interview">08 · Mock interview</option>
+      <option value="v-cards">09 · Flashcards &amp; one-liners</option>
+    </optgroup>
+    <optgroup label="Admin pipelines">
+      <option value="v-qgen">10 · Question generator + review</option>
+      <option value="v-newsroom">11 · Current affairs pipeline</option>
+      <option value="v-matgen">12 · Material generator + review</option>
+      <option value="v-guard">13 · Guardrails &amp; prompt config</option>
+      <option value="v-cost">14 · AI usage &amp; cost</option>
+    </optgroup>
+    <optgroup label="Build">
+      <option value="v-tech">15 · Technical implementation</option>
+    </optgroup>
+  </select>
+  <div class="grow"></div>
+  <span class="h">Modals:</span>
+  <select onchange="openM(this.value);this.selectedIndex=0" style="max-width:180px">
+    <option value="">Open a modal…</option>
+    <option value="m-limit">Daily AI limit reached</option>
+    <option value="m-unsure">AI is not confident</option>
+    <option value="m-feedback">Report a bad answer</option>
+    <option value="m-approve">Approve generated questions</option>
+    <option value="m-reject">Reject generation</option>
+    <option value="m-prompt">Edit a prompt</option>
+  </select>
+</div>
+
+<!-- ================= 00 OVERVIEW ================= -->
+<div class="view on" id="v-overview">
+<div class="wrap">
+  <div class="top">
+    <div>
+      <span class="aimark"><svg><use href="#i-ai"/></svg> AI LAYER</span>
+      <h1 style="margin-top:10px">Eleven AI features, one rule</h1>
+      <p class="lede" style="margin-top:8px">AI drafts. A person decides. Nothing an AI produced about a date, a fee or an eligibility criterion ever reaches a student without a human reading it first — because the cost of being wrong here is somebody's year.</p>
+    </div>
+  </div>
+
+  <div class="note note-bad" style="margin-bottom:22px"><b>The one rule, stated plainly.</b> Everywhere else in edtech, AI output goes straight to the user. Here it cannot, for one specific class of content: eligibility, dates, fees and anything a person will act on to apply for a job. For explanation, practice and study help, AI answers directly — but always grounded in our own indexed corpus, always labelled, and always with a route back to the official source.</p></div>
+
+  <div class="g2" style="margin-bottom:22px">
+    <div class="card pad">
+      <h2>Student-facing — AI answers directly</h2>
+      <p class="sub" style="margin-bottom:10px">Grounded in our own corpus. Labelled. Rate-limited. A confidence floor, below which it hands over to a human.</p>
+      <div class="feat"><div class="n">1</div><div><b>Ask Sadhana</b><p>Natural-language question over every notification, syllabus, cutoff and note we hold. Answers in Telugu with the source cards it used.</p></div></div>
+      <div class="feat"><div class="n">2</div><div><b>AI doubt solver</b><p>Instant first answer on a posted doubt, clearly marked as AI. The community can still correct it, and a human best-answer always outranks it.</p></div></div>
+      <div class="feat"><div class="n">3</div><div><b>Explain this simpler</b><p>Select any line in study material and get it re-explained in plainer Telugu, with an example.</p></div></div>
+      <div class="feat"><div class="n">4</div><div><b>Daily current affairs</b><p>Yesterday's news, filtered to what actually appears in these exams, written in Telugu, with the questions it is likely to become.</p></div></div>
+      <div class="feat"><div class="n">5</div><div><b>Notes generator</b><p>Any syllabus topic into structured Telugu notes with headings, key facts and a summary table.</p></div></div>
+      <div class="feat"><div class="n">6</div><div><b>Personal study plan</b><p>Weak areas from quiz history plus days remaining to the exam, turned into a week-by-week plan.</p></div></div>
+      <div class="feat"><div class="n">7</div><div><b>Answer evaluation</b><p>Descriptive answers for Group 1 mains scored against a published rubric, with what was missing.</p></div></div>
+      <div class="feat"><div class="n">8</div><div><b>Mock interview</b><p>Voice or text interview practice on the candidate's own bio-data and optional subject.</p></div></div>
+      <div class="feat"><div class="n">9</div><div><b>Flashcards and one-liners</b><p>Any topic or any past paper turned into spaced-repetition cards in Telugu.</p></div></div>
+    </div>
+    <div class="card pad">
+      <h2>Admin pipelines — AI drafts, humans publish</h2>
+      <p class="sub" style="margin-bottom:10px">These never reach a student without an approval click, and the approver's name is written to the audit log.</p>
+      <div class="feat"><div class="n">10</div><div><b>Question generator</b><p>Syllabus topic or news item into 20 bilingual MCQs with plausible distractors. Every one reviewed before it enters the bank.</p></div></div>
+      <div class="feat"><div class="n">11</div><div><b>Current affairs pipeline</b><p>News sources into exam-relevant Telugu summaries and draft questions. Two-source verification before publish.</p></div></div>
+      <div class="feat"><div class="n">12</div><div><b>Material generator</b><p>Topic into long-form Telugu study notes for the free library. Fact-checked and edited before publishing.</p></div></div>
+      <div class="feat" style="opacity:.75"><div class="n">✓</div><div><b>Already live: notification extraction</b><p>PDF into structured fields. Never guesses a date. Always lands in the review queue.</p></div></div>
+      <div class="feat" style="opacity:.75"><div class="n">✓</div><div><b>Already live: translation</b><p>English into Telugu with a glossary. Critical fields require a human.</p></div></div>
+      <div class="hr"></div>
+      <h3>What AI is never allowed to do</h3>
+      <table class="tbl">
+        <tbody>
+          <tr><td><b>State an eligibility outcome</b></td><td class="tsub">The deterministic engine decides that, not a model</td></tr>
+          <tr><td><b>Publish a date or a fee</b></td><td class="tsub">Human verification against the official PDF, every time</td></tr>
+          <tr><td><b>Answer without sources</b></td><td class="tsub">No retrieved passages means no answer</td></tr>
+          <tr><td><b>Predict a cutoff</b></td><td class="tsub">We show real historical data instead</td></tr>
+          <tr><td><b>Promise selection</b></td><td class="tsub">Blocked at the prompt and in output filtering</td></tr>
+          <tr><td><b>Reproduce copyrighted books</b></td><td class="tsub">Generation is grounded only in our own legal corpus</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>How grounding works</h2>
+  <div class="card pad" style="margin-bottom:22px">
+    <div class="pre" style="background:var(--paper);color:var(--ink2);border:1px solid var(--line)">
+Student question (Telugu or English)
+        │
+        ▼
+  <span class="k">Intent router</span> ── eligibility / dates? ──► deterministic engine, never the model
+        │
+        │ study, concept, revision
+        ▼
+  <span class="k">Retrieval</span>  over our own corpus only:
+        · exam syllabi and patterns        · notification facts
+        · previous papers and answer keys  · approved material
+        · answered community doubts        · current affairs digests
+        │
+        ▼
+   found nothing relevant? ──► <span class="s">"I don't have this. Ask the community."</span>  (no free generation)
+        │
+        ▼
+  <span class="k">Generation</span> with the retrieved passages + glossary + Telugu style guide
+        │
+        ▼
+  <span class="k">Output checks</span> · no eligibility claims · no invented dates
+             · no guarantee language · sources present
+        │
+        ▼
+  Answer, labelled AI, with the source cards it used
+        │
+        └─► every answer carries "Report a wrong answer"
+    </div>
+    <div class="note note-ai" style="margin-top:14px"><b>Retrieval-grounded, not free-form.</b> The model may only answer from what we have indexed. This is what keeps a study assistant from confidently inventing an exam pattern that does not exist — the single most damaging thing a product like this can do.</div>
+  </div>
+
+  <div class="g3">
+    <div class="card pad"><h3>Labelling</h3><p class="sub" style="line-height:1.75">Every AI output carries the violet <span class="aimark" style="font-size:10px"><svg><use href="#i-ai"/></svg> AI</span> mark. Users always know what a machine wrote. We never blur that line to make the product look smarter.</p></div>
+    <div class="card pad"><h3>Confidence floor</h3><p class="sub" style="line-height:1.75">Below the threshold the assistant says so and routes to the community rather than guessing. A visible "I don't know" builds more trust than a fluent wrong answer.</p></div>
+    <div class="card pad"><h3>Cost discipline</h3><p class="sub" style="line-height:1.75">Aggressive caching, small models for routing, per-user daily caps. AI cost per active user stays under ₹0.40 a month, or the free product does not work.</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 01 ASK SADHANA ================= -->
+<div class="view" id="v-ask">
+<div class="narrow">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> ASK SADHANA</span><h1 style="margin-top:9px">Grounded chat</h1><p class="sub">Answers only from our own indexed corpus. Shows every source it used.</p></div><button class="btn btn-sec btn-xs" onclick="openM('m-limit')">Usage</button></div>
+
+  <div class="chat" style="margin-bottom:18px">
+    <div class="msg u"><span class="av">RV</span><div class="bub te">గ్రూప్ 2 పేపర్ 4లో తెలంగాణ ఉద్యమం ఎన్ని మార్కులకు వస్తుంది? దానికి ఏం చదవాలి?</div></div>
+
+    <div class="msg a" style="max-width:100%"><span class="av"><svg width="16" height="16"><use href="#i-ai"/></svg></span>
+      <div style="flex:1">
+        <div class="aibox">
+          <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · grounded in 4 sources</span><span class="badge b-ok">High confidence</span></div>
+          <p class="te" style="font-size:14px;line-height:1.9">TGPSC గ్రూప్ 2లో <b>పేపర్ 4 మొత్తం</b> తెలంగాణ ఉద్యమం మరియు రాష్ట్ర ఆవిర్భావం మీదే — <b>150 మార్కులు</b>, 150 ప్రశ్నలు, 150 నిమిషాలు. మొత్తం 600 మార్కుల్లో ఇది నాలుగో వంతు.</p>
+          <p class="te" style="font-size:14px;line-height:1.9;margin-top:10px">సిలబస్ ప్రకారం మూడు దశలు ఉన్నాయి — 1948–1970 (ఆలోచన దశ), 1971–1990 (ఉద్యమ దశ), 1991–2014 (రాష్ట్ర ఏర్పాటు). గత మూడు పేపర్లలో <b>జెంటిల్‌మెన్స్ అగ్రిమెంట్ 1956</b> మరియు <b>1969 ఉద్యమం</b> నుంచి ప్రతిసారీ ప్రశ్నలు వచ్చాయి.</p>
+          <div class="hr" style="margin:13px 0"></div>
+          <div class="sub" style="margin-bottom:6px;font-weight:700;color:var(--ai-d)">Sources used</div>
+          <a class="srcpill"><i>1</i> TGPSC Group 2 — exam pattern</a>
+          <a class="srcpill"><i>2</i> TGPSC Group 2 — Paper IV syllabus</a>
+          <a class="srcpill"><i>3</i> Group 2 2024 Paper IV — question paper</a>
+          <a class="srcpill"><i>4</i> Telangana Movement — official notes</a>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+          <button class="btn btn-sec btn-xs">Open the syllabus</button>
+          <button class="btn btn-sec btn-xs" onclick="go('v-notes')">Make me notes on this</button>
+          <button class="btn btn-sec btn-xs" onclick="go('v-cards')">Flashcards</button>
+          <button class="btn btn-sec btn-xs" onclick="openM('m-feedback')">Wrong answer?</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg u"><span class="av">RV</span><div class="bub te">ఈసారి కటాఫ్ ఎంత వస్తుంది?</div></div>
+
+    <div class="msg a" style="max-width:100%"><span class="av"><svg width="16" height="16"><use href="#i-ai"/></svg></span>
+      <div style="flex:1">
+        <div class="aibox" style="border-color:var(--gold);background:linear-gradient(180deg,var(--gold-s) 0%,#fff 58%)">
+          <div class="hd"><span class="aimark" style="background:var(--gold-s);color:var(--gold-d)"><svg><use href="#i-ai"/></svg> AI</span><span class="badge b-warn">Refused — by design</span></div>
+          <p class="te" style="font-size:14px;line-height:1.9">కటాఫ్ ఎంత వస్తుందో నేను చెప్పలేను — అది ఖాళీల సంఖ్య, పేపర్ కష్టం, ఎంతమంది రాశారు అనే వాటిపై ఆధారపడి ఉంటుంది. ఊహించి చెబితే మీరు తప్పుగా ప్లాన్ చేసుకుంటారు.</p>
+          <p class="te" style="font-size:14px;line-height:1.9;margin-top:9px">బదులుగా <b>గత 5 సంవత్సరాల నిజమైన కటాఫ్ మార్కులు</b> ఇక్కడ ఉన్నాయి — SC కేటగిరీలో 2021లో 214, 2025లో 331.5. ధోరణి పెరుగుతోంది.</p>
+          <button class="btn btn-sec btn-xs" style="margin-top:11px">See all 5 years by category</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card pad-s" style="display:flex;gap:9px;align-items:flex-end;position:sticky;bottom:14px">
+    <textarea class="input te" style="min-height:44px;max-height:110px" placeholder="తెలుగులో లేదా ఇంగ్లీష్‌లో అడగండి…"></textarea>
+    <button class="btn btn-ai" style="padding:11px 13px"><svg width="16" height="16"><use href="#i-send"/></svg></button>
+  </div>
+  <p class="hint" style="text-align:center;margin-top:9px">18 of 30 free questions left today · answers come only from Sadhana's own material</p>
+</div>
+</div>
+
+<!-- ================= 02 DOUBT SOLVER ================= -->
+<div class="view" id="v-doubt">
+<div class="narrow">
+  <div class="crumb">Doubts › Eligibility</div>
+  <h1 class="te" style="font-size:22px;line-height:1.7;margin-bottom:14px">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా లెక్కిస్తారు?</h1>
+  <p class="sub" style="margin-bottom:20px">Asked by Ravi K · 12 minutes ago · 84 views</p>
+
+  <div class="note note-ai" style="margin-bottom:16px"><b>How this works.</b> The AI answers within seconds so nobody waits three hours on a simple question. It is always marked as AI, it always shows its sources, and the moment a human posts a better answer the AI answer drops below it. A verified selected candidate's answer always outranks the machine.</div>
+
+  <div class="aibox" style="margin-bottom:16px">
+    <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · answered in 4 seconds</span><span class="badge b-ok">3 sources</span></div>
+    <p class="te" style="font-size:14px;line-height:1.9">నోటిఫికేషన్‌లో ఇచ్చిన <b>కట్-ఆఫ్ తేదీ</b> ఆధారంగానే లెక్కిస్తారు — దరఖాస్తు చివరి తేదీ కాదు. చాలా TGPSC నోటిఫికేషన్లలో ఇది <b>జూలై 1</b>. ప్రతి నోటిఫికేషన్‌లో "as on" అనే పదం కోసం చూడండి.</p>
+    <p class="te" style="font-size:14px;line-height:1.9;margin-top:9px">ఉదాహరణకు TS పోలీస్ కానిస్టేబుల్ 2026లో వయస్సు 01/07/2026 నాటికి లెక్కిస్తారు. SC అభ్యర్థులకు 5 సంవత్సరాల సడలింపు ఉంది, కాబట్టి 18–22 పరిమితి మీకు 18–27 అవుతుంది.</p>
+    <div class="hr" style="margin:13px 0"></div>
+    <div class="sub" style="margin-bottom:6px;font-weight:700;color:var(--ai-d)">Sources used</div>
+    <a class="srcpill"><i>1</i> TS Police Constable 2026 — eligibility</a>
+    <a class="srcpill"><i>2</i> TGPSC Group 2 2026 — eligibility</a>
+    <a class="srcpill"><i>3</i> Answered doubt · Prasad S, verified selected</a>
+    <div class="note note-warn" style="margin-top:12px">Relaxation differs by notification. Always confirm on the official PDF for the job you are applying to.</div>
+    <div class="row" style="margin-top:12px"><div style="display:flex;gap:8px"><button class="btn btn-sec btn-xs">Helpful · 14</button><button class="btn btn-sec btn-xs" onclick="openM('m-feedback')">Not helpful</button></div><span class="sub">Ranked below any human answer</span></div>
+  </div>
+
+  <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Human answers</h2><span class="badge b-neutral">Waiting for the first</span></div>
+  <div class="card pad" style="text-align:center;padding:30px">
+    <p class="sub" style="max-width:44ch;margin:0 auto 14px;line-height:1.75">Nobody has answered yet. 41 people who follow Eligibility have been notified — a human answer usually arrives within three hours and will appear above the AI answer.</p>
+    <button class="btn btn-pri">Write an answer</button>
+  </div>
+</div>
+</div>
+
+<!-- ================= 03 EXPLAIN ================= -->
+<div class="view" id="v-explain">
+<div class="wrap">
+  <div class="top"><div><div class="crumb">Material › Telangana Movement</div><h1>Explain this simpler</h1><p class="sub">Select any sentence in the material and ask for it in plainer Telugu.</p></div></div>
+  <div class="split">
+    <div class="card pad">
+      <h2>1. The idea of Telangana, 1948–1970</h2>
+      <p style="font-size:15px;line-height:1.9;margin-bottom:14px">The demand for a separate Telangana state has roots in the merger of the Hyderabad State with the Indian Union in 1948 and the subsequent formation of Andhra Pradesh in 1956.</p>
+      <p style="font-size:15px;line-height:1.9;background:var(--ai-s);border-radius:6px;padding:3px 5px;display:inline;box-shadow:0 0 0 4px var(--ai-s)">Signed on 20 February 1956, the Gentlemen's Agreement provided for a Regional Council, reservation of posts for Telangana candidates, and the retention of surplus Telangana revenues within the region. Its incomplete implementation became the central grievance of the movement.</p>
+      <div style="display:flex;gap:8px;margin:18px 0 0"><button class="btn btn-ai btn-xs"><svg width="13" height="13"><use href="#i-ai"/></svg> Explain simpler</button><button class="btn btn-sec btn-xs">Explain in Telugu</button><button class="btn btn-sec btn-xs">Give an example</button><button class="btn btn-sec btn-xs">Make a flashcard</button></div>
+
+      <div class="aibox" style="margin-top:16px">
+        <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · simpler Telugu</span></div>
+        <p class="te" style="font-size:14.5px;line-height:1.95">1956లో ఆంధ్రప్రదేశ్ ఏర్పడేటప్పుడు తెలంగాణ నాయకులు ఒక ఒప్పందం చేసుకున్నారు. దాన్నే <b>జెంటిల్‌మెన్స్ అగ్రిమెంట్</b> అంటారు. తేదీ: <b>20 ఫిబ్రవరి 1956</b>.</p>
+        <p class="te" style="font-size:14.5px;line-height:1.95;margin-top:10px">ఇందులో మూడు ముఖ్య హామీలు ఉన్నాయి:<br>• తెలంగాణకు ప్రత్యేక <b>రీజనల్ కౌన్సిల్</b><br>• ఉద్యోగాల్లో తెలంగాణ వారికి <b>రిజర్వేషన్</b><br>• తెలంగాణ నుంచి వచ్చే మిగులు ఆదాయం <b>తెలంగాణలోనే</b> ఖర్చు చేయాలి</p>
+        <p class="te" style="font-size:14.5px;line-height:1.95;margin-top:10px">ఈ హామీలు సరిగ్గా అమలు కాలేదు — <b>అదే ఉద్యమానికి ప్రధాన కారణం</b> అయ్యింది.</p>
+        <div class="note note-ok" style="margin-top:12px"><b>Why this matters in the exam:</b> the date, the signatories and the three provisions have appeared in four of the last five Group 2 Paper IV papers.</div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-sec btn-xs">Even simpler</button><button class="btn btn-sec btn-xs">Add to my notes</button><button class="btn btn-sec btn-xs" onclick="openM('m-feedback')">This is wrong</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Why this feature exists</h3><p class="sub" style="line-height:1.8">Most quality preparation material in India is written in dense English. A Telugu-medium graduate loses hours decoding sentences before they can start learning. This turns that into one tap.</p></div>
+      <div class="card pad"><h3>Grounding</h3><div class="dl">
+        <div class="r"><span>Rewrites only</span><b>Selected text</b></div>
+        <div class="r"><span>Adds facts</span><b>Never</b></div>
+        <div class="r"><span>Exam relevance note</span><b>From past papers</b></div>
+        <div class="r"><span>Cached</span><b>Per passage</b></div>
+      </div><p class="hint">The same passage is explained once and reused for everyone, which is why this costs almost nothing at scale.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 04 CURRENT AFFAIRS ================= -->
+<div class="view" id="v-affairs">
+<div class="wrap">
+  <div class="top">
+    <div><span class="aimark"><svg><use href="#i-ai"/></svg> DAILY DIGEST</span><h1 style="margin-top:9px">Current affairs — 6 September 2026</h1><p class="sub">Yesterday's news, filtered to what these exams actually ask. Verified by Sailaja P at 6:20 AM.</p></div>
+    <div style="display:flex;gap:9px"><button class="btn btn-sec">Download PDF</button><button class="btn btn-gold">Take today's quiz</button></div>
+  </div>
+  <div class="note note-ok" style="margin-bottom:18px"><b>Every item here was checked by a person before publishing.</b> AI drafts the summary and the questions; a content editor verifies each fact against the original source. Nothing on this page is auto-published.</div>
+
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:14px">
+        <div class="row" style="margin-bottom:10px"><span class="badge b-info">Telangana · Schemes</span><span class="badge b-warn">High exam probability</span></div>
+        <h2 class="te" style="font-size:17px;line-height:1.7">ఇందిరమ్మ ఇళ్లు — రెండో దశకు 4.5 లక్షల ఇళ్లు మంజూరు</h2>
+        <p class="te" style="font-size:14px;line-height:1.9;margin-top:8px">తెలంగాణ ప్రభుత్వం ఇందిరమ్మ ఇళ్ల పథకం రెండో దశలో 4.5 లక్షల ఇళ్లను మంజూరు చేసింది. ప్రతి నియోజకవర్గానికి 3,500 ఇళ్ల చొప్పున కేటాయించారు. మొదటి దశలో 5 లక్షల ఇళ్లు మంజూరు చేశారు.</p>
+        <div class="card pad-s" style="background:var(--paper);margin-top:12px">
+          <div class="sub" style="font-weight:700;margin-bottom:5px">Why it matters for the exam</div>
+          <p class="sub" style="line-height:1.75">State welfare schemes with numbers attached appear in Group 2 Paper I and Paper III almost every year. Learn the scheme name, the launch year, the beneficiary count and the per-constituency allocation.</p>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap"><a class="srcpill"><i>↗</i> Telangana Today · 5 Sep</a><a class="srcpill"><i>↗</i> PIB release</a><span class="badge b-ok">2 sources verified</span></div>
+      </div>
+
+      <div class="card pad" style="margin-bottom:14px">
+        <div class="row" style="margin-bottom:10px"><span class="badge b-info">National · Economy</span><span class="badge b-neutral">Medium probability</span></div>
+        <h2 class="te" style="font-size:17px;line-height:1.7">RBI రెపో రేటును 5.75% వద్ద యథాతథంగా ఉంచింది</h2>
+        <p class="te" style="font-size:14px;line-height:1.9;margin-top:8px">రిజర్వ్ బ్యాంక్ ద్రవ్య విధాన కమిటీ వరుసగా మూడో సారి రెపో రేటును మార్చకుండా 5.75% వద్దే ఉంచింది. ద్రవ్యోల్బణం అంచనాను 4.2%కి సవరించారు.</p>
+        <div class="card pad-s" style="background:var(--paper);margin-top:12px">
+          <div class="sub" style="font-weight:700;margin-bottom:5px">Learn these numbers</div>
+          <p class="sub" style="line-height:1.75">Repo 5.75% · reverse repo 3.35% · CRR 4% · inflation projection 4.2%. Banking exams ask the current rate directly; Group 2 asks who sets it and how often the MPC meets.</p>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap"><a class="srcpill"><i>↗</i> RBI press release</a><a class="srcpill"><i>↗</i> The Hindu · 5 Sep</a></div>
+      </div>
+
+      <div class="card pad">
+        <div class="row" style="margin-bottom:10px"><span class="badge b-info">Telangana · Appointments</span><span class="badge b-warn">High probability</span></div>
+        <h2 class="te" style="font-size:17px;line-height:1.7">తెలంగాణ కొత్త ప్రధాన కార్యదర్శి నియామకం</h2>
+        <p class="te" style="font-size:14px;line-height:1.9;margin-top:8px">తెలంగాణ ప్రభుత్వం కొత్త ప్రధాన కార్యదర్శిని నియమించింది. ఈ పదవి రాష్ట్ర పరిపాలనలో అత్యున్నత అధికారి స్థానం.</p>
+        <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap"><a class="srcpill"><i>↗</i> GO issued 5 Sep</a><span class="badge b-ok">Verified</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card pad" style="margin-bottom:14px">
+        <h3>Today at a glance</h3>
+        <div class="dl">
+          <div class="r"><span>Items</span><b>8</b></div>
+          <div class="r"><span>High probability</span><b>3</b></div>
+          <div class="r"><span>From news scanned</span><b>412 articles</b></div>
+          <div class="r"><span>Kept as exam-relevant</span><b>2%</b></div>
+          <div class="r"><span>Verified by</span><b>Sailaja P</b></div>
+        </div>
+      </div>
+      <div class="card pad" style="margin-bottom:14px">
+        <h3>Became quiz questions</h3>
+        <p class="sub" style="line-height:1.75;margin-bottom:11px">5 of today's 8 items were turned into questions for tomorrow's quiz. This is where the daily current affairs pool comes from — it cannot be written in advance.</p>
+        <button class="btn btn-sec btn-xs btn-full">See tomorrow's mix</button>
+      </div>
+      <div class="card pad">
+        <h3>Monthly compilation</h3>
+        <p class="sub" style="line-height:1.75;margin-bottom:11px">August 2026 · 186 items · 64 pages · Telugu</p>
+        <button class="btn btn-sec btn-xs btn-full">Download August PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 05 NOTES GENERATOR ================= -->
+<div class="view" id="v-notes">
+<div class="wrap">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> NOTES GENERATOR</span><h1 style="margin-top:9px">Make notes on any syllabus topic</h1><p class="sub">Structured Telugu notes built from our own indexed material, not from the open internet.</p></div></div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <div class="g2">
+          <div class="field"><label>Exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+          <div class="field"><label>Paper</label><select class="input"><option>Paper IV — Telangana Movement</option></select></div>
+        </div>
+        <div class="field"><label>Topic <span class="opt">— pick from the structured syllabus</span></label><select class="input"><option>The idea of Telangana, 1948–1970</option><option>Mobilisation phase, 1971–1990</option></select></div>
+        <div class="g2">
+          <div class="field"><label>Depth</label><select class="input"><option>Exam-focused — facts and dates</option><option>Detailed — with context</option><option>Revision — one-liners only</option></select></div>
+          <div class="field"><label>Language</label><select class="input"><option>Telugu</option><option>English</option><option>Both, side by side</option></select></div>
+        </div>
+        <button class="btn btn-ai btn-full"><svg width="15" height="15"><use href="#i-ai"/></svg> Generate notes</button>
+      </div>
+
+      <div class="aibox">
+        <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · generated from 6 sources</span><div style="display:flex;gap:7px"><button class="btn btn-sec btn-xs">Save</button><button class="btn btn-sec btn-xs">Download</button></div></div>
+        <h2 class="te" style="font-size:18px">తెలంగాణ ఆలోచన దశ — 1948 నుంచి 1970</h2>
+        <p class="te" style="font-size:14px;line-height:1.95;margin-top:10px">1948లో హైదరాబాద్ సంస్థానం భారత యూనియన్‌లో విలీనమైంది. 1956లో ఆంధ్రప్రదేశ్ ఏర్పడింది. ఈ రెండు సంఘటనలే ప్రత్యేక తెలంగాణ డిమాండ్‌కు మూలం.</p>
+        <h3 class="te" style="margin-top:16px;font-size:15px">ముఖ్య తేదీలు</h3>
+        <table class="tbl" style="margin-top:8px">
+          <thead><tr><th>తేదీ</th><th>సంఘటన</th></tr></thead>
+          <tbody>
+            <tr><td><b>17 సెప్టెంబర్ 1948</b></td><td class="te">హైదరాబాద్ సంస్థానం విలీనం</td></tr>
+            <tr><td><b>20 ఫిబ్రవరి 1956</b></td><td class="te">జెంటిల్‌మెన్స్ అగ్రిమెంట్</td></tr>
+            <tr><td><b>1 నవంబర్ 1956</b></td><td class="te">ఆంధ్రప్రదేశ్ ఏర్పాటు</td></tr>
+            <tr><td><b>జనవరి 1969</b></td><td class="te">ఖమ్మంలో విద్యార్థి నిరాహార దీక్ష</td></tr>
+            <tr><td><b>1969</b></td><td class="te">తెలంగాణ ప్రజా సమితి ఏర్పాటు</td></tr>
+          </tbody>
+        </table>
+        <h3 class="te" style="margin-top:16px;font-size:15px">జెంటిల్‌మెన్స్ అగ్రిమెంట్ — మూడు హామీలు</h3>
+        <p class="te" style="font-size:14px;line-height:1.95">1. తెలంగాణకు ప్రత్యేక రీజనల్ కౌన్సిల్<br>2. ఉద్యోగాల్లో తెలంగాణ వారికి రిజర్వేషన్<br>3. మిగులు ఆదాయం తెలంగాణలోనే ఖర్చు</p>
+        <div class="note note-warn" style="margin-top:14px"><b>పరీక్షలో ఎక్కువగా అడిగినవి:</b> గత 5 గ్రూప్ 2 పేపర్లలో జెంటిల్‌మెన్స్ అగ్రిమెంట్ తేదీ 4 సార్లు, 1969 ఉద్యమం 5 సార్లు వచ్చాయి.</div>
+        <div class="hr" style="margin:14px 0"></div>
+        <div class="sub" style="font-weight:700;color:var(--ai-d);margin-bottom:6px">Built from</div>
+        <a class="srcpill"><i>1</i> Paper IV syllabus</a><a class="srcpill"><i>2</i> Telangana Movement — official notes</a><a class="srcpill"><i>3</i> Group 2 2024 Paper IV</a><a class="srcpill"><i>4</i> Group 2 2023 Paper IV</a><a class="srcpill"><i>5</i> Group 2 2022 Paper IV</a><a class="srcpill"><i>6</i> Approved student notes</a>
+        <div style="display:flex;gap:8px;margin-top:13px;flex-wrap:wrap"><button class="btn btn-pri btn-xs">Save to my notes</button><button class="btn btn-sec btn-xs" onclick="go('v-cards')">Make flashcards</button><button class="btn btn-sec btn-xs">Practice questions on this</button><button class="btn btn-sec btn-xs" onclick="openM('m-feedback')">Report a mistake</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Why it is grounded</h3><p class="sub" style="line-height:1.8">Notes are assembled from our own syllabus, past papers and approved material — never from a coaching book and never from open-web scraping. That keeps them legal and keeps them accurate to the actual paper.</p></div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Topics with weak coverage</h3><p class="sub" style="margin-bottom:10px">Generation quality follows corpus depth. These topics have little indexed material, so notes on them are thinner.</p>
+        <div class="dl"><div class="r"><span>Paper III · Public finance</span><span class="badge b-warn">Thin</span></div><div class="r"><span>Paper I · Disaster management</span><span class="badge b-warn">Thin</span></div></div>
+      </div>
+      <div class="card pad"><h3>Your generated notes</h3><div class="dl"><div class="r"><span>Saved</span><b>7</b></div><div class="r"><span>This month</span><b>12 of 30</b></div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 06 STUDY PLAN ================= -->
+<div class="view" id="v-plan">
+<div class="wrap">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> STUDY PLAN</span><h1 style="margin-top:9px">Your plan to 4 October</h1><p class="sub">Built from your quiz history, the syllabus weights and 28 days remaining.</p></div><button class="btn btn-sec">Rebuild plan</button></div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="card pad kpi"><b>28</b><span>Days to TGPSC Group 2</span></div>
+    <div class="card pad kpi"><b>2.5h</b><span>Your average daily study</span></div>
+    <div class="card pad kpi"><b style="color:var(--red)">41%</b><span>Weakest — Indian Polity</span></div>
+    <div class="card pad kpi"><b style="color:var(--green)">92%</b><span>Strongest — Telangana Movement</span></div>
+  </div>
+  <div class="split">
+    <div>
+      <div class="aibox" style="margin-bottom:16px">
+        <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · from your last 62 quizzes</span><span class="badge b-ok">Updated today</span></div>
+        <p style="font-size:14px;line-height:1.85">Your Telangana Movement score is already strong at 92%, and Paper IV is a quarter of the exam — so you are safe there and should not spend more time on it. Indian Polity at 41% is the real problem, and Polity appears in both Paper I and Paper II, which means it is worth roughly twice what its score suggests.</p>
+        <p style="font-size:14px;line-height:1.85;margin-top:10px">The plan below spends 40% of your remaining time on Polity, keeps Telangana Movement to light revision only, and leaves the last four days entirely for full-length practice.</p>
+      </div>
+      <h2>Week by week</h2>
+      <div class="card pad" style="margin-bottom:12px">
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">Week 1 · 7–13 September</h3><span class="badge b-bad">Polity focus</span></div>
+        <table class="tbl"><tbody>
+          <tr><td style="width:96px"><b>Mon–Wed</b></td><td>Fundamental Rights and Duties — Articles 12 to 35<div class="tsub">2 hours daily · notes plus 30 practice questions</div></td></tr>
+          <tr><td><b>Thu–Fri</b></td><td>Union and State governments, Centre–state relations<div class="tsub">2 hours daily</div></td></tr>
+          <tr><td><b>Sat</b></td><td>Polity sectional test, 50 questions<div class="tsub">Target: above 60%</div></td></tr>
+          <tr><td><b>Sun</b></td><td>Telangana Movement — light revision only<div class="tsub">45 minutes · flashcards</div></td></tr>
+        </tbody></table>
+      </div>
+      <div class="card pad" style="margin-bottom:12px">
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">Week 2 · 14–20 September</h3><span class="badge b-warn">Economy</span></div>
+        <table class="tbl"><tbody>
+          <tr><td style="width:96px"><b>Mon–Wed</b></td><td>Indian economy since independence, national income</td></tr>
+          <tr><td><b>Thu–Fri</b></td><td>Telangana economy, agriculture and irrigation</td></tr>
+          <tr><td><b>Sat</b></td><td>Full-length mock, Papers I and III</td></tr>
+          <tr><td><b>Sun</b></td><td>Review the mock, redo every wrong question</td></tr>
+        </tbody></table>
+      </div>
+      <div class="card pad">
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">Weeks 3–4 · 21 September – 4 October</h3><span class="badge b-ok">Consolidation</span></div>
+        <p class="sub" style="line-height:1.8">Two full-length mocks a week, current affairs daily, and revision of only what you got wrong. The last four days are practice and sleep — no new topics. Starting something new in the final week costs more in confidence than it gains in marks.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Time allocation</h3>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Indian Polity</span><b>40%</b></div><div class="bar"><i style="width:40%;background:var(--red)"></i></div></div>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Economy</span><b>25%</b></div><div class="bar"><i style="width:25%;background:var(--gold)"></i></div></div>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Mocks and revision</span><b>25%</b></div><div class="bar"><i style="width:25%"></i></div></div>
+        <div><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Telangana Movement</span><b>10%</b></div><div class="bar"><i style="width:10%"></i></div></div>
+      </div>
+      <div class="card pad note note-warn" style="border-radius:12px"><b>This is a plan, not a prediction.</b> It cannot tell you whether you will clear the exam, and it will not try. It only allocates the hours you have across the topics where they are worth the most.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 07 ANSWER EVALUATION ================= -->
+<div class="view" id="v-eval">
+<div class="wrap">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> ANSWER EVALUATION</span><h1 style="margin-top:9px">Descriptive answer feedback</h1><p class="sub">For Group 1 mains. Scored against a published rubric, with what was missing.</p></div></div>
+  <div class="note note-warn" style="margin-bottom:18px"><b>This is feedback, not a mark.</b> No AI can predict what an actual examiner will award. What it can do reliably is tell you which required points you did not write, whether your structure follows the expected pattern, and where you wasted words — and that is what improves scores.</div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <div class="row" style="margin-bottom:12px"><h3 style="margin:0">Question</h3><span class="badge b-info">Group 1 Mains · Paper III · 15 marks</span></div>
+        <p style="font-size:15px;line-height:1.8;margin-bottom:14px">Examine the role of the Gentlemen's Agreement of 1956 in shaping the Telangana movement. <span class="sub">(15 marks · 250 words)</span></p>
+        <div class="field"><label>Your answer <span class="opt">— type, or photograph your handwriting</span></label><textarea class="input te" style="min-height:150px">1956లో ఆంధ్రప్రదేశ్ ఏర్పడేటప్పుడు తెలంగాణ నాయకులకు కొన్ని హామీలు ఇచ్చారు. దీన్నే జెంటిల్‌మెన్స్ అగ్రిమెంట్ అంటారు. ఇందులో రీజనల్ కౌన్సిల్ ఏర్పాటు, ఉద్యోగాల్లో రిజర్వేషన్, ఆదాయం తెలంగాణలోనే ఖర్చు చేయడం వంటివి ఉన్నాయి. కానీ ఈ హామీలు అమలు కాలేదు. దీంతో 1969లో పెద్ద ఉద్యమం మొదలైంది…</textarea></div>
+        <div style="display:flex;gap:9px"><button class="btn btn-sec btn-xs">Upload a photo instead</button><button class="btn btn-ai"><svg width="14" height="14"><use href="#i-ai"/></svg> Evaluate</button></div>
+      </div>
+
+      <div class="aibox">
+        <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI · rubric-based feedback</span><span class="badge b-warn">Indicative only</span></div>
+        <div class="g3" style="margin-bottom:16px">
+          <div class="card pad-s" style="text-align:center"><div style="font-family:var(--disp);font-size:22px;font-weight:700">7<span style="font-size:13px;color:var(--muted)">/15</span></div><div class="sub">Indicative band</div></div>
+          <div class="card pad-s" style="text-align:center"><div style="font-family:var(--disp);font-size:22px;font-weight:700">148</div><div class="sub">Words of 250</div></div>
+          <div class="card pad-s" style="text-align:center"><div style="font-family:var(--disp);font-size:22px;font-weight:700">4<span style="font-size:13px;color:var(--muted)">/9</span></div><div class="sub">Required points hit</div></div>
+        </div>
+        <h3>Points you covered</h3>
+        <table class="tbl" style="margin-bottom:14px"><tbody>
+          <tr><td style="width:28px"><span class="badge b-ok">✓</span></td><td>Named the agreement and its 1956 context</td></tr>
+          <tr><td><span class="badge b-ok">✓</span></td><td>Listed the Regional Council provision</td></tr>
+          <tr><td><span class="badge b-ok">✓</span></td><td>Listed employment reservation</td></tr>
+          <tr><td><span class="badge b-ok">✓</span></td><td>Connected non-implementation to the 1969 agitation</td></tr>
+        </tbody></table>
+        <h3>Points you missed</h3>
+        <table class="tbl" style="margin-bottom:14px"><tbody>
+          <tr><td style="width:28px"><span class="badge b-bad">✕</span></td><td><b>The exact date — 20 February 1956</b><div class="tsub">Examiners reward specific dates in a question that names an agreement</div></td></tr>
+          <tr><td><span class="badge b-bad">✕</span></td><td><b>The signatories</b><div class="tsub">Naming the leaders of both regions shows depth</div></td></tr>
+          <tr><td><span class="badge b-bad">✕</span></td><td><b>The Mulki rules connection</b><div class="tsub">Central to the employment grievance and almost always expected here</div></td></tr>
+          <tr><td><span class="badge b-bad">✕</span></td><td><b>The word “examine” was not answered</b><div class="tsub">You described. The question asked you to weigh how far it shaped the movement — that needs a judgement in your conclusion.</div></td></tr>
+          <tr><td><span class="badge b-bad">✕</span></td><td><b>No conclusion at all</b><div class="tsub">A 15-mark answer without a conclusion loses marks structurally, regardless of content</div></td></tr>
+        </tbody></table>
+        <div class="note note-info"><b>The single change that would gain the most:</b> you used 148 of 250 words. Add the date, the Mulki rules and a three-line conclusion that answers "how far" — that is roughly 90 more words and it addresses four of the five gaps at once.</div>
+        <div style="display:flex;gap:8px;margin-top:13px;flex-wrap:wrap"><button class="btn btn-sec btn-xs">See a model answer</button><button class="btn btn-sec btn-xs">Rewrite and re-evaluate</button><button class="btn btn-sec btn-xs" onclick="openM('m-feedback')">Disagree with this</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>The rubric</h3><p class="sub" style="margin-bottom:10px">Published, not hidden. You can see exactly what it is scoring.</p>
+        <div class="dl">
+          <div class="r"><span>Required content points</span><b>9 · 60%</b></div>
+          <div class="r"><span>Directive word answered</span><b>20%</b></div>
+          <div class="r"><span>Structure: intro, body, conclusion</span><b>10%</b></div>
+          <div class="r"><span>Word count discipline</span><b>10%</b></div>
+        </div>
+      </div>
+      <div class="card pad"><h3>Your trend</h3>
+        <div class="dl">
+          <div class="r"><span>Answers evaluated</span><b>18</b></div>
+          <div class="r"><span>Average band</span><b>7.4 / 15</b></div>
+          <div class="r"><span>Most common gap</span><b>No conclusion</b></div>
+          <div class="r"><span>Improving</span><b style="color:var(--green)">+1.8 over 6 weeks</b></div>
+        </div>
+        <div class="note note-warn" style="margin-top:12px">You have left out a conclusion in 12 of 18 answers. That one habit is costing more than any content gap.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 08 MOCK INTERVIEW ================= -->
+<div class="view" id="v-interview">
+<div class="narrow">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> MOCK INTERVIEW</span><h1 style="margin-top:9px">Group 1 interview practice</h1><p class="sub">Questions built from your own bio-data, in Telugu or English, as long as you want.</p></div></div>
+  <div class="note note-warn" style="margin-bottom:18px"><b>Practice, not simulation.</b> A real board reads your body language, your composure and your file. This gives you repetitions on the questions your bio-data invites — which is the part you can actually prepare.</div>
+
+  <div class="card pad" style="margin-bottom:16px">
+    <h3>Your bio-data — the board will ask from this</h3>
+    <div class="g2">
+      <div class="field"><label>Home district</label><input class="input" value="Karimnagar"></div>
+      <div class="field"><label>Graduation subject</label><input class="input" value="B.Sc Computer Science"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Hobbies as written in the form</label><input class="input" value="Reading Telugu literature, cricket"></div>
+      <div class="field"><label>Optional subject</label><input class="input" value="Public Administration"></div>
+    </div>
+    <div class="field"><label>Interview language</label><select class="input"><option>Telugu</option><option>English</option><option>Mixed — as I would actually answer</option></select></div>
+    <button class="btn btn-ai btn-full"><svg width="15" height="15"><use href="#i-ai"/></svg> Start a 20-minute mock</button>
+  </div>
+
+  <div class="chat" style="margin-bottom:16px">
+    <div class="msg a" style="max-width:100%"><span class="av"><svg width="16" height="16"><use href="#i-ai"/></svg></span>
+      <div class="bub" style="flex:1"><span class="badge b-neutral" style="margin-bottom:7px">Board member 1 · warm-up</span><p class="te" style="font-size:14px;line-height:1.9">కరీంనగర్ నుంచి వచ్చారు. మీ జిల్లాలో ప్రధాన నీటిపారుదల ప్రాజెక్టు ఏది, అది ఎన్ని ఎకరాలకు సాగునీరు అందిస్తుంది?</p></div></div>
+    <div class="msg u" style="max-width:82%"><span class="av">RV</span><div class="bub te">శ్రీరాంసాగర్ ప్రాజెక్టు. గోదావరి నదిపై ఉంది. దాదాపు 9 లక్షల ఎకరాలకు సాగునీరు అందిస్తుంది.</div></div>
+    <div class="msg a" style="max-width:100%"><span class="av"><svg width="16" height="16"><use href="#i-ai"/></svg></span>
+      <div style="flex:1">
+        <div class="bub"><span class="badge b-neutral" style="margin-bottom:7px">Board member 2 · follow-up pressure</span><p class="te" style="font-size:14px;line-height:1.9">సరే. మరి కాళేశ్వరం వచ్చాక శ్రీరాంసాగర్ ప్రాముఖ్యత తగ్గిందని కొందరు అంటున్నారు. మీరు ఏమంటారు?</p></div>
+        <div class="aibox" style="margin-top:9px;padding:13px">
+          <div class="hd" style="margin-bottom:8px"><span class="aimark"><svg><use href="#i-ai"/></svg> Feedback on your last answer</span></div>
+          <table class="tbl"><tbody>
+            <tr><td style="width:28px"><span class="badge b-ok">✓</span></td><td>Correct and specific — you named the river and the acreage</td></tr>
+            <tr><td><span class="badge b-warn">!</span></td><td>Too short for an interview. A board reads brevity as thin preparation.</td></tr>
+            <tr><td><span class="badge b-warn">!</span></td><td>You did not mention the flood flow canal or the current utilisation debate — both invite a good follow-up</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card pad-s" style="display:flex;gap:9px;align-items:flex-end">
+    <textarea class="input te" style="min-height:44px" placeholder="మీ సమాధానం టైప్ చేయండి, లేదా మాట్లాడండి…"></textarea>
+    <button class="btn btn-sec" style="padding:11px 13px">🎙</button>
+    <button class="btn btn-ai" style="padding:11px 13px"><svg width="16" height="16"><use href="#i-send"/></svg></button>
+  </div>
+  <p class="hint" style="text-align:center;margin-top:9px">Question 4 of about 20 · 6 minutes elapsed · full transcript and report at the end</p>
+</div>
+</div>
+
+<!-- ================= 09 FLASHCARDS ================= -->
+<div class="view" id="v-cards">
+<div class="wrap">
+  <div class="top"><div><span class="aimark"><svg><use href="#i-ai"/></svg> FLASHCARDS</span><h1 style="margin-top:9px">Cards and one-liners</h1><p class="sub">Any topic or any past paper turned into spaced-repetition cards in Telugu.</p></div><button class="btn btn-ai"><svg width="14" height="14"><use href="#i-ai"/></svg> Generate from a topic</button></div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="card pad kpi"><b>412</b><span>Cards in your deck</span></div>
+    <div class="card pad kpi"><b style="color:var(--gold-d)">38</b><span>Due today</span></div>
+    <div class="card pad kpi"><b>84%</b><span>Recall rate</span></div>
+    <div class="card pad kpi"><b>12</b><span>Cards you keep failing</span></div>
+  </div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="text-align:center;padding:40px 22px;margin-bottom:14px">
+        <span class="badge b-neutral" style="margin-bottom:16px">Telangana Movement · card 6 of 38</span>
+        <p class="te" style="font-size:19px;font-weight:600;line-height:1.8;margin-bottom:26px">జెంటిల్‌మెన్స్ అగ్రిమెంట్ ఎప్పుడు సంతకం చేశారు?</p>
+        <div class="card pad" style="background:var(--green-s);border-color:var(--green);max-width:400px;margin:0 auto 20px"><p class="te" style="font-size:17px;font-weight:700;color:var(--green-d)">20 ఫిబ్రవరి 1956</p></div>
+        <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-soft-danger btn-xs">Forgot · show again today</button>
+          <button class="btn btn-sec btn-xs">Hard · 2 days</button>
+          <button class="btn btn-sec btn-xs">Good · 6 days</button>
+          <button class="btn btn-pri btn-xs">Easy · 15 days</button>
+        </div>
+      </div>
+      <h2>Your decks</h2>
+      <table class="tbl"><thead><tr><th>Deck</th><th>Cards</th><th>Due</th><th>Recall</th><th>Source</th></tr></thead><tbody>
+        <tr><td><b>Telangana Movement — dates</b></td><td>84</td><td><span class="badge b-warn">38</span></td><td>91%</td><td><span class="badge b-ai">AI from syllabus</span></td></tr>
+        <tr><td><b>Indian Polity — Articles</b></td><td>142</td><td>0</td><td><b style="color:var(--red)">62%</b></td><td><span class="badge b-ai">AI from syllabus</span></td></tr>
+        <tr><td><b>Group 2 2024 — wrong answers</b></td><td>46</td><td>0</td><td>78%</td><td><span class="badge b-info">Your mistakes</span></td></tr>
+        <tr><td><b>Current affairs — August</b></td><td>140</td><td>0</td><td>88%</td><td><span class="badge b-ai">AI from digests</span></td></tr>
+      </tbody></table>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Generate a new deck</h3>
+        <div class="field"><label>From</label><select class="input"><option>A syllabus topic</option><option>A past paper</option><option>My wrong answers</option><option>A month of current affairs</option><option>Notes I saved</option></select></div>
+        <div class="field"><label>Card count</label><select class="input"><option>50 cards</option><option>100 cards</option></select></div>
+        <button class="btn btn-ai btn-full btn-xs">Generate</button>
+      </div>
+      <div class="card pad note note-warn" style="border-radius:12px"><b>Polity recall is 62%.</b> That matches your quiz weakness exactly. These cards are due before anything else — the deck knows what the quiz already told us.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 10 QUESTION GENERATOR (ADMIN) ================= -->
+<div class="view" id="v-qgen">
+<div class="wrap">
+  <div class="top"><div><span class="badge b-ai">ADMIN</span><h1 style="margin-top:9px">Question generator</h1><p class="sub">Draft 20 bilingual MCQs from a topic or a news item. Nothing enters the bank without a human approving each one.</p></div><div style="display:flex;gap:9px"><button class="btn btn-soft-danger" onclick="openM('m-reject')">Reject batch</button><button class="btn btn-pri" onclick="openM('m-approve')">Approve selected</button></div></div>
+  <div class="note note-bad" style="margin-bottom:18px"><b>Answer keys are the whole risk here.</b> A fluent question with a wrong key teaches thousands of people something false, and they will carry it into the exam hall. Every key is checked by a person against a source before approval — this is the slowest step in the pipeline and it stays that way.</div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <div class="g3">
+          <div class="field"><label>Source</label><select class="input"><option>Syllabus topic</option><option>Current affairs item</option><option>Past paper</option></select></div>
+          <div class="field"><label>Topic</label><select class="input"><option>Fundamental Rights — Articles 12–35</option></select></div>
+          <div class="field"><label>Difficulty mix</label><select class="input"><option>4 easy · 12 medium · 4 hard</option></select></div>
+        </div>
+        <div class="row"><span class="sub">Generates in both languages with the glossary applied</span><button class="btn btn-ai"><svg width="14" height="14"><use href="#i-ai"/></svg> Generate 20 questions</button></div>
+      </div>
+
+      <div class="card pad" style="margin-bottom:12px">
+        <div class="row" style="margin-bottom:12px"><div style="display:flex;gap:9px;align-items:center"><input type="checkbox" checked style="accent-color:var(--green);width:16px;height:16px"><b>Question 1 of 20</b></div><div style="display:flex;gap:7px"><span class="aimark"><svg><use href="#i-ai"/></svg> AI draft</span><span class="badge b-ok">Key verified</span></div></div>
+        <p style="font-size:14.5px;font-weight:600;margin-bottom:10px">Which Article of the Indian Constitution is known as the "heart and soul" of the Constitution, as described by Dr. B. R. Ambedkar?</p>
+        <p class="te" style="font-size:14px;margin-bottom:12px;color:var(--ink2)">డాక్టర్ బి.ఆర్. అంబేద్కర్ భారత రాజ్యాంగంలోని ఏ అధికరణను "రాజ్యాంగ హృదయం మరియు ఆత్మ" అని అభివర్ణించారు?</p>
+        <table class="tbl" style="margin-bottom:11px"><tbody>
+          <tr><td style="width:30px">A</td><td>Article 14</td><td class="te">అధికరణ 14</td></tr>
+          <tr style="background:var(--green-s)"><td><b>B</b></td><td><b>Article 32</b> <span class="badge b-ok">Correct</span></td><td class="te"><b>అధికరణ 32</b></td></tr>
+          <tr><td>C</td><td>Article 19</td><td class="te">అధికరణ 19</td></tr>
+          <tr><td>D</td><td>Article 21</td><td class="te">అధికరణ 21</td></tr>
+        </tbody></table>
+        <div class="card pad-s" style="background:var(--paper)"><div class="sub" style="font-weight:700;margin-bottom:4px">Explanation</div><p class="sub" style="line-height:1.75">Article 32 provides the Right to Constitutional Remedies, allowing citizens to approach the Supreme Court directly when a fundamental right is violated. Ambedkar called it the heart and soul of the Constitution.</p></div>
+        <div class="row" style="margin-top:11px"><span class="sub">Distractors are all Fundamental Rights articles — plausible, not obviously wrong</span><div style="display:flex;gap:7px"><button class="btn btn-sec btn-xs">Edit</button><button class="btn btn-soft-danger btn-xs">Drop</button></div></div>
+      </div>
+
+      <div class="card pad" style="border-color:var(--red)">
+        <div class="row" style="margin-bottom:12px"><div style="display:flex;gap:9px;align-items:center"><input type="checkbox" style="accent-color:var(--green);width:16px;height:16px"><b>Question 7 of 20</b></div><div style="display:flex;gap:7px"><span class="aimark"><svg><use href="#i-ai"/></svg> AI draft</span><span class="badge b-bad">Flagged by the model</span></div></div>
+        <p style="font-size:14.5px;font-weight:600;margin-bottom:10px">In which year was the Right to Education added as a Fundamental Right?</p>
+        <div class="note note-bad" style="margin-bottom:11px"><b>The model flagged its own answer as uncertain.</b> The 86th Amendment was passed in 2002 but came into force in 2010, and both years appear as answer keys in different sources. This is exactly the kind of question that generates arguments in the comments and erodes trust.</div>
+        <div class="row"><span class="sub">Recommended: rewrite to specify "passed" or "came into force", or drop it</span><div style="display:flex;gap:7px"><button class="btn btn-sec btn-xs">Rewrite</button><button class="btn btn-soft-danger btn-xs">Drop</button></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>This batch</h3>
+        <div class="dl">
+          <div class="r"><span>Generated</span><b>20</b></div>
+          <div class="r"><span>Key verified</span><b style="color:var(--green)">16</b></div>
+          <div class="r"><span>Model flagged</span><b style="color:var(--red)">2</b></div>
+          <div class="r"><span>Duplicates found</span><b>2</b></div>
+          <div class="r"><span>Telugu complete</span><b>20</b></div>
+        </div>
+      </div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Automatic checks</h3>
+        <div class="dl">
+          <div class="r"><span>Duplicate against 2,418 existing</span><span class="badge b-ok">Run</span></div>
+          <div class="r"><span>Distractor plausibility</span><span class="badge b-ok">Run</span></div>
+          <div class="r"><span>Glossary compliance</span><span class="badge b-ok">Run</span></div>
+          <div class="r"><span>Disputed-fact detection</span><span class="badge b-warn">2 flagged</span></div>
+        </div>
+      </div>
+      <div class="card pad note note-ok" style="border-radius:12px"><b>This is the pipeline that keeps the quiz alive.</b> Current affairs is the binding constraint on the daily quiz — it cannot be written months ahead. Generation plus human verification is what turns yesterday's news into tomorrow's questions in under an hour.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 11 NEWSROOM ================= -->
+<div class="view" id="v-newsroom">
+<div class="wrap">
+  <div class="top"><div><span class="badge b-ai">ADMIN</span><h1 style="margin-top:9px">Current affairs pipeline</h1><p class="sub">412 articles scanned overnight · 8 kept · 5 became questions · published 6:20 AM</p></div><button class="btn btn-pri">Publish today's digest</button></div>
+
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="pre" style="background:var(--paper);color:var(--ink2);border:1px solid var(--line)">
+04:00  <span class="k">Ingest</span>       PIB · The Hindu · Telangana Today · Eenadu · Sakshi · RBI · state GOs
+       412 articles fetched
+        │
+04:12  <span class="k">Filter</span>       exam-relevance classifier against 5 years of past papers
+       412 ──► 34 candidates                          <span class="c">(small model, cheap)</span>
+        │
+04:20  <span class="k">Dedupe</span>       same story across sources merged
+       34 ──► 19
+        │
+04:26  <span class="k">Draft</span>        Telugu summary + "why it matters" + 2 draft questions each
+       19 items                                       <span class="c">(large model)</span>
+        │
+04:40  <span class="k">Source check</span> every factual claim needs 2 independent sources
+       19 ──► 11 pass · <span class="s">8 held for single-source</span>
+        │
+05:00  <span class="k">HUMAN REVIEW</span>  ◄── nothing passes this without a person
+       Sailaja P · 11 reviewed · 8 approved · 3 rejected
+        │
+06:20  <span class="k">Publish</span>      digest live · 5 questions into tomorrow's quiz pool
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <h2>Awaiting review — 3 items</h2>
+      <div class="card pad" style="margin-bottom:12px">
+        <div class="row" style="margin-bottom:10px"><div><b>Indiramma Housing — phase 2 allocation</b><div class="tsub">Telangana Today · PIB · 2 sources</div></div><span class="badge b-ok">2 sources</span></div>
+        <p class="te" style="font-size:13.5px;line-height:1.85;margin-bottom:11px">తెలంగాణ ప్రభుత్వం ఇందిరమ్మ ఇళ్ల పథకం రెండో దశలో 4.5 లక్షల ఇళ్లను మంజూరు చేసింది…</p>
+        <div class="card pad-s" style="background:var(--paper);margin-bottom:11px"><div class="sub" style="font-weight:700;margin-bottom:4px">Facts to verify</div><table class="tbl"><tbody>
+          <tr><td style="width:26px"><span class="badge b-ok">✓</span></td><td>4.5 lakh houses — matches both sources</td></tr>
+          <tr><td><span class="badge b-ok">✓</span></td><td>3,500 per constituency — matches PIB</td></tr>
+          <tr><td><span class="badge b-warn">?</span></td><td>Phase 1 figure of 5 lakh — only one source states it</td></tr>
+        </tbody></table></div>
+        <div class="row"><span class="sub">2 draft questions attached</span><div style="display:flex;gap:7px"><button class="btn btn-soft-danger btn-xs">Reject</button><button class="btn btn-sec btn-xs">Edit</button><button class="btn btn-pri btn-xs">Approve</button></div></div>
+      </div>
+      <div class="card pad" style="border-color:var(--gold)">
+        <div class="row" style="margin-bottom:10px"><div><b>New Chief Secretary appointed</b><div class="tsub">One source only · GO not yet published online</div></div><span class="badge b-warn">Held</span></div>
+        <div class="note note-warn">Held automatically. Appointments are exactly the kind of item that gets reported early and corrected later — and a wrong name in a quiz answer is remembered for months. It waits until the GO is verifiable.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Today</h3>
+        <div class="dl">
+          <div class="r"><span>Articles scanned</span><b>412</b></div>
+          <div class="r"><span>Exam-relevant</span><b>34</b></div>
+          <div class="r"><span>After dedupe</span><b>19</b></div>
+          <div class="r"><span>Two-source verified</span><b>11</b></div>
+          <div class="r"><span>Human approved</span><b>8</b></div>
+          <div class="r"><span>Questions produced</span><b>5</b></div>
+        </div>
+      </div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Sources</h3>
+        <div class="dl">
+          <div class="r"><span>PIB</span><span class="badge b-ok">Healthy</span></div>
+          <div class="r"><span>Telangana Today</span><span class="badge b-ok">Healthy</span></div>
+          <div class="r"><span>Eenadu</span><span class="badge b-ok">Healthy</span></div>
+          <div class="r"><span>State GO portal</span><span class="badge b-warn">Slow</span></div>
+          <div class="r"><span>RBI</span><span class="badge b-ok">Healthy</span></div>
+        </div>
+      </div>
+      <div class="card pad note note-ok" style="border-radius:12px"><b>The filter is the value.</b> 412 articles down to 8 is why a student reads this in six minutes instead of an hour. The classifier is trained on which topics actually appeared in five years of papers.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 12 MATERIAL GENERATOR ================= -->
+<div class="view" id="v-matgen">
+<div class="wrap">
+  <div class="top"><div><span class="badge b-ai">ADMIN</span><h1 style="margin-top:9px">Material generator</h1><p class="sub">Long-form Telugu study notes for the free library. Fact-checked and edited before publishing.</p></div><div style="display:flex;gap:9px"><button class="btn btn-sec">Save draft</button><button class="btn btn-pri">Publish to library</button></div></div>
+  <div class="note note-bad" style="margin-bottom:18px"><b>Generated material is grounded only in our own legal corpus.</b> It is never produced from coaching books, and never from open-web scraping of copyrighted material. That constraint is what makes the library safe to host — and it is not negotiable at any volume.</div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <div class="g3">
+          <div class="field"><label>Exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+          <div class="field"><label>Topic</label><select class="input"><option>Fundamental Rights — Articles 12–35</option></select></div>
+          <div class="field"><label>Length</label><select class="input"><option>Long — 3,000 words</option><option>Medium — 1,200 words</option></select></div>
+        </div>
+        <div class="row"><span class="sub">Uses syllabus, past papers and approved material as the only sources</span><button class="btn btn-ai"><svg width="14" height="14"><use href="#i-ai"/></svg> Generate</button></div>
+      </div>
+      <div class="tabs"><button class="on" onclick="tab(this,'mg-draft')">Draft</button><button onclick="tab(this,'mg-check')">Fact check</button><button onclick="tab(this,'mg-src')">Sources</button></div>
+      <div class="pane on" id="mg-draft">
+        <div class="aibox">
+          <div class="hd"><span class="aimark"><svg><use href="#i-ai"/></svg> AI draft · 2,840 words · unpublished</span><span class="badge b-warn">Needs editing</span></div>
+          <h2 class="te" style="font-size:18px">ప్రాథమిక హక్కులు — భాగం III, అధికరణలు 12–35</h2>
+          <p class="te" style="font-size:14px;line-height:1.95;margin-top:10px">భారత రాజ్యాంగంలోని భాగం III ప్రాథమిక హక్కులను వివరిస్తుంది. ఇవి పౌరులకు రాజ్యం నుంచి రక్షణ కల్పిస్తాయి. మొత్తం ఆరు రకాల ప్రాథమిక హక్కులు ఉన్నాయి.</p>
+          <h3 class="te" style="margin-top:14px;font-size:15px">1. సమానత్వ హక్కు — అధికరణలు 14–18</h3>
+          <p class="te" style="font-size:14px;line-height:1.95">అధికరణ 14 చట్టం ముందు సమానత్వాన్ని హామీ ఇస్తుంది. అధికరణ 15 మతం, జాతి, కులం, లింగం, జన్మస్థలం ఆధారంగా వివక్షను నిషేధిస్తుంది. అధికరణ 16 ప్రభుత్వ ఉద్యోగాలలో అవకాశ సమానత్వాన్ని కల్పిస్తుంది. అధికరణ 17 అంటరానితనాన్ని రద్దు చేస్తుంది…</p>
+          <p class="sub" style="margin-top:14px">— draft continues for 2,840 words —</p>
+        </div>
+      </div>
+      <div class="pane" id="mg-check">
+        <div class="card pad">
+          <h3>Automatic fact check</h3>
+          <table class="tbl"><tbody>
+            <tr><td style="width:28px"><span class="badge b-ok">✓</span></td><td>Article numbers 12–35 correctly mapped to the six rights</td></tr>
+            <tr><td><span class="badge b-ok">✓</span></td><td>Article 17 — abolition of untouchability, correct</td></tr>
+            <tr><td><span class="badge b-ok">✓</span></td><td>Article 32 described as Right to Constitutional Remedies, correct</td></tr>
+            <tr><td><span class="badge b-warn">!</span></td><td><b>"Six fundamental rights"</b> — correct today, but the Right to Property was removed in 1978 and was originally a seventh. An editor should add that, because it is a common exam question.</td></tr>
+            <tr><td><span class="badge b-bad">✕</span></td><td><b>Article 21A wording is loose</b> — the draft implies the Right to Education was always a fundamental right. It was added by the 86th Amendment. Fix before publishing.</td></tr>
+          </tbody></table>
+          <div class="note note-warn" style="margin-top:12px">Two edits needed. Neither is a hallucination — both are places where a fluent summary quietly loses a distinction the exam actually tests.</div>
+        </div>
+      </div>
+      <div class="pane" id="mg-src">
+        <div class="card pad"><h3>Grounded in</h3>
+          <a class="srcpill"><i>1</i> TGPSC Group 2 Paper II syllabus</a><a class="srcpill"><i>2</i> Group 2 2024 Paper II</a><a class="srcpill"><i>3</i> Group 2 2023 Paper II</a><a class="srcpill"><i>4</i> Indian Polity — approved student notes</a><a class="srcpill"><i>5</i> Constitution of India — official text</a>
+          <div class="note note-ok" style="margin-top:14px">All five sources are either government-published or material we hold legally. No coaching book, no scraped web content.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Before publishing</h3>
+        <div class="checklist">
+          <label><input type="checkbox" checked> Read the whole draft, not just the summary</label>
+          <label><input type="checkbox" checked> Both fact-check flags addressed</label>
+          <label><input type="checkbox"> Telugu reads naturally, not machine-translated</label>
+          <label><input type="checkbox"> Marked as AI-assisted on the public page</label>
+        </div>
+        <div class="note note-warn" style="margin-top:12px">Published material carries an "AI-assisted, edited by [name]" label. Readers deserve to know, and the editor's name creates accountability.</div>
+      </div>
+      <div class="card pad"><h3>Library impact</h3><div class="dl">
+        <div class="r"><span>Topics with no material</span><b style="color:var(--gold-d)">42</b></div>
+        <div class="r"><span>Generated so far</span><b>18</b></div>
+        <div class="r"><span>Average edit time</span><b>26 min</b></div>
+        <div class="r"><span>Rejected at review</span><b>3</b></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 13 GUARDRAILS ================= -->
+<div class="view" id="v-guard">
+<div class="wrap">
+  <div class="top"><div><span class="badge b-ai">ADMIN</span><h1 style="margin-top:9px">Guardrails and prompts</h1><p class="sub">Every rule that constrains AI output, in one place. Changes are logged.</p></div><button class="btn btn-pri" onclick="toast('Guardrail configuration saved and logged')">Save</button></div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <h2>Hard blocks — cannot be turned off</h2>
+        <table class="tbl"><thead><tr><th>Rule</th><th>Enforced where</th><th>On failure</th></tr></thead><tbody>
+          <tr><td><b>No eligibility outcomes</b><div class="tsub">The deterministic engine decides, never a model</div></td><td>Intent router</td><td>Routed away from the model</td></tr>
+          <tr><td><b>No invented dates</b><div class="tsub">A date not present in retrieved sources is stripped</div></td><td>Output filter</td><td>Sentence removed, answer flagged</td></tr>
+          <tr><td><b>No cutoff prediction</b></td><td>Prompt + output filter</td><td>Refuses, shows historical data</td></tr>
+          <tr><td><b>No selection guarantees</b></td><td>Output filter</td><td>Answer blocked</td></tr>
+          <tr><td><b>No answer without sources</b></td><td>Retrieval gate</td><td>Hands over to community</td></tr>
+          <tr><td><b>No copyrighted reproduction</b></td><td>Corpus restriction</td><td>Nothing to retrieve from</td></tr>
+        </tbody></table>
+      </div>
+      <div class="card pad" style="margin-bottom:16px">
+        <h2>Tunable thresholds</h2>
+        <div class="g2">
+          <div class="field"><label>Confidence floor — below this, hand to community</label><input class="input" value="0.62"></div>
+          <div class="field"><label>Minimum retrieved passages to answer</label><input class="input" value="2"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Free questions per user per day</label><input class="input" value="30"></div>
+          <div class="field"><label>Notes generations per user per month</label><input class="input" value="30"></div>
+        </div>
+        <div class="note note-info">Raising the confidence floor makes the assistant say "I don't know" more often. That is usually the right trade — a visible refusal costs less trust than a fluent wrong answer.</div>
+      </div>
+      <div class="card pad">
+        <h2>Prompts</h2>
+        <table class="tbl"><thead><tr><th>Prompt</th><th>Model</th><th>Version</th><th>Last edited</th><th></th></tr></thead><tbody>
+          <tr><td><b>Grounded answer</b></td><td class="mono">large</td><td>v14</td><td>2 Sep · Lokesh</td><td><button class="btn btn-sec btn-xs" onclick="openM('m-prompt')">Edit</button></td></tr>
+          <tr><td><b>Notification extraction</b></td><td class="mono">large</td><td>v22</td><td>18 Aug · Sailaja P</td><td><button class="btn btn-sec btn-xs" onclick="openM('m-prompt')">Edit</button></td></tr>
+          <tr><td><b>Question generation</b></td><td class="mono">large</td><td>v9</td><td>28 Aug · Lokesh</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Exam-relevance classifier</b></td><td class="mono">small</td><td>v6</td><td>12 Aug · Lokesh</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Telugu translation</b></td><td class="mono">large</td><td>v18</td><td>1 Sep · Kiran S</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Answer evaluation rubric</b></td><td class="mono">large</td><td>v4</td><td>30 Aug · Lokesh</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Refusals this week</h3>
+        <div class="dl">
+          <div class="r"><span>Cutoff prediction asked</span><b>1,842</b></div>
+          <div class="r"><span>Eligibility asked of the model</span><b>604</b></div>
+          <div class="r"><span>Below confidence floor</span><b>388</b></div>
+          <div class="r"><span>No sources retrieved</span><b>212</b></div>
+        </div>
+        <div class="note note-ok" style="margin-top:12px">1,842 people asked what the cutoff will be. Every one got real historical data instead of a guess. That refusal is the product working.</div>
+      </div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Reported bad answers</h3>
+        <div class="dl">
+          <div class="r"><span>Reported this week</span><b>34</b></div>
+          <div class="r"><span>Confirmed wrong</span><b style="color:var(--red)">6</b></div>
+          <div class="r"><span>Prompt fixed</span><b>2</b></div>
+          <div class="r"><span>Corpus gap</span><b>4</b></div>
+        </div>
+        <p class="hint">Four of six were missing source material, not model failure. The fix is content, not prompting.</p>
+      </div>
+      <div class="card pad note note-bad" style="border-radius:12px"><b>Hard blocks are code, not prompt text.</b> A prompt instruction can be talked around by a user. The eligibility route, the source gate and the output filters are enforced in the application, where nothing a user types can reach them.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 14 COST ================= -->
+<div class="view" id="v-cost">
+<div class="wrap">
+  <div class="top"><div><span class="badge b-ai">ADMIN</span><h1 style="margin-top:9px">AI usage and cost</h1><p class="sub">September to date · the free product only works if this stays small</p></div><select class="input" style="width:auto"><option>This month</option></select></div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="card pad kpi"><b>₹41,280</b><span>Month to date</span></div>
+    <div class="card pad kpi"><b style="color:var(--green)">₹0.31</b><span>Per active user <em class="sub">budget ₹0.40</em></span></div>
+    <div class="card pad kpi"><b>68%</b><span>Cache hit rate</span></div>
+    <div class="card pad kpi"><b>1.84M</b><span>Requests</span></div>
+  </div>
+  <div class="split">
+    <div>
+      <div class="card pad" style="margin-bottom:16px">
+        <h2>By feature</h2>
+        <table class="tbl"><thead><tr><th>Feature</th><th>Requests</th><th>Model</th><th>Cache hit</th><th>Cost</th><th>Per request</th></tr></thead><tbody>
+          <tr><td><b>Ask Sadhana</b></td><td>884,204</td><td class="mono">large</td><td>41%</td><td>₹18,400</td><td>₹0.021</td></tr>
+          <tr><td><b>Explain this simpler</b></td><td>412,880</td><td class="mono">large</td><td><b style="color:var(--green)">92%</b></td><td>₹3,100</td><td>₹0.008</td></tr>
+          <tr><td><b>AI doubt solver</b></td><td>84,120</td><td class="mono">large</td><td>18%</td><td>₹6,200</td><td>₹0.074</td></tr>
+          <tr><td><b>Flashcards</b></td><td>188,400</td><td class="mono">large</td><td>88%</td><td>₹1,900</td><td>₹0.010</td></tr>
+          <tr><td><b>Notes generator</b></td><td>28,412</td><td class="mono">large</td><td>76%</td><td>₹4,100</td><td>₹0.144</td></tr>
+          <tr><td><b>Answer evaluation</b></td><td>4,208</td><td class="mono">large</td><td>0%</td><td>₹3,900</td><td>₹0.927</td></tr>
+          <tr><td><b>Current affairs filter</b></td><td>12,360</td><td class="mono">small</td><td>0%</td><td>₹420</td><td>₹0.034</td></tr>
+          <tr><td><b>Question generation</b></td><td>1,840</td><td class="mono">large</td><td>0%</td><td>₹1,600</td><td>₹0.870</td></tr>
+          <tr><td><b>Translation</b></td><td>8,412</td><td class="mono">large</td><td>0%</td><td>₹1,200</td><td>₹0.143</td></tr>
+          <tr><td><b>Notification extraction</b></td><td>412</td><td class="mono">large</td><td>0%</td><td>₹460</td><td>₹1.117</td></tr>
+        </tbody></table>
+      </div>
+      <div class="card pad">
+        <h2>The four things that keep this affordable</h2>
+        <table class="tbl"><tbody>
+          <tr><td style="width:24px"><b>1</b></td><td><b>Cache aggressively by content, not by user</b><div class="tsub">"Explain this passage" is the same answer for everyone. One generation serves thousands — which is why it costs ₹0.008 against ₹0.074 for a doubt.</div></td></tr>
+          <tr><td><b>2</b></td><td><b>Small model for routing and filtering</b><div class="tsub">The exam-relevance classifier reads 412 articles a day. Using a large model there would cost 20× for no gain.</div></td></tr>
+          <tr><td><b>3</b></td><td><b>Hard per-user caps</b><div class="tsub">30 questions a day covers real study. It also stops one user costing what a thousand do.</div></td></tr>
+          <tr><td><b>4</b></td><td><b>Retrieval keeps prompts short</b><div class="tsub">Two retrieved passages beat stuffing a whole syllabus into context — cheaper and more accurate at the same time.</div></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="card pad" style="margin-bottom:14px"><h3>Against revenue</h3>
+        <div class="dl">
+          <div class="r"><span>Ad revenue, month</span><b>₹96,400</b></div>
+          <div class="r"><span>AI cost, month</span><b>₹41,280</b></div>
+          <div class="r"><span>AI as % of revenue</span><b style="color:var(--gold-d)">43%</b></div>
+          <div class="r"><span>Target</span><b>Under 30%</b></div>
+        </div>
+        <div class="note note-warn" style="margin-top:12px">43% is too high. Answer evaluation and question generation are the expensive ones. Evaluation should move behind premium; question generation is worth every rupee because it keeps the daily quiz alive.</div>
+      </div>
+      <div class="card pad"><h3>Decisions this suggests</h3>
+        <table class="tbl"><tbody>
+          <tr><td><b>Answer evaluation → premium</b><div class="tsub">₹0.93 per use, and it serves Group 1 aspirants who will pay</div></td></tr>
+          <tr><td><b>Raise the Explain cache TTL</b><div class="tsub">Already 92%; passages do not change</div></td></tr>
+          <tr><td><b>Keep Ask Sadhana free</b><div class="tsub">It is the reason people come back — do not gate the habit</div></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ================= 15 TECHNICAL ================= -->
+<div class="view" id="v-tech">
+<div class="wrap">
+  <div class="top"><div><h1>Technical implementation</h1><p class="lede" style="margin-top:6px">What to build, in the order it should be built. Laravel, sitting on the schema in Volume 2.</p></div></div>
+
+  <h2>New tables</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre">
+<span class="c">-- retrieval corpus, chunked and embedded</span>
+ai_chunks          id, source_type, source_id, locale, content,
+                   embedding VECTOR(1536), token_count, created_at
+                   <span class="c">INDEX (source_type, source_id), VECTOR INDEX (embedding)</span>
+
+<span class="c">-- every AI interaction, for cost, audit and quality</span>
+ai_requests        id, user_id, feature, model, prompt_version,
+                   input_tokens, output_tokens, cost_paise,
+                   confidence, sources_used JSON, cache_hit,
+                   refused_reason, created_at
+                   <span class="c">INDEX (feature, created_at), INDEX (user_id, created_at)</span>
+
+<span class="c">-- content-keyed cache, shared across all users</span>
+ai_cache           cache_key (hash of content+feature+locale),
+                   response, locale, hits, expires_at
+                   <span class="c">PRIMARY KEY (cache_key)</span>
+
+<span class="c">-- anything a human must approve before it reaches a student</span>
+ai_drafts          id, type, payload JSON, source_refs JSON,
+                   model_confidence, flagged_reason,
+                   status ENUM('pending','approved','rejected'),
+                   reviewed_by, reviewed_at, created_at
+
+<span class="c">-- current affairs pipeline</span>
+news_items         id, source, url, published_at, raw_text,
+                   relevance_score, dedupe_group,
+                   status ENUM('scanned','candidate','drafted',
+                               'verified','approved','rejected')
+news_sources_check news_item_id, source_url, verified_by, verified_at
+
+<span class="c">-- user-facing artefacts</span>
+study_plans        id, user_id, exam_id, target_date, plan JSON, generated_at
+flashcards         id, user_id, deck, front, back, locale, source_type,
+                   ease, interval_days, due_at
+answer_evaluations id, user_id, question_id, answer_text, rubric JSON,
+                   band, points_hit JSON, points_missed JSON, created_at
+
+<span class="c">-- reported bad output, feeds prompt and corpus fixes</span>
+ai_reports         id, ai_request_id, user_id, reason, note,
+                   resolution ENUM('prompt','corpus','no_issue'), created_at
+    </div>
+  </div>
+
+  <h2>The one service everything goes through</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre">
+<span class="k">app/Services/AI/</span>
+  AiGateway.php           <span class="c">// single entry point — nothing calls the API directly</span>
+  IntentRouter.php        <span class="c">// eligibility/dates → deterministic engine, never the model</span>
+  Retriever.php           <span class="c">// vector search over ai_chunks, locale-aware</span>
+  PromptRegistry.php      <span class="c">// versioned prompts, editable in admin, logged</span>
+  OutputGuard.php         <span class="c">// strips invented dates, blocks guarantee language</span>
+  CostMeter.php           <span class="c">// writes ai_requests, enforces per-user caps</span>
+  ResponseCache.php       <span class="c">// content-keyed, not user-keyed</span>
+
+<span class="k">Features/</span>
+  AskSadhana.php  DoubtSolver.php  ExplainSimpler.php
+  NotesGenerator.php  StudyPlanner.php  AnswerEvaluator.php
+  MockInterview.php  FlashcardMaker.php
+  QuestionGenerator.php  NewsPipeline.php  MaterialGenerator.php
+
+<span class="k">Jobs/</span>
+  EmbedChunk.php  ScanNews.php  ClassifyRelevance.php
+  DraftDigest.php  GenerateQuestions.php  ReindexCorpus.php
+    </div>
+    <div class="note note-ai" style="margin-top:14px"><b>Why a single gateway.</b> Cost caps, refusal logging, prompt versioning and output filtering all live in one place. If any feature could call the API directly, every one of those guarantees becomes optional — and the one that gets skipped will be the one that mattered.</div>
+  </div>
+
+  <h2>The grounded-answer prompt, in shape</h2>
+  <div class="card pad" style="margin-bottom:20px">
+    <div class="pre">
+<span class="k">SYSTEM</span>
+You answer questions for Telugu-speaking Indian government exam aspirants.
+
+Answer ONLY from the passages provided below. If they do not contain the
+answer, say so plainly and suggest asking the community. Never fill a gap
+from general knowledge.
+
+<span class="s">NEVER:</span>
+- state whether a person is eligible for anything
+- give a date, fee or deadline that is not in the passages
+- predict a cutoff, a rank or a selection chance
+- promise or imply that following advice leads to selection
+
+Answer in {locale}. Apply this glossary exactly — these are the words
+people search for: {glossary}. Keep numerals in Latin script.
+
+Be direct. An aspirant is short of time and under pressure.
+Cite which passage each fact came from.
+
+<span class="k">USER</span>
+Passages:
+{retrieved_passages}
+
+Question: {question}
+    </div>
+    <div class="note note-bad" style="margin-top:14px"><b>The prompt is the weakest of the three layers.</b> A user can talk around instructions. That is why the eligibility route, the retrieval gate and the output filters are enforced in application code — the prompt only has to handle the honest majority.</div>
+  </div>
+
+  <h2>Build order</h2>
+  <div class="card pad">
+    <table class="tbl"><thead><tr><th style="width:70px">Phase</th><th>Ship</th><th>Why this order</th></tr></thead><tbody>
+      <tr><td><b>Now</b></td><td>Notification extraction · Translation</td><td class="tsub">Already in the plan. They pay for themselves in content velocity from week one.</td></tr>
+      <tr><td><b>M4+</b></td><td>Question generator · Current affairs pipeline</td><td class="tsub">Current affairs is the binding constraint on the daily quiz, and the daily quiz is the retention engine. This unblocks the thing the whole business rests on.</td></tr>
+      <tr><td><b>M5</b></td><td>Corpus embedding · Ask Sadhana · Explain simpler</td><td class="tsub">Needs a corpus worth retrieving from, so it comes after exam pages and material exist. Explain is cheap and cached — ship it alongside.</td></tr>
+      <tr><td><b>Phase 2</b></td><td>Doubt solver · Flashcards · Notes generator</td><td class="tsub">Doubt solver only makes sense once the community exists. Flashcards and notes deepen the material library.</td></tr>
+      <tr><td><b>Phase 3</b></td><td>Study plan · Answer evaluation · Mock interview</td><td class="tsub">Evaluation and interview are Group 1 features and expensive per use. They belong behind premium, where the users who need them will pay.</td></tr>
+    </tbody></table>
+    <div class="note note-warn" style="margin-top:14px"><b>Do not build AI before the corpus exists.</b> A retrieval assistant with nothing to retrieve gives confident empty answers, and that first impression is very hard to undo. Exam pages, syllabi and past papers come first — the assistant is only as good as what it can read.</div>
+  </div>
+</div>
+</div>
+
+<!-- ================= MODALS ================= -->
+<div class="scrim" id="m-limit" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>You've used today's 30 questions</h3></div>
+  <div class="modal-b">
+    <p style="margin-bottom:14px">The limit exists so the assistant stays free for everyone. It resets at midnight.</p>
+    <div class="dl"><div class="r"><span>Used today</span><b>30 of 30</b></div><div class="r"><span>Resets</span><b>In 4h 12m</b></div><div class="r"><span>Still free right now</span><b>Notes, flashcards, quiz</b></div></div>
+    <div class="note note-ai" style="margin-top:12px">Everything else on Sadhana keeps working. Only the chat assistant is capped.</div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Close</button><button class="btn btn-pri" onclick="closeAll()">Ask the community instead</button></div>
+</div></div>
+
+<div class="scrim" id="m-unsure" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>I'm not confident about this one</h3></div>
+  <div class="modal-b">
+    <p style="margin-bottom:12px">I could not find enough in Sadhana's material to answer this properly, and I would rather tell you that than guess.</p>
+    <div class="note note-warn" style="margin-bottom:12px">Confidence 0.41 · below the 0.62 floor · only 1 relevant passage found</div>
+    <p>A person who has actually written this exam will answer better. Posting it takes a moment and usually gets a reply within three hours.</p>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Try rewording it</button><button class="btn btn-pri" onclick="closeAll();toast('Posted to the community')">Ask the community</button></div>
+</div></div>
+
+<div class="scrim" id="m-feedback" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>What's wrong with this answer?</h3><p class="sub">Reports go to a person, not a model. Six were confirmed wrong last week and four turned out to be missing source material.</p></div>
+  <div class="modal-b">
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="fb" checked style="accent-color:var(--green)"> A fact is wrong</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="fb" style="accent-color:var(--green)"> The Telugu reads badly</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="fb" style="accent-color:var(--green)"> It did not answer what I asked</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="fb" style="accent-color:var(--green)"> It should not have answered this at all</label>
+    <div class="field" style="margin-top:10px"><label>What should it have said? <span class="opt">— optional</span></label><textarea class="input" style="min-height:60px"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Reported. A person reviews this within a day.')">Send report</button></div>
+</div></div>
+
+<div class="scrim" id="m-approve" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Approve 16 questions into the bank?</h3><p class="sub">2 were flagged by the model and 2 are duplicates. Those are excluded.</p></div>
+  <div class="modal-b">
+    <div class="note note-bad" style="margin-bottom:14px"><b>You are confirming every answer key.</b> A wrong key teaches thousands of people something false and they carry it into the exam hall.</div>
+    <div class="checklist">
+      <label><input type="checkbox" checked> I checked each answer key against a source</label>
+      <label><input type="checkbox" checked> No question has a disputed or ambiguous answer</label>
+      <label><input type="checkbox" checked> Telugu matches the English option order</label>
+      <label><input type="checkbox"> Explanations are correct and useful</label>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Approving as</label><input class="input" value="Sailaja P · Content lead" disabled style="background:var(--paper);color:var(--muted)"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Not yet</button><button class="btn btn-dis" title="Tick every box first">Approve 16 questions</button></div>
+</div></div>
+
+<div class="scrim" id="m-reject" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Reject this batch</h3><p class="sub">The reason improves the prompt. Rejections are reviewed monthly.</p></div>
+  <div class="modal-b">
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" checked style="accent-color:var(--green)"> Distractors are obviously wrong</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Too easy for this exam</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Does not match the paper's style</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Telugu reads like a machine translation</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Multiple answer keys are wrong</label>
+    <div class="field" style="margin-top:10px"><label>Note for the prompt review</label><textarea class="input" style="min-height:60px"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-soft-danger" onclick="closeAll();toast('Batch rejected · logged for prompt review')">Reject batch</button></div>
+</div></div>
+
+<div class="scrim" id="m-prompt" onclick="closeM(event)"><div class="modal wide" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Edit prompt — grounded answer</h3><p class="sub">Currently v14 · saving creates v15 · the old version stays available to roll back to</p></div>
+  <div class="modal-b">
+    <div class="note note-bad" style="margin-bottom:14px"><b>Hard blocks are not in this text.</b> The eligibility route, the source gate and the output filters live in application code and cannot be changed here. What you edit below is tone, structure and emphasis.</div>
+    <div class="field"><label>System prompt</label><textarea class="input mono" style="min-height:190px;font-size:12px">You answer questions for Telugu-speaking Indian government exam aspirants.
+
+Answer ONLY from the passages provided. If they do not contain the answer,
+say so plainly and suggest asking the community. Never fill a gap from
+general knowledge.
+
+NEVER: state eligibility · give a date or fee not in the passages ·
+predict a cutoff or rank · promise selection.
+
+Answer in {locale}. Apply {glossary} exactly. Numerals in Latin script.
+Be direct — an aspirant is short of time and under pressure.
+Cite which passage each fact came from.</textarea></div>
+    <div class="field"><label>Change note <span class="opt">— written to the audit log</span></label><input class="input" placeholder="e.g. added instruction to cite passages"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-sec">Test against 50 saved questions</button><button class="btn btn-pri" onclick="closeAll();toast('Saved as v15 · logged')">Save as v15</button></div>
+</div></div>
+
+<div class="toast" id="toast"><svg width="15" height="15"><use href="#i-check"/></svg><span id="tmsg"></span></div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});
+  var el=document.getElementById(id); if(!el)return;
+  el.classList.add('on');
+  var s=document.getElementById('pick');
+  for(var i=0;i<s.options.length;i++){if(s.options[i].value===id){s.selectedIndex=i;break;}}
+  window.scrollTo(0,0); location.hash=id;
+}
+function openM(id){ if(id) document.getElementById(id).classList.add('on'); }
+function closeM(e){ if(e.target.classList.contains('scrim')) e.target.classList.remove('on'); }
+function closeAll(){ document.querySelectorAll('.scrim').forEach(function(s){s.classList.remove('on')}); }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(); });
+function tab(b,p){
+  b.parentElement.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+  b.classList.add('on');
+  var el=document.getElementById(p);
+  el.parentElement.querySelectorAll('.pane').forEach(function(x){x.classList.remove('on')});
+  el.classList.add('on');
+}
+var tt;
+function toast(m){var t=document.getElementById('toast');document.getElementById('tmsg').textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2800);}
+if(location.hash && document.getElementById(location.hash.slice(1))) go(location.hash.slice(1));
+</script>
+</body>
+</html>

@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sadhana — Admin Portal (working prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12211C;--ink2:#33463E;--muted:#6B7C74;--faint:#9AA8A1;
+  --line:#DDE3DF;--line2:#EDF1EE;--paper:#F7F8F5;--card:#FFF;
+  --green:#0F6B4F;--green-d:#0A4E39;--green-s:#E3F0EA;
+  --gold:#E8A33D;--gold-d:#B67A1F;--gold-s:#FCF1DE;
+  --red:#C4362B;--red-s:#FBE7E4;--blue:#2C5F8A;--blue-s:#E4EDF4;
+  --purple:#6B4E9B;--purple-s:#EEE9F6;
+  --sans:"Noto Sans","Noto Sans Telugu",system-ui,sans-serif;
+  --disp:"Gabarito","Noto Sans Telugu",system-ui,sans-serif;
+  --te:"Noto Sans Telugu","Noto Sans",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.te{font-family:var(--te);line-height:1.8}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+code,.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+
+/* dev bar */
+.devbar{position:fixed;top:0;left:0;right:0;height:42px;background:#000;color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;z-index:900;font-size:12.5px}
+.devbar b{font-family:var(--disp);font-size:13px}
+.devbar select{background:rgba(255,255,255,.11);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:12.5px;max-width:270px}
+.devbar select option{background:#111}
+.devbar .grow{flex:1}
+.devbar .h{color:rgba(255,255,255,.4);font-size:11.5px}
+@media(max-width:900px){.devbar .h{display:none}}
+
+.view{display:none}.view.on{display:block}
+
+/* shell */
+.shell{display:grid;grid-template-columns:238px 1fr;min-height:100vh;padding-top:42px}
+.side{background:var(--ink);color:#A9B8B1;padding:16px 11px;overflow-y:auto;position:sticky;top:42px;height:calc(100vh - 42px)}
+.side .lg{font-family:var(--disp);font-weight:800;font-size:16px;color:#fff;padding:0 9px 6px;display:flex;align-items:center;gap:8px}
+.side .lg i{width:23px;height:23px;border-radius:6px;background:var(--green);display:grid;place-items:center;font-style:normal;font-size:12.5px}
+.side .env{font-size:10px;color:var(--gold);padding:0 9px 14px;letter-spacing:.06em}
+.side .grp{font-size:10px;font-weight:700;color:#5D716A;padding:14px 9px 5px;letter-spacing:.08em}
+.side a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;font-size:13px;margin-bottom:1px}
+.side a:hover{background:rgba(255,255,255,.07);color:#fff}
+.side a.on{background:var(--green);color:#fff;font-weight:600}
+.side a svg{width:16px;height:16px;flex-shrink:0}
+.side a .c{margin-left:auto;background:var(--gold);color:#3B2A08;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px}
+.side a .c.red{background:var(--red);color:#fff}
+.side .me{margin-top:18px;padding:10px 9px;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:9px;align-items:center}
+.side .me .av{width:28px;height:28px;border-radius:99px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.side .me b{color:#fff;font-size:12.5px;display:block}
+.side .me span{font-size:10.5px;color:#5D716A}
+
+.main{padding:22px 26px 50px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px;flex-wrap:wrap}
+.crumb{font-size:12.5px;color:var(--muted);margin-bottom:4px}
+h1{font-family:var(--disp);font-size:24px;font-weight:700;letter-spacing:-.022em;line-height:1.15}
+h2{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:-.015em;margin-bottom:12px}
+h3{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:8px}
+.sub{font-size:12.5px;color:var(--muted)}
+
+/* atoms */
+.btn{font-size:13px;font-weight:600;border-radius:8px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;line-height:1.25;white-space:nowrap}
+.btn-pri{background:var(--green);color:#fff}.btn-pri:hover{background:var(--green-d)}
+.btn-sec{border:1.5px solid var(--line);color:var(--ink);background:var(--card)}.btn-sec:hover{border-color:var(--ink2)}
+.btn-gold{background:var(--gold);color:#3B2A08}
+.btn-danger{background:var(--red);color:#fff}
+.btn-soft-danger{background:var(--red-s);color:var(--red)}
+.btn-ghost{color:var(--green);padding:8px 4px}
+.btn-dis{background:var(--line2);color:var(--faint);cursor:not-allowed}
+.btn-xs{font-size:12px;padding:5px 10px;border-radius:6px}
+.btn-full{width:100%;justify-content:center}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.b-ok{background:var(--green-s);color:var(--green-d)}
+.b-warn{background:var(--gold-s);color:var(--gold-d)}
+.b-bad{background:var(--red-s);color:var(--red)}
+.b-neutral{background:var(--line2);color:var(--muted)}
+.b-info{background:var(--blue-s);color:var(--blue)}
+.b-pur{background:var(--purple-s);color:var(--purple)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.pad{padding:18px}.pad-s{padding:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.split{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hr{height:1px;background:var(--line);margin:18px 0}
+
+.kpi b{font-family:var(--disp);font-size:27px;font-weight:700;display:block;line-height:1;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--muted);display:block;margin-top:5px}
+.kpi em{font-style:normal;font-size:11.5px;font-weight:600}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.field label .req{color:var(--red)}
+.field label .opt{font-weight:400;color:var(--faint)}
+.input{width:100%;font-family:inherit;font-size:13.5px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-s)}
+.input.err{border-color:var(--red);background:var(--red-s)}
+.input.warn{border-color:var(--gold);background:var(--gold-s)}
+.input:disabled{background:var(--paper);color:var(--muted)}
+textarea.input{resize:vertical;min-height:76px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.hint.err{color:var(--red)}.hint.warn{color:var(--gold-d)}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{text-align:left;padding:9px 11px;font-size:11.5px;font-weight:700;color:var(--muted);border-bottom:1.5px solid var(--line);white-space:nowrap;background:var(--paper)}
+table.tbl td{padding:11px;border-bottom:1px solid var(--line2);vertical-align:middle}
+table.tbl tbody tr:hover{background:var(--paper)}
+table.tbl tbody tr:last-child td{border-bottom:0}
+.tsub{font-size:11.5px;color:var(--muted)}
+
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.toolbar .input{width:auto;padding:8px 11px}
+.toolbar .grow{flex:1;min-width:180px}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{padding:10px 14px;font-size:13.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+.pane{display:none}.pane.on{display:block}
+
+.loctabs{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:14px}
+.loctabs button{padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--muted);border-right:1.5px solid var(--line)}
+.loctabs button:last-child{border-right:0}
+.loctabs button.on{background:var(--green);color:#fff}
+.loctabs button .dot{width:6px;height:6px;border-radius:99px;background:var(--red);display:inline-block;margin-left:5px;vertical-align:middle}
+
+.bar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--green)}
+.chart{display:flex;align-items:flex-end;gap:10px;height:140px}
+.chart .b{flex:1;text-align:center}
+.chart .b i{display:block;background:var(--green);border-radius:4px 4px 0 0}
+.chart .b b{font-size:11px;color:var(--muted);font-weight:500;display:block;margin-top:5px}
+.chart .b em{font-size:11px;font-style:normal;font-weight:700;display:block;margin-bottom:3px}
+
+.av{width:30px;height:30px;border-radius:99px;background:var(--green-s);color:var(--green-d);display:grid;place-items:center;font-weight:700;font-size:11.5px;flex-shrink:0}
+.who{display:flex;gap:9px;align-items:center}
+
+.note{border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.65}
+.note-warn{background:var(--gold-s);border:1px solid var(--gold);color:var(--gold-d)}
+.note-bad{background:var(--red-s);border:1px solid var(--red);color:var(--red)}
+.note-ok{background:var(--green-s);border:1px solid var(--green);color:var(--green-d)}
+.note-info{background:var(--blue-s);border:1px solid var(--blue);color:var(--blue)}
+
+.dl .r{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.dl .r:last-child{border-bottom:0}
+.dl .r span{color:var(--muted)}
+.dl .r b{font-weight:600;text-align:right}
+
+.checklist label{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;padding:6px 0;cursor:pointer}
+.checklist input{margin-top:2px;width:15px;height:15px;accent-color:var(--green);flex-shrink:0}
+
+.review{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.review-l{padding:16px;border-right:1px solid var(--line)}
+.review-r{background:var(--line2);padding:16px;display:flex;flex-direction:column}
+.pdfmock{flex:1;background:#fff;border:1px solid var(--line);border-radius:7px;padding:20px;font-size:11.5px;line-height:1.85;color:var(--ink2);overflow:auto;max-height:420px}
+.pdfmock h5{font-family:var(--disp);font-size:12.5px;text-align:center;margin-bottom:3px}
+mark{background:var(--gold-s);padding:0 2px;border-radius:2px}
+
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.diff>div{padding:13px}
+.diff>div:first-child{border-right:1px solid var(--line);background:var(--paper)}
+.diff .lb{font-size:11px;font-weight:700;color:var(--faint);margin-bottom:6px;letter-spacing:.05em}
+
+.log{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.9;background:var(--ink);color:#A9B8B1;border-radius:9px;padding:14px;overflow:auto;max-height:280px}
+.log .t{color:#5D716A}
+.log .ok{color:#6FD3A6}.log .warn{color:var(--gold)}.log .bad{color:#F09085}
+
+.sched{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.sched .d{border:1px solid var(--line);border-radius:8px;padding:8px;min-height:74px;background:var(--card);font-size:11px}
+.sched .d.done{background:var(--green-s);border-color:var(--green)}
+.sched .d.today{border-color:var(--gold);border-width:2px;background:var(--gold-s)}
+.sched .d.gap{background:var(--red-s);border-color:var(--red)}
+.sched .d b{display:block;font-size:12px;margin-bottom:3px}
+
+/* modals */
+.scrim{position:fixed;inset:0;background:rgba(18,33,28,.55);z-index:950;display:none;align-items:center;justify-content:center;padding:22px}
+.scrim.on{display:flex}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:460px;box-shadow:0 24px 60px -12px rgba(18,33,28,.5);max-height:88vh;overflow:auto}
+.modal.wide{max-width:780px}
+.modal-h{padding:18px 20px 0}
+.modal-h h3{font-family:var(--disp);font-size:17px;font-weight:700;margin-bottom:5px}
+.modal-b{padding:12px 20px 18px;font-size:13.5px;color:var(--ink2);line-height:1.7}
+.modal-f{padding:13px 20px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end;background:var(--paper);border-radius:0 0 14px 14px;flex-wrap:wrap}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(140%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:980;transition:transform .28s cubic-bezier(.2,.8,.3,1);display:flex;gap:9px;align-items:center;box-shadow:0 12px 30px -8px rgba(0,0,0,.4)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1000px){
+  .shell{grid-template-columns:1fr}
+  .side{display:none}
+  .g2,.g3,.g4,.split,.review,.diff{grid-template-columns:1fr}
+  .main{padding:18px 16px 40px}
+}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M4.5 5h15l1.5 8v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10.5 20a1.8 1.8 0 0 0 3 0"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4z"/><path d="M20 4h-6v13.5a2.5 2.5 0 0 0-2.5-2.5"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.3"/><circle cx="12" cy="17" r=".7" fill="currentColor"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.5a3.2 3.2 0 0 1 0 5.6M17.5 15.2c2 .6 3.5 2.1 3.5 4.8"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H8l-4 3V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></symbol>
+<symbol id="i-money" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></symbol>
+<symbol id="i-spider" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.4-3.1 8.1-7.5 9-4.4-.9-7.5-4.6-7.5-9V6z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M2 12h3M19 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></symbol>
+</svg>
+
+<div class="devbar">
+  <b>Sadhana Admin</b>
+  <span class="h">working prototype</span>
+  <select id="pick" onchange="go(this.value)">
+    <optgroup label="Access">
+      <option value="a-login">01 · Admin sign-in (2FA)</option>
+      <option value="a-dash">02 · Dashboard</option>
+    </optgroup>
+    <optgroup label="Content">
+      <option value="a-review">03 · Review queue (split)</option>
+      <option value="a-notifs">04 · Notifications list</option>
+      <option value="a-notif-edit">05 · Notification editor</option>
+      <option value="a-vacancy">06 · Vacancy breakdown</option>
+      <option value="a-exams">07 · Exams list</option>
+      <option value="a-exam-edit">08 · Exam editor</option>
+      <option value="a-syllabus">09 · Syllabus builder</option>
+      <option value="a-cutoffs">10 · Cutoff manager</option>
+    </optgroup>
+    <optgroup label="Quiz">
+      <option value="a-questions">11 · Question bank</option>
+      <option value="a-question-edit">12 · Question editor</option>
+      <option value="a-import">13 · CSV import</option>
+      <option value="a-schedule">14 · Quiz scheduler</option>
+    </optgroup>
+    <optgroup label="Localisation">
+      <option value="a-trans">15 · Translation queue</option>
+      <option value="a-trans-review">16 · Translation review</option>
+      <option value="a-glossary">17 · Glossary</option>
+    </optgroup>
+    <optgroup label="Community">
+      <option value="a-material">18 · Material moderation</option>
+      <option value="a-users">19 · Users</option>
+      <option value="a-user">20 · User detail</option>
+      <option value="a-moderation">21 · Post moderation</option>
+    </optgroup>
+    <optgroup label="Growth">
+      <option value="a-ads">22 · Ad campaigns</option>
+      <option value="a-ad-edit">23 · Campaign editor</option>
+      <option value="a-analytics">24 · Analytics</option>
+    </optgroup>
+    <optgroup label="System">
+      <option value="a-scrapers">25 · Scrapers</option>
+      <option value="a-scraper">26 · Scraper detail &amp; log</option>
+      <option value="a-queues">27 · Queues &amp; health</option>
+      <option value="a-audit">28 · Audit log</option>
+      <option value="a-team">29 · Team &amp; roles</option>
+      <option value="a-settings">30 · Settings</option>
+    </optgroup>
+  </select>
+  <div class="grow"></div>
+  <span class="h">Modals:</span>
+  <select onchange="openM(this.value);this.selectedIndex=0" style="max-width:190px">
+    <option value="">Open a modal…</option>
+    <option value="m-publish">Confirm publish</option>
+    <option value="m-reject">Reject notification</option>
+    <option value="m-bulk">Bulk publish</option>
+    <option value="m-material">Approve material</option>
+    <option value="m-material-no">Reject material</option>
+    <option value="m-block">Block user</option>
+    <option value="m-access">Access user data (DPDP)</option>
+    <option value="m-moderate">Moderate post</option>
+    <option value="m-run">Run scraper now</option>
+    <option value="m-glossary">Add glossary term</option>
+    <option value="m-import-err">Import errors</option>
+    <option value="m-invite">Invite team member</option>
+    <option value="m-role">Change role</option>
+    <option value="m-maint">Maintenance mode</option>
+  </select>
+</div>
+
+<!-- ============ 01 LOGIN ============ -->
+<div class="view on" id="a-login">
+  <div style="min-height:100vh;padding-top:42px;display:grid;grid-template-columns:1fr 1fr">
+    <div style="background:var(--ink);color:#fff;padding:52px 44px;display:flex;flex-direction:column;justify-content:center">
+      <div style="font-family:var(--disp);font-weight:800;font-size:20px;display:flex;align-items:center;gap:9px;margin-bottom:30px"><i style="width:26px;height:26px;border-radius:7px;background:var(--green);display:grid;place-items:center;font-style:normal;font-size:14px">స</i>Sadhana Admin</div>
+      <h1 style="font-size:34px;color:#fff;line-height:1.1;margin-bottom:14px">Everything here<br>is logged.</h1>
+      <p style="color:#8FA39B;font-size:15px;max-width:38ch;line-height:1.75">Every notification you publish reaches lakhs of people, and every user record you open is recorded in the audit trail with your name against it.</p>
+      <div class="note note-warn" style="margin-top:26px;max-width:44ch;background:rgba(232,163,61,.12);border-color:rgba(232,163,61,.4);color:var(--gold)">A wrong date on a published notification can cost someone a year of their life. Verify before you publish, every time.</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:44px 24px">
+      <div style="width:100%;max-width:340px">
+        <h2 style="font-size:22px">Sign in</h2>
+        <p class="sub" style="margin-bottom:20px">Staff accounts only. Two-factor is mandatory.</p>
+        <div class="field"><label>Work email</label><input class="input" value="sailaja@sadhana.study"></div>
+        <div class="field"><label>Password</label><input class="input" type="password" value="••••••••••••"></div>
+        <div class="field"><label>Authenticator code</label>
+          <div style="display:flex;gap:7px">
+            <input class="input" value="4" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0;border-color:var(--green)">
+            <input class="input" value="9" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0;border-color:var(--green)">
+            <input class="input" value="2" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0;border-color:var(--green)">
+            <input class="input" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0;border-color:var(--ink)">
+            <input class="input" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0">
+            <input class="input" style="text-align:center;font-size:18px;font-weight:700;padding:11px 0">
+          </div>
+        </div>
+        <button class="btn btn-pri btn-full" style="padding:12px" onclick="go('a-dash')">Sign in</button>
+        <p class="hint" style="text-align:center;margin-top:14px">Locked out? Ask an owner to reset your 2FA. Support cannot do it.</p>
+        <div class="hr"></div>
+        <p class="hint" style="text-align:center">Session lasts 8 hours. IP allowlist is enforced.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SHELL TEMPLATE VIEWS ============ -->
+<!-- 02 DASHBOARD -->
+<div class="view" id="a-dash"><div class="shell">
+  <div class="side" id="nav-a-dash"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Dashboard</h1><p class="sub">Sunday, 6 September 2026 · 7:42 AM · everything on this page is live</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec" onclick="go('a-analytics')">Full analytics</button><button class="btn btn-pri" onclick="go('a-notif-edit')">New notification</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:16px"><b>2 notifications are past the 2-hour review SLA</b>, and the RRB Secunderabad scraper has been broken since 4 September. Both cost us search ranking on new notifications. <a onclick="go('a-review')" style="text-decoration:underline;font-weight:700">Open review queue</a></div>
+    <div class="g4" style="margin-bottom:18px">
+      <div class="card pad kpi"><b>18,402</b><span>Daily active users <em style="color:var(--green)">▲ 6.2% week on week</em></span></div>
+      <div class="card pad kpi"><b>24.1%</b><span>D7 retention <em style="color:var(--green)">▲ above the 20% gate</em></span></div>
+      <div class="card pad kpi"><b style="color:var(--gold-d)">34 min</b><span>Publish latency, p90 <em class="sub">target under 60</em></span></div>
+      <div class="card pad kpi"><b style="color:var(--red)">7</b><span>Awaiting review <em style="color:var(--red)">2 over SLA</em></span></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:16px">
+          <div class="row" style="margin-bottom:14px"><h2 style="margin:0">Daily active users</h2><select class="input" style="width:auto;padding:6px 9px;font-size:12.5px"><option>Last 7 days</option><option>Last 30 days</option></select></div>
+          <div class="chart">
+            <div class="b"><em>15.2k</em><i style="height:70px"></i><b>Mon</b></div>
+            <div class="b"><em>16.1k</em><i style="height:75px"></i><b>Tue</b></div>
+            <div class="b"><em>15.8k</em><i style="height:73px"></i><b>Wed</b></div>
+            <div class="b"><em>17.4k</em><i style="height:81px"></i><b>Thu</b></div>
+            <div class="b"><em>19.9k</em><i style="height:93px;background:var(--gold)"></i><b>Fri</b></div>
+            <div class="b"><em>17.2k</em><i style="height:80px"></i><b>Sat</b></div>
+            <div class="b"><em>18.4k</em><i style="height:86px"></i><b>Sun</b></div>
+          </div>
+          <p class="sub" style="margin-top:11px">Friday's spike is TS Police Constable going live at 10:04 AM. Peak concurrency was 4,180 — about 9× baseline.</p>
+        </div>
+        <div class="card pad">
+          <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Scraper health</h2><a class="btn btn-ghost btn-xs" onclick="go('a-scrapers')">Manage</a></div>
+          <table class="tbl"><thead><tr><th>Source</th><th>Last run</th><th>Last success</th><th>Found today</th><th>Status</th></tr></thead><tbody>
+            <tr><td><b>TGPSC</b></td><td>7:30 AM</td><td>7:30 AM</td><td>2</td><td><span class="badge b-ok">Healthy</span></td></tr>
+            <tr><td><b>APPSC</b></td><td>7:30 AM</td><td>7:30 AM</td><td>1</td><td><span class="badge b-ok">Healthy</span></td></tr>
+            <tr><td><b>SSC</b></td><td>7:15 AM</td><td>7:15 AM</td><td>0</td><td><span class="badge b-ok">Healthy</span></td></tr>
+            <tr><td><b>TGLPRB</b></td><td>7:28 AM</td><td>Yesterday 6:00 PM</td><td>—</td><td><span class="badge b-warn">2 failures</span></td></tr>
+            <tr><td><b>RRB Secunderabad</b></td><td>7:00 AM</td><td>4 Sep</td><td>—</td><td><span class="badge b-bad">Broken · layout changed</span></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Needs you now</h3>
+          <div class="dl">
+            <a class="r" onclick="go('a-review')"><span>Notifications to review</span><span class="badge b-bad">7 · 2 late</span></a>
+            <a class="r" onclick="go('a-material')"><span>Uploads awaiting check</span><b>3</b></a>
+            <a class="r" onclick="go('a-moderation')"><span>Flagged posts</span><span class="badge b-warn">2</span></a>
+            <a class="r" onclick="go('a-trans')"><span>Translations to approve</span><b>12</b></a>
+            <a class="r" onclick="go('a-scrapers')"><span>Broken scrapers</span><span class="badge b-bad">1</span></a>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Content gaps</h3>
+          <div class="dl">
+            <div class="r"><span>Questions with no Telugu</span><b style="color:var(--red)">41</b></div>
+            <div class="r"><span>Quiz pool depth</span><b>18 days</b></div>
+            <div class="r"><span>Exams missing cutoffs</span><b>6</b></div>
+            <div class="r"><span>Notifications missing Telugu</span><b style="color:var(--gold-d)">4</b></div>
+          </div>
+          <a class="btn btn-sec btn-xs btn-full" style="margin-top:11px" onclick="go('a-questions')">Fix question gaps</a>
+        </div>
+        <div class="card pad"><h3>Today's revenue</h3>
+          <div style="font-family:var(--disp);font-size:26px;font-weight:700">₹4,182</div>
+          <p class="sub" style="margin-bottom:10px">3 direct campaigns live · AdSense RPM ₹38</p>
+          <a class="btn btn-sec btn-xs btn-full" onclick="go('a-ads')">Campaigns</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 03 REVIEW QUEUE -->
+<div class="view" id="a-review"><div class="shell">
+  <div class="side" id="nav-a-review"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Review queue</h1><p class="sub">7 waiting · oldest is 2h 14m · SLA is 2 hours</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Skip for now</button><button class="btn btn-soft-danger" onclick="openM('m-reject')">Reject</button><button class="btn btn-pri" onclick="openM('m-publish')">Approve and publish</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>2 items are past SLA.</b> Being first to publish is most of why we rank on Google for a new notification. Every hour late costs position.</div>
+    <div class="review">
+      <div class="review-l">
+        <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Extracted fields</h2><span class="badge b-warn">1 of 7 · scraped 2h 14m ago</span></div>
+        <div class="field"><label>Title <span class="req">*</span></label><input class="input" value="TGPSC Junior Assistant &amp; Typist 2026"></div>
+        <div class="field"><label>Organisation</label><input class="input" value="Telangana Public Service Commission"></div>
+        <div class="g2">
+          <div class="field"><label>Vacancies</label><input class="input" value="1,240"></div>
+          <div class="field"><label>Qualification</label><select class="input"><option>Degree</option><option>Intermediate</option></select></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Min age</label><input class="input" value="18"></div>
+          <div class="field"><label>Max age</label><input class="input" value="44"></div>
+        </div>
+        <div class="field"><label>Age reference date <span class="req">*</span></label><input class="input err" value="" placeholder="Not extracted"><div class="hint err">Left blank by the extractor — it never guesses a date. The PDF states 01/07/2026 on the right.</div></div>
+        <div class="g2">
+          <div class="field"><label>Applications open</label><input class="input" value="04 / 09 / 2026"></div>
+          <div class="field"><label>Last date <span class="req">*</span></label><input class="input warn" value="29 / 09 / 2026"><div class="hint warn">Low extractor confidence — confirm on page 3</div></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Processing fee</label><input class="input" value="200"></div>
+          <div class="field"><label>Exam fee</label><input class="input" value="120"></div>
+        </div>
+        <div class="hr"></div>
+        <h3>Confirm before publishing</h3>
+        <div class="checklist">
+          <label><input type="checkbox"> All dates match the official PDF</label>
+          <label><input type="checkbox"> Eligibility and age relaxation match</label>
+          <label><input type="checkbox"> Fee amounts match</label>
+          <label><input type="checkbox"> The official link opens correctly</label>
+        </div>
+      </div>
+      <div class="review-r">
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">Source PDF</h3><a class="sub" style="color:var(--green);font-weight:600">Open on tgpsc.gov.in ↗</a></div>
+        <div class="pdfmock">
+          <h5>TELANGANA PUBLIC SERVICE COMMISSION</h5>
+          <p style="text-align:center;margin-bottom:13px">NOTIFICATION NO. 22/2026<br>JUNIOR ASSISTANT &amp; TYPIST</p>
+          <p style="margin-bottom:9px">Applications are invited online from qualified candidates through the proforma application to be made available on the Commission's WEBSITE for the post of Junior Assistant and Typist in various departments.</p>
+          <p style="margin-bottom:9px"><b>1. VACANCIES:</b> The number of vacancies notified is <mark><b>1,240</b></mark>, distributed across zones as detailed in Annexure-I.</p>
+          <p style="margin-bottom:9px"><b>2. EDUCATIONAL QUALIFICATION:</b> Must possess a Bachelor's Degree from any University in India recognised by the UGC.</p>
+          <p style="margin-bottom:9px"><b>3. AGE:</b> Minimum <mark>18</mark> years and maximum <mark>44</mark> years. The age is reckoned as on <mark><b>01/07/2026</b></mark>. Relaxation of age is admissible as per rules: BC 5 years, SC/ST 5 years, PH 10 years, Ex-servicemen 3 years.</p>
+          <p style="margin-bottom:9px"><b>4. IMPORTANT DATES:</b> Submission of online application commences from <mark>04/09/2026</mark>. The last date for submission of online application is <mark><b>29/09/2026</b></mark> up to 5:00 PM.</p>
+          <p><b>5. FEE:</b> Application processing fee of Rs. <mark>200</mark>/- and examination fee of Rs. <mark>120</mark>/-. SC, ST, BC and PH candidates are exempted from the examination fee.</p>
+        </div>
+        <div class="note note-warn" style="margin-top:10px"><b>The reference date is on this page.</b> Add 01/07/2026 before publishing — every age eligibility check depends on it, and a wrong reference date silently mis-classifies thousands of users.</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px"><span class="sub">Next in queue: APPSC Group 2 amendment · 1h 48m old</span><div style="display:flex;gap:8px"><button class="btn btn-sec btn-xs">Previous</button><button class="btn btn-sec btn-xs">Next item</button></div></div>
+  </div>
+</div></div>
+
+<!-- 04 NOTIFICATIONS LIST -->
+<div class="view" id="a-notifs"><div class="shell">
+  <div class="side" id="nav-a-notifs"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Notifications</h1><p class="sub">248 total · 41 published and open · 7 awaiting review · 4 missing Telugu</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec" onclick="openM('m-bulk')">Bulk actions</button><button class="btn btn-pri" onclick="go('a-notif-edit')">New notification</button></div>
+    </div>
+    <div class="card pad-s toolbar" style="margin-bottom:12px">
+      <input class="input grow" placeholder="Search title, organisation or slug">
+      <select class="input"><option>All statuses</option><option>Pending review</option><option>Published</option><option>Draft</option><option>Expired</option><option>Cancelled</option></select>
+      <select class="input"><option>All exams</option><option>TGPSC Group 2</option><option>TS Police Constable</option></select>
+      <select class="input"><option>All sources</option><option>Scraper</option><option>Manual</option></select>
+      <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;white-space:nowrap"><input type="checkbox" style="accent-color:var(--green)"> Missing Telugu</label>
+    </div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th style="width:30px"><input type="checkbox" style="accent-color:var(--green)"></th><th>Title</th><th>Exam</th><th>Vacancies</th><th>Closes</th><th>Locales</th><th>Views</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TGPSC Junior Assistant &amp; Typist 2026</b><div class="tsub">Scraped 2h 14m ago from tgpsc.gov.in</div></td><td>TGPSC Group 4</td><td>1,240</td><td>29 Sep</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td>—</td><td><span class="badge b-bad">Review · late</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-review')">Review</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>APPSC Group 2 — amendment</b><div class="tsub">Scraped 1h 48m ago from psc.ap.gov.in</div></td><td>APPSC Group 2</td><td>412</td><td>18 Oct</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td>—</td><td><span class="badge b-warn">Pending review</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-review')">Review</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TS Police Constable (Civil &amp; AR) 2026</b><div class="tsub">Published 18 Aug by Sailaja P</div></td><td>TS Police Constable</td><td>16,614</td><td><b style="color:var(--red)">12 Sep</b></td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>412k</td><td><span class="badge b-ok">Published</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-notif-edit')">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TGPSC Group 2 Services 2026</b><div class="tsub">Published today 6:12 AM by Sailaja P</div></td><td>TGPSC Group 2</td><td>783</td><td>04 Oct</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>88k</td><td><span class="badge b-ok">Published</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-notif-edit')">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>SCCL Junior Assistant 2026</b><div class="tsub">Draft created by Naveen R</div></td><td>—</td><td>316</td><td>11 Oct</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td>—</td><td><span class="badge b-neutral">Draft</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-notif-edit')">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>RRB NTPC 2026</b><div class="tsub">Auto-expired 2 Sep</div></td><td>RRB NTPC</td><td>11,558</td><td>02 Sep</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>1.1M</td><td><span class="badge b-neutral">Expired</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TSSPDCL Junior Lineman 2026</b><div class="tsub">Cancelled by the department 28 Aug</div></td><td>—</td><td>2,553</td><td>—</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>204k</td><td><span class="badge b-bad">Cancelled</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="sub">Showing 7 of 248</span><div style="display:flex;gap:8px"><button class="btn btn-sec btn-xs">Previous</button><button class="btn btn-sec btn-xs">Next</button></div></div>
+  </div>
+</div></div>
+
+<!-- 05 NOTIFICATION EDITOR -->
+<div class="view" id="a-notif-edit"><div class="shell">
+  <div class="side" id="nav-a-notif-edit"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-notifs')">Notifications</a> › Edit</div><h1>TS Police Constable (Civil &amp; AR) 2026</h1><p class="sub">Published 18 Aug · last verified 6 Sep by Sailaja P · 412,388 views</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Preview</button><button class="btn btn-sec">Save draft</button><button class="btn btn-pri" onclick="openM('m-publish')">Publish changes</button></div>
+    </div>
+    <div class="tabs">
+      <button class="on" onclick="tab(this,'p-basic')">Basic</button>
+      <button onclick="tab(this,'p-elig')">Eligibility</button>
+      <button onclick="tab(this,'p-dates')">Dates &amp; fees</button>
+      <button onclick="tab(this,'p-links')">Links &amp; source</button>
+      <button onclick="tab(this,'p-seo')">SEO</button>
+    </div>
+    <div class="split">
+      <div>
+        <div class="pane on" id="p-basic">
+          <div class="card pad">
+            <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు</button><button style="opacity:.45">हिन्दी</button></div>
+            <div class="field"><label>Title <span class="req">*</span></label><input class="input" value="TS Police Constable (Civil &amp; AR) 2026"><div class="hint">Shown in the feed, in search results and in the push notification</div></div>
+            <div class="field"><label>Description</label><textarea class="input">The Telangana Police Recruitment Board invites applications for 16,614 constable posts across the Civil, Armed Reserve and Transport wings.</textarea></div>
+            <div class="g2">
+              <div class="field"><label>Slug <span class="opt">— never translated</span></label><input class="input mono" value="ts-police-constable-2026"><div class="hint">Changing this breaks every existing link and loses search ranking</div></div>
+              <div class="field"><label>Organisation <span class="req">*</span></label><input class="input" value="Telangana Police Recruitment Board"></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Linked exam</label><select class="input"><option>TS Police Constable</option></select></div>
+              <div class="field"><label>Job type</label><select class="input"><option>Government</option><option>Private</option><option>PSU</option><option>Contract</option></select></div>
+            </div>
+            <div class="field"><label>Total vacancies</label><input class="input" value="16,614"><div class="hint"><a onclick="go('a-vacancy')" style="color:var(--green);font-weight:600">Edit the post-wise and category-wise breakdown →</a></div></div>
+          </div>
+        </div>
+        <div class="pane" id="p-elig">
+          <div class="card pad">
+            <div class="note note-bad" style="margin-bottom:16px"><b>Nothing on this tab is ever auto-published.</b> The eligibility engine reads these fields directly — a wrong value silently tells thousands of people the wrong thing about their career.</div>
+            <div class="g2">
+              <div class="field"><label>Minimum qualification <span class="req">*</span></label><select class="input"><option>Intermediate / 12th</option><option>10th / SSC</option><option>Degree</option></select></div>
+              <div class="field"><label>Age reference date <span class="req">*</span></label><input class="input" value="01 / 07 / 2026"><div class="hint">Age is calculated on this date, not the closing date</div></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Minimum age</label><input class="input" value="18"></div>
+              <div class="field"><label>Maximum age</label><input class="input" value="22"></div>
+            </div>
+            <div class="field"><label>Age relaxation by category, in years</label>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+                <div><div class="hint" style="margin:0 0 3px">OBC</div><input class="input" value="3" style="padding:8px"></div>
+                <div><div class="hint" style="margin:0 0 3px">SC</div><input class="input" value="5" style="padding:8px"></div>
+                <div><div class="hint" style="margin:0 0 3px">ST</div><input class="input" value="5" style="padding:8px"></div>
+                <div><div class="hint" style="margin:0 0 3px">PwD</div><input class="input" value="10" style="padding:8px"></div>
+                <div><div class="hint" style="margin:0 0 3px">Ex-serv.</div><input class="input" value="3" style="padding:8px"></div>
+              </div>
+              <div class="hint">These stack. An SC ex-serviceman gets 5 + 3 = 8 years.</div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Restricted to states</label><input class="input" value="Telangana"><div class="hint">Leave empty for all-India</div></div>
+              <div class="field"><label>Gender restriction</label><select class="input"><option>Open to all</option><option>Male only</option><option>Female only</option></select></div>
+            </div>
+            <div class="field"><label>Additional requirements <span class="opt">— shown as free text</span></label><textarea class="input">Height: 167.6 cm for men, 152.5 cm for women. Chest measurement applies to male candidates only.</textarea></div>
+            <div class="hr"></div>
+            <div class="note note-info"><b>Live eligibility preview.</b> With these values, 34,208 registered users currently match all criteria, and 12,400 of them have this exam in their preferences and will get a WhatsApp alert on publish.</div>
+          </div>
+        </div>
+        <div class="pane" id="p-dates">
+          <div class="card pad">
+            <div class="g2">
+              <div class="field"><label>Notification date</label><input class="input" value="18 / 08 / 2026"></div>
+              <div class="field"><label>Applications open</label><input class="input" value="18 / 08 / 2026"></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Last date to apply <span class="req">*</span></label><input class="input warn" value="12 / 09 / 2026"><div class="hint warn">Verify against the official PDF before saving</div></div>
+              <div class="field"><label>Fee payment closes</label><input class="input" value="12 / 09 / 2026"></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Exam date</label><input class="input" value="08 / 11 / 2026"></div>
+              <div class="field"><label>Admit card date</label><input class="input" placeholder="To be announced"></div>
+            </div>
+            <div class="hr"></div>
+            <h3>Application fee by category</h3>
+            <div class="g2">
+              <div class="field"><label>General / OBC / EWS</label><input class="input" value="800"></div>
+              <div class="field"><label>SC / ST / Ex-servicemen</label><input class="input" value="400"></div>
+            </div>
+            <div class="hr"></div>
+            <h3>Pay scale</h3>
+            <div class="g2">
+              <div class="field"><label>Minimum</label><input class="input" value="25220"></div>
+              <div class="field"><label>Maximum</label><input class="input" value="80910"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane" id="p-links">
+          <div class="card pad">
+            <div class="field"><label>Official PDF URL <span class="req">*</span></label><input class="input mono" value="https://tgprb.in/notification-03-2026.pdf"><div class="hint">Checked hourly. Users are always given a route back to the government's own words.</div></div>
+            <div class="field"><label>Apply URL</label><input class="input mono" value="https://tgprb.in/apply"></div>
+            <div class="field"><label>Source page</label><input class="input mono" value="https://tgprb.in/notifications" disabled></div>
+            <div class="hr"></div>
+            <h3>Verification</h3>
+            <div class="dl">
+              <div class="r"><span>Verified by</span><b>Sailaja P</b></div>
+              <div class="r"><span>Verified on</span><b>6 September 2026, 6:04 AM</b></div>
+              <div class="r"><span>Official link last checked</span><b>Today 7:00 AM · 200 OK</b></div>
+              <div class="r"><span>Source</span><b>Scraper · TGLPRB</b></div>
+            </div>
+            <button class="btn btn-sec btn-xs" style="margin-top:12px">Mark as re-verified today</button>
+          </div>
+        </div>
+        <div class="pane" id="p-seo">
+          <div class="card pad">
+            <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు</button></div>
+            <div class="field"><label>Meta title</label><input class="input" value="TS Police Constable Notification 2026 — 16,614 Posts, Apply by 12 Sep"><div class="hint">58 of 60 characters</div></div>
+            <div class="field"><label>Meta description</label><textarea class="input">TS Police Constable 2026 notification: 16,614 vacancies, Intermediate qualification, age 18–22 with relaxation. Last date 12 September 2026.</textarea><div class="hint">138 of 155 characters</div></div>
+            <div class="hr"></div>
+            <h3>Structured data</h3>
+            <div class="dl">
+              <div class="r"><span>JobPosting</span><span class="badge b-ok">Valid</span></div>
+              <div class="r"><span>BreadcrumbList</span><span class="badge b-ok">Valid</span></div>
+              <div class="r"><span>Indexed by Google</span><span class="badge b-ok">Both locales</span></div>
+              <div class="r"><span>Appears in Google Jobs</span><span class="badge b-ok">Yes</span></div>
+            </div>
+            <div class="note note-info" style="margin-top:14px">Google search traffic to this page: 88,412 clicks in the last 30 days, ranking 2nd for “police constable notification 2026 telugu”.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Status</h3>
+          <div class="dl">
+            <div class="r"><span>Current</span><span class="badge b-ok">Published</span></div>
+            <div class="r"><span>Published</span><b>18 Aug, 10:04 AM</b></div>
+            <div class="r"><span>Views</span><b>412,388</b></div>
+            <div class="r"><span>Saves</span><b>28,104</b></div>
+            <div class="r"><span>Error reports</span><b>2 · both resolved</b></div>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Translation</h3>
+          <div class="dl">
+            <div class="r"><span>English</span><span class="badge b-ok">Complete</span></div>
+            <div class="r"><span>Telugu</span><span class="badge b-warn">3 fields pending</span></div>
+            <div class="r"><span>Hindi</span><span class="badge b-neutral">Not enabled</span></div>
+          </div>
+          <button class="btn btn-sec btn-xs btn-full" style="margin-top:11px" onclick="go('a-trans-review')">Open translation review</button>
+        </div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Change history</h3>
+          <div style="font-size:12px;line-height:1.8">
+            <div style="padding:6px 0;border-bottom:1px solid var(--line2)"><b>Re-verified</b> · Sailaja P · 6 Sep</div>
+            <div style="padding:6px 0;border-bottom:1px solid var(--line2)"><b>Exam date added</b> · Naveen R · 2 Sep</div>
+            <div style="padding:6px 0;border-bottom:1px solid var(--line2)"><b>Telugu title approved</b> · Sailaja P · 18 Aug</div>
+            <div style="padding:6px 0"><b>Published</b> · Sailaja P · 18 Aug</div>
+          </div>
+          <a class="btn btn-ghost btn-xs" onclick="go('a-audit')">Full audit trail</a>
+        </div>
+        <div class="card pad note note-warn" style="border-radius:12px"><b>Publishing sends alerts.</b> 12,400 users have this exam in their preferences. They get one WhatsApp message the moment you publish.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 06 VACANCY BREAKDOWN -->
+<div class="view" id="a-vacancy"><div class="shell">
+  <div class="side" id="nav-a-vacancy"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-notifs')">Notifications</a> › <a onclick="go('a-notif-edit')">TS Police Constable 2026</a> › Vacancies</div><h1>Vacancy breakdown</h1><p class="sub">Post-wise and category-wise. The total must match the notification's headline figure.</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Add a post</button><button class="btn btn-pri" onclick="toast('Breakdown saved · total matches 16,614')">Save</button></div>
+    </div>
+    <div class="card" style="overflow:auto;margin-bottom:14px">
+      <table class="tbl">
+        <thead><tr><th>Post</th><th>General</th><th>OBC</th><th>SC</th><th>ST</th><th>EWS</th><th>Total</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><input class="input" value="Civil Constable" style="padding:7px 9px"></td><td><input class="input" value="5392" style="padding:7px 9px;width:82px"></td><td><input class="input" value="3546" style="padding:7px 9px;width:82px"></td><td><input class="input" value="2102" style="padding:7px 9px;width:82px"></td><td><input class="input" value="1182" style="padding:7px 9px;width:82px"></td><td><input class="input" value="920" style="padding:7px 9px;width:82px"></td><td><b>13,142</b></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+          <tr><td><input class="input" value="Armed Reserve" style="padding:7px 9px"></td><td><input class="input" value="1193" style="padding:7px 9px;width:82px"></td><td><input class="input" value="785" style="padding:7px 9px;width:82px"></td><td><input class="input" value="465" style="padding:7px 9px;width:82px"></td><td><input class="input" value="261" style="padding:7px 9px;width:82px"></td><td><input class="input" value="204" style="padding:7px 9px;width:82px"></td><td><b>2,908</b></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+          <tr><td><input class="input" value="SCT PC (Transport)" style="padding:7px 9px"></td><td><input class="input" value="231" style="padding:7px 9px;width:82px"></td><td><input class="input" value="152" style="padding:7px 9px;width:82px"></td><td><input class="input" value="90" style="padding:7px 9px;width:82px"></td><td><input class="input" value="51" style="padding:7px 9px;width:82px"></td><td><input class="input" value="40" style="padding:7px 9px;width:82px"></td><td><b>564</b></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+          <tr style="background:var(--green-s)"><td><b>Total</b></td><td><b>6,816</b></td><td><b>4,483</b></td><td><b>2,657</b></td><td><b>1,494</b></td><td><b>1,164</b></td><td><b>16,614</b></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note note-ok"><b>Totals match.</b> The breakdown adds to 16,614, the same as the headline vacancy count on the notification. If these ever diverge, the page will not publish.</div>
+  </div>
+</div></div>
+
+<!-- 07 EXAMS LIST -->
+<div class="view" id="a-exams"><div class="shell">
+  <div class="side" id="nav-a-exams"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Exams</h1><p class="sub">34 exams · 28 fully populated in both languages · 6 missing cutoff data</p></div>
+      <button class="btn btn-pri" onclick="go('a-exam-edit')">New exam</button>
+    </div>
+    <div class="note note-warn" style="margin-bottom:14px"><b>Exam pages carry roughly 60% of our search traffic.</b> An exam with a thin or missing section ranks poorly and stays that way for months. Complete them fully or do not publish them.</div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search exams"><select class="input"><option>All categories</option></select><select class="input"><option>All states</option></select><label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" style="accent-color:var(--green)"> Incomplete only</label></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Exam</th><th>Body</th><th>Live notifications</th><th>Syllabus</th><th>Cutoffs</th><th>Papers</th><th>Locales</th><th>Monthly views</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>TGPSC Group 2</b><div class="tsub">tgpsc-group-2</div></td><td>TGPSC</td><td><span class="badge b-ok">1 open</span></td><td><span class="badge b-ok">Complete</span></td><td>5 years</td><td>3</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>184k</td><td><button class="btn btn-sec btn-xs" onclick="go('a-exam-edit')">Edit</button></td></tr>
+          <tr><td><b>TS Police Constable</b><div class="tsub">ts-police-constable</div></td><td>TGLPRB</td><td><span class="badge b-warn">Closing</span></td><td><span class="badge b-ok">Complete</span></td><td>4 years</td><td>2</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>402k</td><td><button class="btn btn-sec btn-xs" onclick="go('a-exam-edit')">Edit</button></td></tr>
+          <tr><td><b>SSC CGL</b><div class="tsub">ssc-cgl</div></td><td>SSC</td><td><span class="badge b-ok">1 open</span></td><td><span class="badge b-ok">Complete</span></td><td>5 years</td><td>5</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td>96k</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>APPSC Group 2</b><div class="tsub">appsc-group-2</div></td><td>APPSC</td><td>—</td><td><span class="badge b-warn">Paper III missing</span></td><td><span class="badge b-bad">None</span></td><td>1</td><td><span class="badge b-ok">EN</span> <span class="badge b-warn">TE partial</span></td><td>41k</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>DSC / TET</b><div class="tsub">ts-dsc-tet</div></td><td>TS Education Dept</td><td>—</td><td><span class="badge b-bad">Not started</span></td><td><span class="badge b-bad">None</span></td><td>0</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td>2k</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 08 EXAM EDITOR -->
+<div class="view" id="a-exam-edit"><div class="shell">
+  <div class="side" id="nav-a-exam-edit"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-exams')">Exams</a> › Edit</div><h1>TGPSC Group 2</h1><p class="sub">184,208 views last month · ranks 1st for “tgpsc group 2 syllabus telugu”</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">View live page</button><button class="btn btn-pri" onclick="toast('Exam saved · caches purged for both locales')">Save</button></div>
+    </div>
+    <div class="tabs">
+      <button class="on" onclick="tab(this,'e-basic')">Basic</button>
+      <button onclick="tab(this,'e-pattern')">Exam pattern</button>
+      <button onclick="tab(this,'e-faq')">FAQ</button>
+      <button onclick="tab(this,'e-seo')">SEO</button>
+    </div>
+    <div class="split">
+      <div>
+        <div class="pane on" id="e-basic">
+          <div class="card pad">
+            <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు</button></div>
+            <div class="g2">
+              <div class="field"><label>Name <span class="req">*</span></label><input class="input" value="TGPSC Group 2"></div>
+              <div class="field"><label>Short name</label><input class="input" value="Group 2"></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Slug <span class="opt">— never translated</span></label><input class="input mono" value="tgpsc-group-2"></div>
+              <div class="field"><label>Category</label><select class="input"><option>State Public Service</option></select></div>
+            </div>
+            <div class="field"><label>Conducting body</label><input class="input" value="Telangana Public Service Commission"></div>
+            <div class="field"><label>Official website</label><input class="input mono" value="https://tgpsc.gov.in"></div>
+            <div class="field"><label>Description <span class="opt">— the first thing a searcher reads</span></label><textarea class="input">The Telangana Public Service Commission conducts Group 2 for executive and non-executive posts including Deputy Tahsildar, Sub-Registrar and Assistant Commercial Tax Officer. Four papers of 150 marks each, followed by an interview.</textarea></div>
+            <div class="field"><label>Eligibility summary</label><textarea class="input">A Bachelor's degree in any discipline. Age 18 to 46 years, with the usual category relaxations.</textarea></div>
+          </div>
+        </div>
+        <div class="pane" id="e-pattern">
+          <div class="card pad">
+            <h3>Papers</h3>
+            <table class="tbl" style="margin-bottom:12px">
+              <thead><tr><th>#</th><th>Subject</th><th>Questions</th><th>Marks</th><th>Minutes</th><th>Negative</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>I</td><td><input class="input" value="General Studies &amp; Mental Ability" style="padding:7px 9px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><select class="input" style="padding:7px 9px;width:70px"><option>No</option></select></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+                <tr><td>II</td><td><input class="input" value="History, Polity and Society" style="padding:7px 9px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><select class="input" style="padding:7px 9px;width:70px"><option>No</option></select></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+                <tr><td>III</td><td><input class="input" value="Economy and Development" style="padding:7px 9px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><select class="input" style="padding:7px 9px;width:70px"><option>No</option></select></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+                <tr><td>IV</td><td><input class="input" value="Telangana Movement and State Formation" style="padding:7px 9px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><input class="input" value="150" style="padding:7px 9px;width:70px"></td><td><select class="input" style="padding:7px 9px;width:70px"><option>No</option></select></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-sec btn-xs">Add a paper</button>
+            <div class="hr"></div>
+            <div class="note note-info">Total: 600 marks across 600 questions in 10 hours. This table renders directly on the public exam page and in the Course structured data.</div>
+          </div>
+        </div>
+        <div class="pane" id="e-faq">
+          <div class="card pad">
+            <div class="note note-info" style="margin-bottom:14px">These become an <code>FAQPage</code> block, which is how we win rich results in Google. Write the question exactly as a person would type it.</div>
+            <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు <span class="dot"></span></button></div>
+            <div class="card pad-s" style="margin-bottom:10px;background:var(--paper)">
+              <div class="field" style="margin-bottom:8px"><label>Question 1</label><input class="input" value="Is there negative marking in TGPSC Group 2?"></div>
+              <div class="field" style="margin-bottom:0"><label>Answer</label><textarea class="input" style="min-height:56px">No. TGPSC Group 2 has no negative marking in any of the four papers, so attempt every question.</textarea></div>
+            </div>
+            <div class="card pad-s" style="margin-bottom:10px;background:var(--paper)">
+              <div class="field" style="margin-bottom:8px"><label>Question 2</label><input class="input" value="What is the age limit for TGPSC Group 2 in 2026?"></div>
+              <div class="field" style="margin-bottom:0"><label>Answer</label><textarea class="input" style="min-height:56px">18 to 46 years as on 1 July 2026, with 5 years of relaxation for SC, ST and BC candidates and 10 years for persons with disabilities.</textarea></div>
+            </div>
+            <button class="btn btn-sec btn-xs">Add a question</button>
+            <p class="hint" style="margin-top:9px">6 of 8 recommended questions written. Pages with 8 or more FAQ entries rank measurably better.</p>
+          </div>
+        </div>
+        <div class="pane" id="e-seo">
+          <div class="card pad">
+            <div class="loctabs"><button class="on te">తెలుగు</button><button>English</button></div>
+            <div class="field"><label>Meta title</label><input class="input te" value="TGPSC గ్రూప్ 2 సిలబస్ 2026 — పూర్తి వివరాలు, కటాఫ్, పాత పేపర్లు"></div>
+            <div class="field"><label>Meta description</label><textarea class="input te">TGPSC గ్రూప్ 2 2026 సిలబస్, పరీక్షా విధానం, గత 5 సంవత్సరాల కటాఫ్ మార్కులు, పాత ప్రశ్నపత్రాలు — అన్నీ తెలుగులో, ఉచితంగా.</textarea></div>
+            <div class="hr"></div>
+            <div class="dl">
+              <div class="r"><span>Ranking, Telugu query</span><b style="color:var(--green)">Position 1</b></div>
+              <div class="r"><span>Ranking, English query</span><b>Position 6</b></div>
+              <div class="r"><span>Clicks, last 30 days</span><b>41,204</b></div>
+              <div class="r"><span>hreflang</span><span class="badge b-ok">Valid</span></div>
+              <div class="r"><span>Course structured data</span><span class="badge b-ok">Valid</span></div>
+              <div class="r"><span>FAQPage structured data</span><span class="badge b-ok">Valid</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Page completeness</h3>
+          <div class="dl">
+            <div class="r"><span>Description</span><span class="badge b-ok">✓</span></div>
+            <div class="r"><span>Exam pattern</span><span class="badge b-ok">✓</span></div>
+            <div class="r"><span>Syllabus</span><a onclick="go('a-syllabus')"><span class="badge b-ok">✓ 4 papers</span></a></div>
+            <div class="r"><span>Cutoffs</span><a onclick="go('a-cutoffs')"><span class="badge b-ok">✓ 5 years</span></a></div>
+            <div class="r"><span>Previous papers</span><span class="badge b-warn">3 of 5</span></div>
+            <div class="r"><span>FAQ</span><span class="badge b-warn">6 of 8</span></div>
+            <div class="r"><span>Telugu translation</span><span class="badge b-warn">FAQ pending</span></div>
+          </div>
+          <div class="bar" style="margin-top:12px"><i style="width:82%"></i></div>
+          <p class="hint">82% complete</p>
+        </div>
+        <div class="card pad"><h3>Sections</h3>
+          <a class="btn btn-sec btn-xs btn-full" style="margin-bottom:7px" onclick="go('a-syllabus')">Syllabus builder</a>
+          <a class="btn btn-sec btn-xs btn-full" style="margin-bottom:7px" onclick="go('a-cutoffs')">Cutoff manager</a>
+          <a class="btn btn-sec btn-xs btn-full" onclick="go('a-material')">Linked material</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 09 SYLLABUS BUILDER -->
+<div class="view" id="a-syllabus"><div class="shell">
+  <div class="side" id="nav-a-syllabus"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-exams')">Exams</a> › <a onclick="go('a-exam-edit')">TGPSC Group 2</a> › Syllabus</div><h1>Syllabus builder</h1><p class="sub">Structured, not a pasted blob — each topic becomes an anchor Google can index and a filter for the question bank.</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Import from PDF</button><button class="btn btn-pri" onclick="toast('Syllabus saved in both locales')">Save</button></div>
+    </div>
+    <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు</button></div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:12px">
+          <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Paper II — History, Polity and Society</h2><button class="btn btn-sec btn-xs">Collapse</button></div>
+          <div class="card pad-s" style="background:var(--paper);margin-bottom:9px">
+            <div class="field" style="margin-bottom:8px"><label>Section 1 title</label><input class="input" value="Socio-cultural history of India and Telangana"></div>
+            <div class="field" style="margin-bottom:0"><label>Topics <span class="opt">— one per line</span></label><textarea class="input" style="min-height:96px">Indus civilisation and Vedic age
+Religious movements: Jainism and Buddhism
+Mauryan and Gupta periods
+Kakatiya, Qutb Shahi and Asaf Jahi dynasties
+Socio-cultural awakening in Telangana</textarea></div>
+          </div>
+          <div class="card pad-s" style="background:var(--paper);margin-bottom:9px">
+            <div class="field" style="margin-bottom:8px"><label>Section 2 title</label><input class="input" value="Indian Constitution"></div>
+            <div class="field" style="margin-bottom:0"><label>Topics</label><textarea class="input" style="min-height:80px">Nature of the Indian constitution
+Fundamental rights and duties
+Union and state governments
+Centre–state relations
+Constitutional bodies</textarea></div>
+          </div>
+          <button class="btn btn-sec btn-xs">Add a section</button>
+        </div>
+        <div class="card pad">
+          <div class="row"><h2 style="margin:0">Paper III — Economy and Development</h2><button class="btn btn-sec btn-xs">Expand</button></div>
+          <p class="sub" style="margin-top:6px">3 sections · 18 topics · Telugu complete</p>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Why structure it</h3>
+          <p class="sub" style="line-height:1.75">Each topic becomes an anchor link Google can index, a tag the question bank filters on, and a row in the “work on this” recommendation after a quiz. A pasted blob does none of that.</p>
+        </div>
+        <div class="card pad"><h3>Coverage</h3>
+          <div class="dl">
+            <div class="r"><span>Paper I</span><span class="badge b-ok">6 sections</span></div>
+            <div class="r"><span>Paper II</span><span class="badge b-ok">3 sections</span></div>
+            <div class="r"><span>Paper III</span><span class="badge b-ok">3 sections</span></div>
+            <div class="r"><span>Paper IV</span><span class="badge b-warn">2 of 4</span></div>
+          </div>
+          <div class="hr" style="margin:12px 0"></div>
+          <div class="dl">
+            <div class="r"><span>Questions tagged</span><b>1,842</b></div>
+            <div class="r"><span>Topics with no questions</span><b style="color:var(--gold-d)">11</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 10 CUTOFFS -->
+<div class="view" id="a-cutoffs"><div class="shell">
+  <div class="side" id="nav-a-cutoffs"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-exams')">Exams</a> › <a onclick="go('a-exam-edit')">TGPSC Group 2</a> › Cutoffs</div><h1>Cutoff manager</h1><p class="sub">Five years by category. This is data no competitor has organised, and it is why people come back to the exam page.</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Add a year</button><button class="btn btn-pri" onclick="toast('Cutoffs saved')">Save</button></div>
+    </div>
+    <div class="note note-warn" style="margin-bottom:14px">Every row needs a <b>source URL</b> pointing at the official result notification. Unsourced cutoffs get removed — a wrong cutoff changes how someone plans an entire year.</div>
+    <div class="card" style="overflow:auto;margin-bottom:14px">
+      <table class="tbl">
+        <thead><tr><th>Year</th><th>Category</th><th>Cutoff</th><th>Out of</th><th>Vacancies</th><th>Zone</th><th>Source</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><input class="input" value="2025" style="padding:7px 9px;width:74px"></td><td><select class="input" style="padding:7px 9px;width:96px"><option>SC</option></select></td><td><input class="input" value="331.5" style="padding:7px 9px;width:80px"></td><td><input class="input" value="600" style="padding:7px 9px;width:74px"></td><td><input class="input" value="602" style="padding:7px 9px;width:80px"></td><td><select class="input" style="padding:7px 9px;width:100px"><option>All zones</option></select></td><td><span class="badge b-ok">Linked</span></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+          <tr><td><input class="input" value="2024" style="padding:7px 9px;width:74px"></td><td><select class="input" style="padding:7px 9px;width:96px"><option>SC</option></select></td><td><input class="input" value="305.0" style="padding:7px 9px;width:80px"></td><td><input class="input" value="600" style="padding:7px 9px;width:74px"></td><td><input class="input" value="783" style="padding:7px 9px;width:80px"></td><td><select class="input" style="padding:7px 9px;width:100px"><option>All zones</option></select></td><td><span class="badge b-ok">Linked</span></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+          <tr><td><input class="input" value="2023" style="padding:7px 9px;width:74px"></td><td><select class="input" style="padding:7px 9px;width:96px"><option>SC</option></select></td><td><input class="input" value="236.5" style="padding:7px 9px;width:80px"></td><td><input class="input" value="600" style="padding:7px 9px;width:74px"></td><td><input class="input" value="582" style="padding:7px 9px;width:80px"></td><td><select class="input" style="padding:7px 9px;width:100px"><option>All zones</option></select></td><td><span class="badge b-bad">Missing</span></td><td><button class="btn btn-soft-danger btn-xs">Remove</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2">
+      <div class="card pad">
+        <h3>Preview — what users see</h3>
+        <div class="chart" style="height:120px">
+          <div class="b"><em>214</em><i style="height:56px"></i><b>2021</b></div>
+          <div class="b"><em>257</em><i style="height:68px"></i><b>2022</b></div>
+          <div class="b"><em>236</em><i style="height:62px"></i><b>2023</b></div>
+          <div class="b"><em>305</em><i style="height:82px"></i><b>2024</b></div>
+          <div class="b"><em>331</em><i style="height:90px;background:var(--gold)"></i><b>2025</b></div>
+        </div>
+      </div>
+      <div class="card pad">
+        <h3>Completeness</h3>
+        <div class="dl">
+          <div class="r"><span>General</span><span class="badge b-ok">5 years</span></div>
+          <div class="r"><span>OBC</span><span class="badge b-ok">5 years</span></div>
+          <div class="r"><span>SC</span><span class="badge b-warn">5 years · 1 unsourced</span></div>
+          <div class="r"><span>ST</span><span class="badge b-warn">3 years</span></div>
+          <div class="r"><span>EWS</span><span class="badge b-warn">2 years</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 11 QUESTION BANK -->
+<div class="view" id="a-questions"><div class="shell">
+  <div class="side" id="nav-a-questions"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Question bank</h1><p class="sub">2,418 questions · 18 days of quiz pool remaining</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec" onclick="go('a-import')">Import CSV</button><button class="btn btn-pri" onclick="go('a-question-edit')">Add question</button></div>
+    </div>
+    <div class="g4" style="margin-bottom:16px">
+      <div class="card pad kpi"><b>2,418</b><span>Total questions</span></div>
+      <div class="card pad kpi"><b style="color:var(--red)">41</b><span>Missing Telugu · excluded from quiz</span></div>
+      <div class="card pad kpi"><b style="color:var(--gold-d)">18</b><span>Days of pool remaining</span></div>
+      <div class="card pad kpi"><b>612</b><span>Never served</span></div>
+    </div>
+    <div class="note note-warn" style="margin-bottom:14px"><b>41 questions have no Telugu translation.</b> They are excluded from the daily quiz automatically — a half-English quiz breaks the promise of the product. At the current rate the pool runs dry in 18 days.</div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search question text"><select class="input"><option>All subjects</option><option>Indian Polity</option><option>Telangana Movement</option></select><select class="input"><option>All difficulty</option></select><select class="input"><option>All types</option><option>Current affairs</option><option>Previous year</option></select><label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" checked style="accent-color:var(--green)"> Missing Telugu</label></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th style="width:30px"><input type="checkbox" style="accent-color:var(--green)"></th><th>Question</th><th>Subject</th><th>Difficulty</th><th>Served</th><th>Correct</th><th>Locales</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:340px">Which committee recommended the formation of the Telangana Regional Council in 1956?</td><td>Telangana Movement</td><td><span class="badge b-neutral">Medium</span></td><td>412</td><td>62%</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-question-edit')">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:340px">The Mission Bhagiratha project is associated with which sector?</td><td>Current affairs</td><td><span class="badge b-neutral">Easy</span></td><td>0</td><td>—</td><td><span class="badge b-ok">EN</span> <span class="badge b-neutral">TE</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-question-edit')">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:340px" class="te">భారత రాజ్యాంగంలోని ఏ అధికరణ 'రాజ్యాంగ పరిహారాల హక్కు'కు సంబంధించినది?</td><td>Indian Polity</td><td><span class="badge b-neutral">Easy</span></td><td>1,204</td><td>78%</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:340px" class="te">తెలంగాణ రాష్ట్ర ఆవిర్భావ దినోత్సవం ఏ తేదీన జరుపుకుంటారు?</td><td>Telangana Movement</td><td><span class="badge b-neutral">Easy</span></td><td>2,102</td><td>94%</td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td style="max-width:340px">Which article of the Indian Constitution deals with the Right to Equality?</td><td>Indian Polity</td><td><span class="badge b-neutral">Hard</span></td><td>886</td><td><b style="color:var(--red)">31%</b></td><td><span class="badge b-ok">EN</span> <span class="badge b-ok">TE</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note note-info" style="margin-top:12px">A question answered correctly by under 35% of people is usually badly worded or has a disputed answer, not genuinely hard. Review the last row.</div>
+  </div>
+</div></div>
+
+<!-- 12 QUESTION EDITOR -->
+<div class="view" id="a-question-edit"><div class="shell">
+  <div class="side" id="nav-a-question-edit"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-questions')">Question bank</a> › Edit</div><h1>Edit question</h1><p class="sub">Served 412 times · 62% answered correctly · last used 14 August</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-soft-danger">Retire</button><button class="btn btn-pri" onclick="toast('Question saved')">Save</button></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <div class="note note-info" style="margin-bottom:14px">The correct answer is picked against the <b>English</b> options and stored as an index. Translations must keep the same order, or the right answer moves.</div>
+          <div class="loctabs"><button class="on">English</button><button class="te">తెలుగు <span class="dot"></span></button></div>
+          <div class="field"><label>Question <span class="req">*</span></label><textarea class="input">Which committee recommended the formation of the Telangana Regional Council in 1956?</textarea></div>
+          <h3>Options</h3>
+          <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="radio" name="ans" style="accent-color:var(--green)"> Option A</label><input class="input" value="The States Reorganisation Commission"></div>
+          <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="radio" name="ans" checked style="accent-color:var(--green)"> Option B <span class="badge b-ok" style="margin-left:auto">Correct</span></label><input class="input" value="The Gentlemen's Agreement of 1956" style="border-color:var(--green)"></div>
+          <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="radio" name="ans" style="accent-color:var(--green)"> Option C</label><input class="input" value="The Fazal Ali Committee"></div>
+          <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="radio" name="ans" style="accent-color:var(--green)"> Option D</label><input class="input" value="The Dar Commission"></div>
+          <div class="field"><label>Explanation <span class="opt">— shown immediately after answering</span></label><textarea class="input">The Gentlemen's Agreement, signed on 20 February 1956, provided for a Regional Council for Telangana along with safeguards in employment, education and revenue allocation.</textarea></div>
+        </div>
+        <div class="card pad">
+          <h3>Classification</h3>
+          <div class="g2">
+            <div class="field"><label>Exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+            <div class="field"><label>Subject</label><select class="input"><option>Telangana Movement</option></select></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Topic</label><select class="input"><option>The idea of Telangana 1948–1970</option></select></div>
+            <div class="field"><label>Difficulty</label><select class="input"><option>Medium</option><option>Easy</option><option>Hard</option></select></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Question type</label><select class="input"><option>Static / subject</option><option>Current affairs</option></select></div>
+            <div class="field"><label>Source year <span class="opt">— if from a past paper</span></label><input class="input" placeholder="e.g. 2024"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Performance</h3>
+          <div class="dl">
+            <div class="r"><span>Times served</span><b>412</b></div>
+            <div class="r"><span>Answered correctly</span><b>62%</b></div>
+            <div class="r"><span>Average time</span><b>21s</b></div>
+            <div class="r"><span>Last used</span><b>14 Aug 2026</b></div>
+            <div class="r"><span>Next eligible</span><b>13 Oct 2026</b></div>
+          </div>
+          <p class="hint">A question cannot repeat within 60 days.</p>
+        </div>
+        <div class="card pad note note-warn" style="border-radius:12px"><b>No Telugu translation.</b> Until this is written, the question is excluded from the daily quiz entirely. <a onclick="go('a-trans')" style="text-decoration:underline;font-weight:700">Send to translation queue</a></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 13 CSV IMPORT -->
+<div class="view" id="a-import"><div class="shell">
+  <div class="side" id="nav-a-import"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-questions')">Question bank</a> › Import</div><h1>Import questions from CSV</h1><p class="sub">Bad rows are reported individually. A broken row never aborts the whole import.</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Download template</button><button class="btn btn-pri" onclick="openM('m-import-err')">Import 47 valid rows</button></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <div style="border:2px dashed var(--line);border-radius:10px;padding:26px;text-align:center;margin-bottom:14px">
+            <svg width="28" height="28" style="color:var(--muted)"><use href="#i-doc"/></svg>
+            <p style="font-size:13.5px;font-weight:600;margin-top:8px">polity-batch-3.csv uploaded</p>
+            <p class="sub">50 rows · 47 valid · 3 with errors</p>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Default exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+            <div class="field"><label>Default subject</label><select class="input"><option>Indian Polity</option></select></div>
+          </div>
+          <label style="display:flex;gap:9px;align-items:center;font-size:13px"><input type="checkbox" checked style="accent-color:var(--green)"> Skip rows that duplicate an existing question</label>
+        </div>
+        <div class="card" style="overflow:auto">
+          <table class="tbl">
+            <thead><tr><th style="width:52px">Row</th><th>Question</th><th>Locale</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td style="max-width:300px">Which article deals with the Right to Constitutional Remedies?</td><td>EN + TE</td><td><span class="badge b-ok">Valid</span></td></tr>
+              <tr><td>2</td><td style="max-width:300px">The Directive Principles are contained in which Part?</td><td>EN + TE</td><td><span class="badge b-ok">Valid</span></td></tr>
+              <tr style="background:var(--red-s)"><td>3</td><td style="max-width:300px">Who is the head of the Union Executive?</td><td>EN only</td><td><span class="badge b-bad">Missing Telugu</span></td></tr>
+              <tr><td>4</td><td style="max-width:300px">How many fundamental duties are listed?</td><td>EN + TE</td><td><span class="badge b-ok">Valid</span></td></tr>
+              <tr style="background:var(--red-s)"><td>5</td><td style="max-width:300px">Which schedule lists the official languages?</td><td>EN + TE</td><td><span class="badge b-bad">correct_index out of range</span></td></tr>
+              <tr style="background:var(--red-s)"><td>6</td><td style="max-width:300px">The Preamble was amended in which year?</td><td>EN + TE</td><td><span class="badge b-bad">Only 3 options given</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Summary</h3>
+          <div class="dl">
+            <div class="r"><span>Rows in file</span><b>50</b></div>
+            <div class="r"><span>Valid</span><b style="color:var(--green)">47</b></div>
+            <div class="r"><span>Errors</span><b style="color:var(--red)">3</b></div>
+            <div class="r"><span>Duplicates skipped</span><b>0</b></div>
+          </div>
+        </div>
+        <div class="card pad"><h3>Required columns</h3>
+          <p class="sub mono" style="line-height:1.9">question_en<br>question_te<br>option_a_en … option_d_en<br>option_a_te … option_d_te<br>correct_index<br>explanation_en<br>explanation_te<br>subject<br>difficulty</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 14 QUIZ SCHEDULER -->
+<div class="view" id="a-schedule"><div class="shell">
+  <div class="side" id="nav-a-schedule"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Quiz scheduler</h1><p class="sub">Published automatically at 06:45 IST · push goes at 07:00 · 18 days scheduled ahead</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Regenerate a day</button><button class="btn btn-pri" onclick="toast('Next 30 days generated')">Generate 30 more days</button></div>
+    </div>
+    <div class="note note-warn" style="margin-bottom:14px"><b>The pool runs dry on 24 September.</b> If fewer than 10 eligible questions exist for a day, nothing publishes — a short quiz is never sent — and the whole team is alerted. Add questions before then.</div>
+    <h2>September 2026</h2>
+    <div class="sched" style="margin-bottom:10px">
+      <div class="d done"><b>1</b>10 Q<div class="tsub">12.4k took</div></div>
+      <div class="d done"><b>2</b>10 Q<div class="tsub">12.9k took</div></div>
+      <div class="d done"><b>3</b>10 Q<div class="tsub">13.2k took</div></div>
+      <div class="d done"><b>4</b>10 Q<div class="tsub">13.0k took</div></div>
+      <div class="d done"><b>5</b>10 Q<div class="tsub">14.8k took</div></div>
+      <div class="d today"><b>6</b>10 Q<div class="tsub">6.4k so far</div></div>
+      <div class="d"><b>7</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>8</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>9</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>10</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>11</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>12</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>13</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>14</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d"><b>…</b></div>
+      <div class="d"><b>23</b>10 Q<div class="tsub">Scheduled</div></div>
+      <div class="d gap"><b>24</b><span style="color:var(--red);font-weight:700">Pool dry</span></div>
+      <div class="d gap"><b>25</b><span style="color:var(--red);font-weight:700">Pool dry</span></div>
+      <div class="d gap"><b>26</b><span style="color:var(--red);font-weight:700">Pool dry</span></div>
+      <div class="d gap"><b>27</b><span style="color:var(--red);font-weight:700">Pool dry</span></div>
+      <div class="d gap"><b>28</b><span style="color:var(--red);font-weight:700">Pool dry</span></div>
+    </div>
+    <div class="g2" style="margin-top:18px">
+      <div class="card pad">
+        <h3>Today's mix — 6 September</h3>
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Question</th><th>Type</th><th>Served</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td style="max-width:230px">Mission Bhagiratha is associated with…</td><td><span class="badge b-info">Current</span></td><td>0</td></tr>
+            <tr><td>2</td><td style="max-width:230px" class="te">ఇందిరమ్మ ఇళ్లు పథకం కింద…</td><td><span class="badge b-info">Current</span></td><td>0</td></tr>
+            <tr><td>3</td><td style="max-width:230px">Which committee recommended…</td><td><span class="badge b-neutral">Static</span></td><td>412</td></tr>
+            <tr><td>4</td><td style="max-width:230px">Group 2 2024 Paper II Q41</td><td><span class="badge b-pur">Past paper</span></td><td>88</td></tr>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:9px">Composition rule: 5 current affairs, 3 static, 2 previous-year. Nothing repeated within 60 days.</p>
+      </div>
+      <div class="card pad">
+        <h3>Pool depth by subject</h3>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Current affairs</span><b style="color:var(--red)">9 days</b></div><div class="bar"><i style="width:22%;background:var(--red)"></i></div></div>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Indian Polity</span><b>34 days</b></div><div class="bar"><i style="width:62%"></i></div></div>
+        <div style="margin-bottom:11px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Telangana Movement</span><b>58 days</b></div><div class="bar"><i style="width:88%"></i></div></div>
+        <div><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Past papers</span><b>41 days</b></div><div class="bar"><i style="width:70%"></i></div></div>
+        <div class="note note-bad" style="margin-top:14px">Current affairs is the binding constraint. It always is — it cannot be written in advance.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 15 TRANSLATION QUEUE -->
+<div class="view" id="a-trans"><div class="shell">
+  <div class="side" id="nav-a-trans"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Translation queue</h1><p class="sub">12 items awaiting approval · 4 of them are eligibility-critical</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec" onclick="go('a-glossary')">Glossary</button><button class="btn btn-pri" onclick="go('a-trans-review')">Start reviewing</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>AI may draft. AI may never publish dates, fees or eligibility.</b> Items marked critical below cannot be approved in bulk — each one needs a person to read it against the source.</div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search"><select class="input"><option>All types</option><option>Notification</option><option>Exam</option><option>Question</option></select><select class="input"><option>All locales</option><option>Telugu</option></select><label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" style="accent-color:var(--green)"> Critical only</label></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th style="width:30px"><input type="checkbox" style="accent-color:var(--green)"></th><th>Source</th><th>Field</th><th>Type</th><th>Engine</th><th>Queued</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr style="background:var(--red-s)"><td></td><td><b>TGPSC Junior Assistant 2026</b></td><td>Eligibility summary</td><td><span class="badge b-bad">Critical</span></td><td>AI draft</td><td>2h ago</td><td><span class="badge b-warn">Awaiting human</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-trans-review')">Review</button></td></tr>
+          <tr style="background:var(--red-s)"><td></td><td><b>TS Police Constable 2026</b></td><td>Important dates</td><td><span class="badge b-bad">Critical</span></td><td>AI draft</td><td>3h ago</td><td><span class="badge b-warn">Awaiting human</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-trans-review')">Review</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>TGPSC Group 2</b></td><td>FAQ question 6</td><td><span class="badge b-neutral">Standard</span></td><td>AI draft</td><td>5h ago</td><td><span class="badge b-info">Ready</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-trans-review')">Review</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>Question #2418</b></td><td>Question and options</td><td><span class="badge b-neutral">Standard</span></td><td>AI draft</td><td>6h ago</td><td><span class="badge b-info">Ready</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-trans-review')">Review</button></td></tr>
+          <tr><td><input type="checkbox" style="accent-color:var(--green)"></td><td><b>SSC CGL</b></td><td>Description</td><td><span class="badge b-neutral">Standard</span></td><td>AI draft</td><td>1d ago</td><td><span class="badge b-info">Ready</span></td><td><button class="btn btn-sec btn-xs">Review</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="sub">3 standard items selected</span><div style="display:flex;gap:8px"><button class="btn btn-sec btn-xs">Reject selected</button><button class="btn btn-pri btn-xs" onclick="toast('3 standard translations approved')">Approve selected</button></div></div>
+  </div>
+</div></div>
+
+<!-- 16 TRANSLATION REVIEW -->
+<div class="view" id="a-trans-review"><div class="shell">
+  <div class="side" id="nav-a-trans-review"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-trans')">Translation queue</a> › Review</div><h1>TGPSC Junior Assistant 2026 — eligibility</h1><p class="sub">Item 1 of 12 · marked critical · AI draft, awaiting a human</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Skip</button><button class="btn btn-soft-danger">Reject and redraft</button><button class="btn btn-pri" onclick="toast('Approved and published in Telugu')">Approve</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>This text states an age limit and a reference date.</b> Read every number against the English source. A single digit wrong here mis-classifies thousands of people as ineligible.</div>
+    <div class="diff" style="margin-bottom:14px">
+      <div>
+        <div class="lb">ENGLISH — SOURCE</div>
+        <p style="font-size:14px;line-height:1.75">Must possess a Bachelor's Degree from any University in India recognised by the UGC. Minimum age 18 years and maximum 44 years, reckoned as on 1 July 2026. Age relaxation: 5 years for BC, SC and ST candidates, 10 years for persons with disabilities, and 3 years for ex-servicemen.</p>
+      </div>
+      <div>
+        <div class="lb">తెలుగు — AI DRAFT, EDITABLE</div>
+        <textarea class="input te" style="min-height:150px;font-size:14px">UGC గుర్తింపు పొందిన ఏదైనా భారతీయ విశ్వవిద్యాలయం నుండి బ్యాచిలర్ డిగ్రీ ఉండాలి. కనిష్ట వయస్సు 18 సంవత్సరాలు, గరిష్ట వయస్సు 44 సంవత్సరాలు — 01 జూలై 2026 నాటికి లెక్కిస్తారు. వయస్సు సడలింపు: BC, SC, ST అభ్యర్థులకు 5 సంవత్సరాలు, దివ్యాంగులకు 10 సంవత్సరాలు, మాజీ సైనికులకు 3 సంవత్సరాలు.</textarea>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card pad">
+        <h3>Numbers to confirm</h3>
+        <div class="dl">
+          <div class="r"><span>Minimum age</span><b>18 — matches</b></div>
+          <div class="r"><span>Maximum age</span><b>44 — matches</b></div>
+          <div class="r"><span>Reference date</span><b>01 July 2026 — matches</b></div>
+          <div class="r"><span>BC / SC / ST relaxation</span><b>5 — matches</b></div>
+          <div class="r"><span>PwD relaxation</span><b>10 — matches</b></div>
+          <div class="r"><span>Ex-servicemen</span><b>3 — matches</b></div>
+        </div>
+        <div class="note note-ok" style="margin-top:12px">All six numbers match the English source.</div>
+      </div>
+      <div class="card pad">
+        <h3>Glossary compliance</h3>
+        <div class="dl">
+          <div class="r"><span>“Bachelor's Degree”</span><span class="badge b-ok">Kept as బ్యాచిలర్ డిగ్రీ</span></div>
+          <div class="r"><span>“UGC”</span><span class="badge b-ok">Untranslated</span></div>
+          <div class="r"><span>Category codes BC/SC/ST</span><span class="badge b-ok">Untranslated</span></div>
+          <div class="r"><span>Numerals</span><span class="badge b-ok">Latin script</span></div>
+        </div>
+        <a class="btn btn-sec btn-xs" style="margin-top:12px" onclick="go('a-glossary')">Open glossary</a>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 17 GLOSSARY -->
+<div class="view" id="a-glossary"><div class="shell">
+  <div class="side" id="nav-a-glossary"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Glossary</h1><p class="sub">142 terms · injected into every AI translation prompt and checked on every review</p></div>
+      <button class="btn btn-pri" onclick="openM('m-glossary')">Add a term</button>
+    </div>
+    <div class="note note-info" style="margin-bottom:14px">These are the words people actually type into Google. Translating “Notification” to <span class="te">ప్రకటన</span> is linguistically correct and commercially fatal — nobody searches for that.</div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search terms"><select class="input"><option>All categories</option><option>Exam names</option><option>Government terms</option><option>Do not translate</option></select></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>English</th><th>Telugu</th><th>Rule</th><th>Category</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>Notification</b></td><td class="te">నోటిఫికేషన్</td><td><span class="badge b-warn">Transliterate</span></td><td>Government</td><td class="tsub">Never ప్రకటన — nobody searches for it</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Group 2</b></td><td class="te">గ్రూప్ 2</td><td><span class="badge b-warn">Transliterate</span></td><td>Exam name</td><td class="tsub">Numeral stays Latin</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Constable</b></td><td class="te">కానిస్టేబుల్</td><td><span class="badge b-warn">Transliterate</span></td><td>Post name</td><td class="tsub">—</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Naib Tahsildar</b></td><td class="te">నాయబ్ తహసీల్దార్</td><td><span class="badge b-warn">Transliterate</span></td><td>Post name</td><td class="tsub">—</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>TGPSC, APPSC, SSC, RRB</b></td><td>—</td><td><span class="badge b-bad">Do not translate</span></td><td>Abbreviation</td><td class="tsub">Roman letters, always</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Age relaxation</b></td><td class="te">వయస్సు సడలింపు</td><td><span class="badge b-ok">Translate</span></td><td>Government</td><td class="tsub">Standard usage in notifications</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Numerals</b></td><td>2026, ₹800</td><td><span class="badge b-bad">Latin only</span></td><td>Formatting</td><td class="tsub">Telugu numerals are not read fluently</td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 18 MATERIAL MODERATION -->
+<div class="view" id="a-material"><div class="shell">
+  <div class="side" id="nav-a-material"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Material moderation</h1><p class="sub">3 uploads awaiting a decision · every upload is checked by a person before it publishes</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-soft-danger" onclick="openM('m-material-no')">Reject</button><button class="btn btn-pri" onclick="openM('m-material')">Approve and publish</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>Reject on sight:</b> any publisher imprint, ISBN, copyright page, another brand's watermark, or printed typeset text from a commercial book. One takedown notice can end the business. Approval is never automated, at any volume.</div>
+    <div class="review">
+      <div class="review-l">
+        <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Upload details</h2><span class="badge b-warn">1 of 3 · 4h ago</span></div>
+        <div class="dl" style="margin-bottom:14px">
+          <div class="r"><span>Title</span><b class="te">ఇండియన్ పాలిటీ — నా నోట్స్</b></div>
+          <div class="r"><span>Uploaded by</span><b>Anusha L · 3,104 points</b></div>
+          <div class="r"><span>Previous uploads</span><b>4 approved, 0 rejected</b></div>
+          <div class="r"><span>File</span><b>PDF · 890 KB · 32 pages</b></div>
+          <div class="r"><span>Exam</span><b>TGPSC Group 2</b></div>
+          <div class="r"><span>Subject</span><b>Indian Polity</b></div>
+          <div class="r"><span>Warranty ticked</span><span class="badge b-ok">Yes · 2 Sep, IP logged</span></div>
+        </div>
+        <h3>Automated checks</h3>
+        <div class="dl">
+          <div class="r"><span>Brand logo detection</span><span class="badge b-ok">Nothing found</span></div>
+          <div class="r"><span>Watermark detection</span><span class="badge b-ok">Nothing found</span></div>
+          <div class="r"><span>ISBN pattern</span><span class="badge b-ok">Not present</span></div>
+          <div class="r"><span>Text layer</span><span class="badge b-ok">Handwritten · no OCR layer</span></div>
+          <div class="r"><span>Duplicate of existing file</span><span class="badge b-ok">No match</span></div>
+        </div>
+        <div class="note note-ok" style="margin-top:12px">Automated checks are a filter, not a decision. Look at the pages yourself.</div>
+      </div>
+      <div class="review-r">
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">Preview</h3><div style="display:flex;gap:7px"><button class="btn btn-sec btn-xs">◀</button><span class="sub">Page 4 of 32</span><button class="btn btn-sec btn-xs">▶</button></div></div>
+        <div class="pdfmock" style="font-family:var(--te)">
+          <p style="font-size:13px;font-weight:700;margin-bottom:10px">ప్రాథమిక హక్కులు — భాగం III</p>
+          <p style="margin-bottom:8px">అధికరణ 14 — చట్టం ముందు సమానత్వం. రాజ్యం ఏ వ్యక్తికీ చట్టం ముందు సమానత్వాన్ని నిరాకరించకూడదు.</p>
+          <p style="margin-bottom:8px">అధికరణ 15 — మతం, జాతి, కులం, లింగం, జన్మస్థలం ఆధారంగా వివక్ష నిషేధం.</p>
+          <p style="margin-bottom:8px">అధికరణ 16 — ప్రభుత్వ ఉద్యోగాలలో అవకాశ సమానత్వం.</p>
+          <p style="margin-bottom:8px">అధికరణ 17 — అంటరానితనం నిర్మూలన.</p>
+          <p style="font-size:10.5px;color:var(--muted);margin-top:16px;text-align:center">— handwritten, no publisher marks, no page furniture from a printed book —</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 19 USERS -->
+<div class="view" id="a-users"><div class="shell">
+  <div class="side" id="nav-a-users"></div>
+  <div class="main">
+    <div class="top"><div><h1>Users</h1><p class="sub">142,806 registered · 18,402 active today · 4 blocked this month</p></div></div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>Every profile you open is logged with your name, the time and the reason you gave.</b> Personal details are visible only where a support ticket requires it. Browsing user records without a reason is a disciplinary matter.</div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search by phone or name"><select class="input"><option>All districts</option></select><select class="input"><option>All statuses</option><option>Blocked</option><option>Verified selected</option></select><select class="input"><option>All exams</option></select></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>User</th><th>District</th><th>Exams</th><th>Streak</th><th>Points</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><div class="who"><span class="av">PS</span><div><b>Prasad S</b><div class="tsub">•••• 4412</div></div></div></td><td>Hyderabad</td><td>2</td><td>62</td><td>4,820</td><td>4 Mar 2026</td><td><span class="badge b-ok">Verified selected</span></td><td><button class="btn btn-sec btn-xs" onclick="openM('m-access')">Open</button></td></tr>
+          <tr><td><div class="who"><span class="av">RV</span><div><b>Ravi Varma</b><div class="tsub">•••• 2345</div></div></div></td><td>Karimnagar</td><td>3</td><td>15</td><td>1,240</td><td>12 Aug 2026</td><td><span class="badge b-neutral">Active</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-user')">Open</button></td></tr>
+          <tr><td><div class="who"><span class="av">AL</span><div><b>Anusha L</b><div class="tsub">•••• 8890</div></div></div></td><td>Warangal</td><td>4</td><td>52</td><td>3,104</td><td>19 Jan 2026</td><td><span class="badge b-neutral">Active</span></td><td><button class="btn btn-sec btn-xs" onclick="openM('m-access')">Open</button></td></tr>
+          <tr><td><div class="who"><span class="av" style="background:var(--red-s);color:var(--red)">XX</span><div><b>Blocked account</b><div class="tsub">•••• 1102</div></div></div></td><td>Nizamabad</td><td>1</td><td>0</td><td>−40</td><td>2 Sep 2026</td><td><span class="badge b-bad">Blocked · piracy</span></td><td><button class="btn btn-sec btn-xs">Open</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 20 USER DETAIL -->
+<div class="view" id="a-user"><div class="shell">
+  <div class="side" id="nav-a-user"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-users')">Users</a> › Ravi Varma</div><h1>Ravi Varma</h1><p class="sub">Joined 12 August 2026 · Karimnagar · 1,240 community points</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Send a message</button><button class="btn btn-soft-danger" onclick="openM('m-block')">Block account</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>Access recorded.</b> Opened by Sailaja P at 07:52 today. Reason given: “support ticket #4182 — user reports quiz streak reset incorrectly”. This entry is permanent.</div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Profile</h2>
+          <div class="g2">
+            <div class="dl">
+              <div class="r"><span>Phone</span><b>+91 98•••• ••45</b></div>
+              <div class="r"><span>Date of birth</span><b>14 Aug 2001</b></div>
+              <div class="r"><span>Category</span><b>SC</b></div>
+              <div class="r"><span>Qualification</span><b>Degree — B.Sc</b></div>
+            </div>
+            <div class="dl">
+              <div class="r"><span>District</span><b>Karimnagar</b></div>
+              <div class="r"><span>Language</span><b>Telugu</b></div>
+              <div class="r"><span>Exams followed</span><b>3</b></div>
+              <div class="r"><span>Eligible for</span><b>34 of 41</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Activity</h2>
+          <div class="g4">
+            <div class="kpi"><b>15</b><span>Current streak</span></div>
+            <div class="kpi"><b>31</b><span>Longest streak</span></div>
+            <div class="kpi"><b>62</b><span>Quizzes taken</span></div>
+            <div class="kpi"><b>6</b><span>Jobs saved</span></div>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Support history</h2>
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Issue</th><th>Handled by</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>6 Sep</td><td>Streak reset reported incorrectly</td><td>Sailaja P</td><td><span class="badge b-warn">Open</span></td></tr>
+              <tr><td>28 Aug</td><td>WhatsApp alerts not arriving</td><td>Naveen R</td><td><span class="badge b-ok">Resolved</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Consent record</h3>
+          <div class="dl">
+            <div class="r"><span>Eligibility checking</span><span class="badge b-ok">On</span></div>
+            <div class="r"><span>WhatsApp alerts</span><span class="badge b-ok">On</span></div>
+            <div class="r"><span>Personalised ads</span><span class="badge b-neutral">Never agreed</span></div>
+            <div class="r"><span>Consent version</span><b>v2.1</b></div>
+            <div class="r"><span>Agreed on</span><b>12 Aug 2026</b></div>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Data rights</h3>
+          <button class="btn btn-sec btn-xs btn-full" style="margin-bottom:7px">Generate data export</button>
+          <button class="btn btn-sec btn-xs btn-full" style="margin-bottom:7px">Process deletion request</button>
+          <p class="hint">Deletion removes personal data within 30 days and keeps community answers as anonymous.</p>
+        </div>
+        <div class="card pad"><h3>Streak audit</h3>
+          <p class="sub" style="line-height:1.8">4 Sep — quiz taken<br>5 Sep — no activity<br>6 Sep 00:14 — <b>freeze consumed</b><br>6 Sep 07:31 — quiz taken, streak 15</p>
+          <div class="note note-ok" style="margin-top:11px">The freeze worked as designed. The user's report is a misunderstanding, not a bug.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 21 MODERATION -->
+<div class="view" id="a-moderation"><div class="shell">
+  <div class="side" id="nav-a-moderation"></div>
+  <div class="main">
+    <div class="top"><div><h1>Post moderation</h1><p class="sub">2 flagged · auto-hidden after 3 reports from users above 300 reputation · SLA 4 hours</p></div></div>
+    <div class="note note-warn" style="margin-bottom:14px"><b>Permanent block, no warning:</b> selling pirated material, posting a phone number with a job guarantee, impersonating an official, or sharing exam paper leaks. The scam posts do real financial harm to people who cannot afford it.</div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Post</th><th>Author</th><th>Reports</th><th>Detected</th><th>Hidden</th><th></th></tr></thead>
+        <tbody>
+          <tr><td style="max-width:340px"><b>Group 2 material PDFs available…</b><div class="tsub">Offers scanned coaching books, includes a phone number</div></td><td><div class="who"><span class="av" style="background:var(--red-s);color:var(--red)">??</span><div><b>New account</b><div class="tsub">Joined 2 Sep · 1 post</div></div></div></td><td><span class="badge b-bad">3</span></td><td><span class="badge b-bad">Piracy + phone number</span></td><td>14m ago</td><td><button class="btn btn-danger btn-xs" onclick="openM('m-moderate')">Review</button></td></tr>
+          <tr><td style="max-width:340px"><b>Group 2 paper leaked, DM me…</b><div class="tsub">Claims to have exam paper in advance</div></td><td><div class="who"><span class="av" style="background:var(--red-s);color:var(--red)">??</span><div><b>New account</b><div class="tsub">Joined 5 Sep · 2 posts</div></div></div></td><td><span class="badge b-bad">6</span></td><td><span class="badge b-bad">Exam leak claim</span></td><td>41m ago</td><td><button class="btn btn-danger btn-xs" onclick="openM('m-moderate')">Review</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g3" style="margin-top:16px">
+      <div class="card pad kpi"><b>2</b><span>Open now</span></div>
+      <div class="card pad kpi"><b>38</b><span>Actioned this month</span></div>
+      <div class="card pad kpi"><b>1h 12m</b><span>Median time to action</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 22 AD CAMPAIGNS -->
+<div class="view" id="a-ads"><div class="shell">
+  <div class="side" id="nav-a-ads"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Ad campaigns</h1><p class="sub">3 live · ₹4,182 today · ₹96,400 this month across direct and programmatic</p></div>
+      <button class="btn btn-pri" onclick="go('a-ad-edit')">New campaign</button>
+    </div>
+    <div class="g4" style="margin-bottom:16px">
+      <div class="card pad kpi"><b>₹96,400</b><span>Month to date</span></div>
+      <div class="card pad kpi"><b>₹38</b><span>Blended RPM</span></div>
+      <div class="card pad kpi"><b>3</b><span>Direct advertisers</span></div>
+      <div class="card pad kpi"><b>2.4M</b><span>Impressions this month</span></div>
+    </div>
+    <div class="note note-info" style="margin-bottom:14px">Direct campaigns earn roughly 6× programmatic RPM because we can target by district and exam. A coaching centre in Karimnagar only wants Karimnagar Group 2 aspirants — nobody else can sell them that.</div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Campaign</th><th>Advertiser</th><th>Placement</th><th>Targeting</th><th>Runs</th><th>Impressions</th><th>CTR</th><th>Paid</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>Group 2 batch — September</b></td><td>Sri Chaitanya Study Circle</td><td>Feed, every 5th card</td><td>Karimnagar · Group 2</td><td>1–30 Sep</td><td>184,022</td><td>2.8%</td><td>₹15,000</td><td><span class="badge b-ok">Live</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-ad-edit')">Edit</button></td></tr>
+          <tr><td><b>Constable physical coaching</b></td><td>Vijetha Academy</td><td>Exam page sponsor</td><td>Telangana · Police</td><td>20 Aug–20 Sep</td><td>402,118</td><td>3.4%</td><td>₹25,000</td><td><span class="badge b-ok">Live</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Hostel — Ashok Nagar</b></td><td>Sai Residency</td><td>Pre-download</td><td>Hyderabad · all exams</td><td>1–15 Sep</td><td>62,884</td><td>1.2%</td><td>₹8,000</td><td><span class="badge b-ok">Live</span></td><td><button class="btn btn-sec btn-xs">Edit</button></td></tr>
+          <tr><td><b>Quiz sponsor — August</b></td><td>Sri Chaitanya Study Circle</td><td>Daily quiz</td><td>Telangana · all</td><td>1–31 Aug</td><td>388,412</td><td>4.1%</td><td>₹15,000</td><td><span class="badge b-neutral">Completed</span></td><td><button class="btn btn-sec btn-xs">Duplicate</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 23 AD EDITOR -->
+<div class="view" id="a-ad-edit"><div class="shell">
+  <div class="side" id="nav-a-ad-edit"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-ads')">Campaigns</a> › Edit</div><h1>Group 2 batch — September</h1><p class="sub">Sri Chaitanya Study Circle · live since 1 September</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Pause</button><button class="btn btn-pri" onclick="toast('Campaign saved')">Save</button></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Creative</h2>
+          <div class="g2">
+            <div class="field"><label>Advertiser</label><input class="input" value="Sri Chaitanya Study Circle"></div>
+            <div class="field"><label>Contact</label><input class="input" value="+91 94900 11223"></div>
+          </div>
+          <div class="field"><label>Headline <span class="opt">— shown in the feed card</span></label><input class="input" value="Group 2 batch starts 15 September · Karimnagar"></div>
+          <div class="field"><label>Headline in Telugu</label><input class="input te" value="గ్రూప్ 2 బ్యాచ్ సెప్టెంబర్ 15 నుంచి · కరీంనగర్"></div>
+          <div class="field"><label>Landing URL</label><input class="input mono" value="https://srichaitanyastudycircle.in/group2"></div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Targeting</h2>
+          <div class="g2">
+            <div class="field"><label>Placement</label><select class="input"><option>Feed — every 5th card</option><option>Exam page sponsor</option><option>Pre-download</option><option>Daily quiz sponsor</option></select></div>
+            <div class="field"><label>Language</label><select class="input"><option>Telugu and English</option><option>Telugu only</option></select></div>
+          </div>
+          <div class="field"><label>Districts</label><input class="input" value="Karimnagar, Jagtial, Peddapalli"><div class="hint">District targeting is what direct advertisers pay a premium for</div></div>
+          <div class="field"><label>Exams</label><input class="input" value="TGPSC Group 2, TGPSC Group 4"></div>
+          <div class="g2">
+            <div class="field"><label>Starts</label><input class="input" value="01 / 09 / 2026"></div>
+            <div class="field"><label>Ends</label><input class="input" value="30 / 09 / 2026"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Daily impression cap</label><input class="input" value="8000"></div>
+            <div class="field"><label>Amount paid</label><input class="input" value="15000"></div>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Policy</h2>
+          <div class="checklist">
+            <label><input type="checkbox" checked> No guaranteed-selection or guaranteed-job claims</label>
+            <label><input type="checkbox" checked> Not placed mid-content on a syllabus or eligibility page</label>
+            <label><input type="checkbox" checked> Never a full-screen interstitial on a first visit</label>
+            <label><input type="checkbox" checked> Clearly labelled “Sponsored”</label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Performance</h3>
+          <div class="dl">
+            <div class="r"><span>Impressions</span><b>184,022</b></div>
+            <div class="r"><span>Clicks</span><b>5,153</b></div>
+            <div class="r"><span>CTR</span><b style="color:var(--green)">2.8%</b></div>
+            <div class="r"><span>Effective RPM</span><b>₹81</b></div>
+            <div class="r"><span>Reach</span><b>18,204 users</b></div>
+          </div>
+        </div>
+        <div class="card pad"><h3>Preview</h3>
+          <div class="card pad-s" style="border-style:dashed;background:var(--paper);text-align:center">
+            <div class="tsub" style="margin-bottom:4px">Sponsored</div>
+            <b style="font-size:13px">Sri Chaitanya Study Circle</b>
+            <div class="te tsub">గ్రూప్ 2 బ్యాచ్ సెప్టెంబర్ 15 నుంచి · కరీంనగర్</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 24 ANALYTICS -->
+<div class="view" id="a-analytics"><div class="shell">
+  <div class="side" id="nav-a-analytics"></div>
+  <div class="main">
+    <div class="top"><div><h1>Analytics</h1><p class="sub">The only numbers that matter are on this page. Everything else is vanity.</p></div><select class="input" style="width:auto"><option>Last 30 days</option><option>Last 90 days</option></select></div>
+    <div class="note note-ok" style="margin-bottom:16px"><b>D7 retention is 24.1%, above the 20% gate.</b> Phase 2 work is unblocked. If it drops below 20% for two consecutive weeks, all feature work stops and the habit loop gets fixed first.</div>
+    <div class="g4" style="margin-bottom:18px">
+      <div class="card pad kpi"><b>41.2%</b><span>D1 retention</span></div>
+      <div class="card pad kpi"><b style="color:var(--green)">24.1%</b><span>D7 retention <em style="color:var(--green)">gate: 20%</em></span></div>
+      <div class="card pad kpi"><b>16.8%</b><span>D30 retention</span></div>
+      <div class="card pad kpi"><b>8.4%</b><span>Hold a 7-day streak</span></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Acquisition funnel</h2>
+          <div style="margin-bottom:12px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Organic visit</span><b>412,088</b></div><div class="bar"><i style="width:100%"></i></div></div>
+          <div style="margin-bottom:12px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Signed up</span><b>24,684 · 6.0%</b></div><div class="bar"><i style="width:38%"></i></div></div>
+          <div style="margin-bottom:12px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Completed profile</span><b>13,208 · 53% of signups</b></div><div class="bar"><i style="width:26%"></i></div></div>
+          <div style="margin-bottom:12px"><div class="row" style="font-size:13px;margin-bottom:4px"><span>Took first quiz</span><b>9,882 · 40% of signups</b></div><div class="bar"><i style="width:20%"></i></div></div>
+          <div><div class="row" style="font-size:13px;margin-bottom:4px"><span>Still active at day 7</span><b>5,949 · 24.1%</b></div><div class="bar"><i style="width:12%;background:var(--gold)"></i></div></div>
+          <div class="note note-warn" style="margin-top:14px">The biggest drop is signup → profile completion at 53%. Every point gained there is worth more than any new feature.</div>
+        </div>
+        <div class="card pad">
+          <h2>Top search queries bringing traffic</h2>
+          <table class="tbl">
+            <thead><tr><th>Query</th><th>Language</th><th>Position</th><th>Clicks</th><th>Page</th></tr></thead>
+            <tbody>
+              <tr><td class="te">పోలీస్ కానిస్టేబుల్ నోటిఫికేషన్ 2026</td><td>Telugu</td><td><b style="color:var(--green)">2</b></td><td>88,412</td><td>TS Police Constable</td></tr>
+              <tr><td class="te">tgpsc గ్రూప్ 2 సిలబస్</td><td>Telugu</td><td><b style="color:var(--green)">1</b></td><td>41,204</td><td>TGPSC Group 2</td></tr>
+              <tr><td>ts police constable notification 2026</td><td>English</td><td>4</td><td>28,886</td><td>TS Police Constable</td></tr>
+              <tr><td class="te">డిగ్రీ అర్హతతో ప్రభుత్వ ఉద్యోగాలు</td><td>Telugu</td><td>3</td><td>18,402</td><td>Notifications</td></tr>
+              <tr><td>ssc cgl cutoff telugu</td><td>Mixed</td><td>7</td><td>9,118</td><td>SSC CGL</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Quality metrics</h3>
+          <div class="dl">
+            <div class="r"><span>Publish latency p90</span><b style="color:var(--green)">34 min</b></div>
+            <div class="r"><span>Doubt first answer, median</span><b>2h 41m</b></div>
+            <div class="r"><span>Translation backlog</span><b style="color:var(--gold-d)">12 items</b></div>
+            <div class="r"><span>Error reports open</span><b>0</b></div>
+            <div class="r"><span>Moderation backlog</span><b>2</b></div>
+          </div>
+        </div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Traffic by language</h3>
+          <div style="margin-bottom:10px"><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>Telugu</span><b>72%</b></div><div class="bar"><i style="width:72%"></i></div></div>
+          <div><div class="row" style="font-size:12.5px;margin-bottom:4px"><span>English</span><b>28%</b></div><div class="bar"><i style="width:28%;background:var(--gold)"></i></div></div>
+          <p class="hint" style="margin-top:9px">The Telugu-first thesis holds. Telugu pages also convert to signup at 7.1% against 4.2% for English.</p>
+        </div>
+        <div class="card pad"><h3>Revenue</h3>
+          <div class="dl">
+            <div class="r"><span>Month to date</span><b>₹96,400</b></div>
+            <div class="r"><span>Direct</span><b>₹63,000</b></div>
+            <div class="r"><span>Programmatic</span><b>₹33,400</b></div>
+            <div class="r"><span>Revenue per MAU</span><b>₹0.62</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 25 SCRAPERS -->
+<div class="view" id="a-scrapers"><div class="shell">
+  <div class="side" id="nav-a-scrapers"></div>
+  <div class="main">
+    <div class="top">
+      <div><h1>Scrapers</h1><p class="sub">9 sources · 1 broken · 1 degraded · every one has a manual fallback</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec" onclick="openM('m-run')">Run one now</button><button class="btn btn-pri">Add a source</button></div>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>RRB Secunderabad has been broken since 4 September.</b> Government sites change layout without warning, which is why every source must also be publishable by hand in under five minutes. <a onclick="go('a-notif-edit')" style="text-decoration:underline;font-weight:700">Publish manually</a></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Source</th><th>Frequency</th><th>Last run</th><th>Last success</th><th>Failures</th><th>Found (30d)</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>TGPSC</b><div class="tsub">tgpsc.gov.in</div></td><td>15 min</td><td>7:30 AM</td><td>7:30 AM</td><td>0</td><td>14</td><td><span class="badge b-ok">Healthy</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-scraper')">Open</button></td></tr>
+          <tr><td><b>APPSC</b><div class="tsub">psc.ap.gov.in</div></td><td>15 min</td><td>7:30 AM</td><td>7:30 AM</td><td>0</td><td>9</td><td><span class="badge b-ok">Healthy</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-scraper')">Open</button></td></tr>
+          <tr><td><b>SSC</b><div class="tsub">ssc.gov.in</div></td><td>30 min</td><td>7:15 AM</td><td>7:15 AM</td><td>0</td><td>6</td><td><span class="badge b-ok">Healthy</span></td><td><button class="btn btn-sec btn-xs">Open</button></td></tr>
+          <tr><td><b>TGLPRB</b><div class="tsub">tgprb.in</div></td><td>30 min</td><td>7:28 AM</td><td>Yesterday 6:00 PM</td><td><span class="badge b-warn">2</span></td><td>3</td><td><span class="badge b-warn">Degraded</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-scraper')">Open</button></td></tr>
+          <tr><td><b>RRB Secunderabad</b><div class="tsub">rrbsecunderabad.gov.in</div></td><td>30 min</td><td>7:00 AM</td><td>4 Sep</td><td><span class="badge b-bad">14</span></td><td>0</td><td><span class="badge b-bad">Broken</span></td><td><button class="btn btn-sec btn-xs" onclick="go('a-scraper')">Open</button></td></tr>
+          <tr><td><b>NCS portal</b><div class="tsub">ncs.gov.in</div></td><td>60 min</td><td>7:00 AM</td><td>7:00 AM</td><td>0</td><td>22</td><td><span class="badge b-ok">Healthy</span></td><td><button class="btn btn-sec btn-xs">Open</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 26 SCRAPER DETAIL -->
+<div class="view" id="a-scraper"><div class="shell">
+  <div class="side" id="nav-a-scraper"></div>
+  <div class="main">
+    <div class="top">
+      <div><div class="crumb"><a onclick="go('a-scrapers')">Scrapers</a> › RRB Secunderabad</div><h1>RRB Secunderabad</h1><p class="sub">Broken since 4 September · 14 consecutive failures · ops alerted after the third</p></div>
+      <div style="display:flex;gap:9px"><button class="btn btn-sec">Pause source</button><button class="btn btn-sec" onclick="openM('m-run')">Run now</button><button class="btn btn-pri">Edit parser</button></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Run log</h2>
+          <div class="log">
+<span class="t">07:00:04</span> Starting run · source=rrb-secunderabad
+<span class="t">07:00:04</span> <span class="ok">robots.txt allows /notifications</span>
+<span class="t">07:00:05</span> GET https://rrbsecunderabad.gov.in/notifications <span class="ok">200 OK</span> 41.2 KB
+<span class="t">07:00:05</span> Parsing listing with RrbSecunderabadScraper
+<span class="t">07:00:05</span> <span class="bad">ParseException: selector "table.notification-list tr" matched 0 nodes</span>
+<span class="t">07:00:05</span> <span class="warn">Page structure changed — expected table, found div.card-grid</span>
+<span class="t">07:00:05</span> consecutive_failures = 14
+<span class="t">07:00:05</span> <span class="bad">Run failed in 1.24s · no records created</span>
+<span class="t">07:00:06</span> Ops already alerted on 4 Sep — suppressing duplicate alert
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Configuration</h2>
+          <div class="g2">
+            <div class="field"><label>Listing URL</label><input class="input mono" value="https://rrbsecunderabad.gov.in/notifications"></div>
+            <div class="field"><label>Parser class</label><input class="input mono" value="RrbSecunderabadScraper"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Frequency</label><select class="input"><option>Every 30 minutes</option></select></div>
+            <div class="field"><label>Rate limit</label><input class="input" value="1 request / 5 seconds"></div>
+          </div>
+          <div class="field"><label>User agent</label><input class="input mono" value="SadhanaBot/1.0 (+https://sadhana.study/bot)"><div class="hint">Honest identification with a contact URL. We never disguise the crawler.</div></div>
+          <div class="field"><label>Alert after</label><input class="input" value="3 consecutive failures"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Health</h3>
+          <div class="dl">
+            <div class="r"><span>Status</span><span class="badge b-bad">Broken</span></div>
+            <div class="r"><span>Consecutive failures</span><b>14</b></div>
+            <div class="r"><span>Last success</span><b>4 Sep, 11:30 AM</b></div>
+            <div class="r"><span>Found in 30 days</span><b>0</b></div>
+            <div class="r"><span>Success rate, 90 days</span><b>84%</b></div>
+          </div>
+        </div>
+        <div class="card pad note note-warn" style="border-radius:12px"><b>The site moved from a table to a card grid.</b> Update the selector in the parser. In the meantime publish RRB notifications by hand — the manual path exists exactly for this.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 27 QUEUES -->
+<div class="view" id="a-queues"><div class="shell">
+  <div class="side" id="nav-a-queues"></div>
+  <div class="main">
+    <div class="top"><div><h1>Queues and system health</h1><p class="sub">Live · refreshed every 10 seconds</p></div><button class="btn btn-soft-danger" onclick="openM('m-maint')">Maintenance mode</button></div>
+    <div class="g4" style="margin-bottom:16px">
+      <div class="card pad kpi"><b style="color:var(--green)">184ms</b><span>Response p95, cached</span></div>
+      <div class="card pad kpi"><b style="color:var(--green)">412ms</b><span>Response p95, dynamic</span></div>
+      <div class="card pad kpi"><b>0.14%</b><span>Error rate</span></div>
+      <div class="card pad kpi"><b>99.97%</b><span>Uptime, 30 days</span></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Queues</h2>
+          <table class="tbl">
+            <thead><tr><th>Queue</th><th>Pending</th><th>Processing</th><th>Failed 24h</th><th>Oldest</th><th>Workers</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><b>high</b><div class="tsub">Scraper alerts, ops</div></td><td>0</td><td>0</td><td>0</td><td>—</td><td>4</td><td><span class="badge b-ok">Healthy</span></td></tr>
+              <tr><td><b>push</b><div class="tsub">FCM and WhatsApp</div></td><td>1,204</td><td>18</td><td>2</td><td>14s</td><td>4</td><td><span class="badge b-ok">Healthy</span></td></tr>
+              <tr><td><b>default</b><div class="tsub">Search indexing, images</div></td><td>62</td><td>3</td><td>0</td><td>4s</td><td>4</td><td><span class="badge b-ok">Healthy</span></td></tr>
+              <tr><td><b>low</b><div class="tsub">Translation, analytics rollup</div></td><td>884</td><td>2</td><td>1</td><td>6m 12s</td><td>2</td><td><span class="badge b-warn">Backed up</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card pad">
+          <h2>Dependencies</h2>
+          <table class="tbl">
+            <thead><tr><th>Service</th><th>Latency</th><th>Last check</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><b>MySQL primary</b></td><td>2.1ms</td><td>4s ago</td><td><span class="badge b-ok">Up</span></td></tr>
+              <tr><td><b>MySQL replica</b></td><td>2.8ms · 0.4s lag</td><td>4s ago</td><td><span class="badge b-ok">Up</span></td></tr>
+              <tr><td><b>Redis</b></td><td>0.4ms</td><td>4s ago</td><td><span class="badge b-ok">Up</span></td></tr>
+              <tr><td><b>Meilisearch</b></td><td>11ms</td><td>4s ago</td><td><span class="badge b-ok">Up</span></td></tr>
+              <tr><td><b>Cloudflare R2</b></td><td>48ms</td><td>10s ago</td><td><span class="badge b-ok">Up</span></td></tr>
+              <tr><td><b>WhatsApp Cloud API</b></td><td>212ms</td><td>10s ago</td><td><span class="badge b-warn">Slow</span></td></tr>
+              <tr><td><b>Anthropic API</b></td><td>1.8s</td><td>1m ago</td><td><span class="badge b-ok">Up</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Degradation ladder</h3>
+          <p class="sub" style="line-height:1.8;margin-bottom:12px">Automatic when p95 goes above 2s. Degraded is always better than absent.</p>
+          <div class="dl">
+            <div class="r"><span>1 · Personalised feed off</span><span class="badge b-neutral">Standby</span></div>
+            <div class="r"><span>2 · Eligibility badges off</span><span class="badge b-neutral">Standby</span></div>
+            <div class="r"><span>3 · Static fallback page</span><span class="badge b-neutral">Standby</span></div>
+          </div>
+          <button class="btn btn-sec btn-xs btn-full" style="margin-top:11px">Trigger level 1 manually</button>
+        </div>
+        <div class="card pad"><h3>Notification-day readiness</h3>
+          <div class="dl">
+            <div class="r"><span>App servers</span><b>3 of 3</b></div>
+            <div class="r"><span>Last load test</span><b>28 Aug · passed 50×</b></div>
+            <div class="r"><span>Cache TTLs</span><b>Normal</b></div>
+            <div class="r"><span>Runbook</span><a style="color:var(--green);font-weight:600">Open ↗</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 28 AUDIT LOG -->
+<div class="view" id="a-audit"><div class="shell">
+  <div class="side" id="nav-a-audit"></div>
+  <div class="main">
+    <div class="top"><div><h1>Audit log</h1><p class="sub">Immutable. Retained for 7 years. Nobody, including owners, can edit or delete entries.</p></div><button class="btn btn-sec">Export CSV</button></div>
+    <div class="card pad-s toolbar"><input class="input grow" placeholder="Search by user, action or record"><select class="input"><option>All actions</option><option>Published</option><option>User data accessed</option><option>Account blocked</option></select><select class="input"><option>All staff</option></select><input class="input" value="Last 7 days" style="width:auto"></div>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Record</th><th>Detail</th><th>IP</th></tr></thead>
+        <tbody>
+          <tr><td>Today 07:52</td><td><div class="who"><span class="av">SP</span> Sailaja P</div></td><td><span class="badge b-warn">User data accessed</span></td><td>User #88412</td><td class="tsub">Reason: support ticket #4182 — streak reset</td><td class="mono">49.37.•.•</td></tr>
+          <tr><td>Today 06:12</td><td><div class="who"><span class="av">SP</span> Sailaja P</div></td><td><span class="badge b-ok">Published</span></td><td>TGPSC Group 2 Services 2026</td><td class="tsub">4 verification boxes ticked · alerted 12,400 users</td><td class="mono">49.37.•.•</td></tr>
+          <tr><td>Yesterday 18:40</td><td><div class="who"><span class="av">NR</span> Naveen R</div></td><td><span class="badge b-bad">Account blocked</span></td><td>User #91204</td><td class="tsub">Piracy + phone number in public post</td><td class="mono">106.51.•.•</td></tr>
+          <tr><td>Yesterday 14:02</td><td><div class="who"><span class="av">SP</span> Sailaja P</div></td><td><span class="badge b-neutral">Field changed</span></td><td>TS Police Constable 2026</td><td class="tsub">exam_date: null → 08/11/2026</td><td class="mono">49.37.•.•</td></tr>
+          <tr><td>4 Sep 11:31</td><td><div class="who"><span class="av" style="background:var(--line2);color:var(--muted)">SY</span> system</div></td><td><span class="badge b-bad">Scraper alert</span></td><td>RRB Secunderabad</td><td class="tsub">3 consecutive failures · ops notified</td><td class="mono">—</td></tr>
+          <tr><td>3 Sep 09:14</td><td><div class="who"><span class="av">LM</span> Lakshmi M</div></td><td><span class="badge b-warn">Role changed</span></td><td>Naveen R</td><td class="tsub">Content editor → Content lead</td><td class="mono">117.98.•.•</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div></div>
+
+<!-- 29 TEAM -->
+<div class="view" id="a-team"><div class="shell">
+  <div class="side" id="nav-a-team"></div>
+  <div class="main">
+    <div class="top"><div><h1>Team and roles</h1><p class="sub">6 staff accounts · all with 2FA enforced</p></div><button class="btn btn-pri" onclick="openM('m-invite')">Invite someone</button></div>
+    <div class="card" style="overflow:auto;margin-bottom:16px">
+      <table class="tbl">
+        <thead><tr><th>Person</th><th>Role</th><th>2FA</th><th>Last active</th><th>Published</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><div class="who"><span class="av">LK</span><div><b>Lokesh</b><div class="tsub">lokesh@sadhana.study</div></div></div></td><td><span class="badge b-pur">Owner</span></td><td><span class="badge b-ok">On</span></td><td>Today 07:40</td><td>12</td><td><button class="btn btn-sec btn-xs">Manage</button></td></tr>
+          <tr><td><div class="who"><span class="av">SP</span><div><b>Sailaja P</b><div class="tsub">sailaja@sadhana.study</div></div></div></td><td><span class="badge b-info">Content lead</span></td><td><span class="badge b-ok">On</span></td><td>Today 07:52</td><td>184</td><td><button class="btn btn-sec btn-xs" onclick="openM('m-role')">Manage</button></td></tr>
+          <tr><td><div class="who"><span class="av">NR</span><div><b>Naveen R</b><div class="tsub">naveen@sadhana.study</div></div></div></td><td><span class="badge b-info">Content editor</span></td><td><span class="badge b-ok">On</span></td><td>Yesterday</td><td>62</td><td><button class="btn btn-sec btn-xs" onclick="openM('m-role')">Manage</button></td></tr>
+          <tr><td><div class="who"><span class="av">LM</span><div><b>Lakshmi M</b><div class="tsub">lakshmi@sadhana.study</div></div></div></td><td><span class="badge b-info">Moderator</span></td><td><span class="badge b-ok">On</span></td><td>Today 06:20</td><td>0</td><td><button class="btn btn-sec btn-xs">Manage</button></td></tr>
+          <tr><td><div class="who"><span class="av">KS</span><div><b>Kiran S</b><div class="tsub">kiran@sadhana.study</div></div></div></td><td><span class="badge b-neutral">Translator</span></td><td><span class="badge b-warn">Not set up</span></td><td>2 Sep</td><td>0</td><td><button class="btn btn-sec btn-xs">Manage</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>What each role can do</h2>
+    <div class="card" style="overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Permission</th><th>Owner</th><th>Content lead</th><th>Content editor</th><th>Moderator</th><th>Translator</th></tr></thead>
+        <tbody>
+          <tr><td>Draft and edit notifications</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+          <tr><td><b>Publish notifications</b></td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Edit eligibility fields</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Approve translations</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>✓ standard only</td></tr>
+          <tr><td>Approve critical translations</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Moderate posts and block users</td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>—</td></tr>
+          <tr><td>Open user personal data</td><td>✓</td><td>✓</td><td>—</td><td>✓ with reason</td><td>—</td></tr>
+          <tr><td>Manage ad campaigns</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Change roles and invite staff</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Maintenance mode</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note note-info" style="margin-top:14px">Publishing and editing eligibility are deliberately separated from drafting. A new editor can prepare everything but cannot push a wrong date live on their own.</div>
+  </div>
+</div></div>
+
+<!-- 30 SETTINGS -->
+<div class="view" id="a-settings"><div class="shell">
+  <div class="side" id="nav-a-settings"></div>
+  <div class="main">
+    <div class="top"><div><h1>Settings</h1><p class="sub">Platform configuration. Changes here are logged in the audit trail.</p></div><button class="btn btn-pri" onclick="toast('Settings saved')">Save</button></div>
+    <div class="split">
+      <div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Languages</h2>
+          <p class="sub" style="margin-bottom:14px">Turning on a language before its content is ready produces thin pages, which Google penalises. That penalty affects the whole domain, not just the new language.</p>
+          <table class="tbl">
+            <thead><tr><th>Language</th><th>Code</th><th>Content coverage</th><th>Live</th></tr></thead>
+            <tbody>
+              <tr><td class="te">తెలుగు</td><td class="mono">te</td><td><span class="badge b-ok">96%</span></td><td><input type="checkbox" checked style="accent-color:var(--green);width:17px;height:17px"></td></tr>
+              <tr><td>English</td><td class="mono">en</td><td><span class="badge b-ok">100%</span></td><td><input type="checkbox" checked style="accent-color:var(--green);width:17px;height:17px"></td></tr>
+              <tr><td>हिन्दी</td><td class="mono">hi</td><td><span class="badge b-bad">4%</span></td><td><input type="checkbox" style="accent-color:var(--green);width:17px;height:17px"></td></tr>
+              <tr><td>தமிழ்</td><td class="mono">ta</td><td><span class="badge b-bad">0%</span></td><td><input type="checkbox" style="accent-color:var(--green);width:17px;height:17px"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card pad" style="margin-bottom:14px">
+          <h2>Notification limits</h2>
+          <div class="g2">
+            <div class="field"><label>Maximum pushes per user per day</label><input class="input" value="5"><div class="hint">Over-notification is how an app gets permanently muted</div></div>
+            <div class="field"><label>Quiet hours</label><input class="input" value="22:00 – 06:00 IST"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Daily quiz publish time</label><input class="input" value="06:45 IST"></div>
+            <div class="field"><label>Daily quiz push time</label><input class="input" value="07:00 IST"></div>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Feature flags</h2>
+          <div class="dl">
+            <div class="r"><div><b>Doubts community</b><div class="tsub">Opens only above 5,000 DAU. An empty forum reads as a dead product.</div></div><input type="checkbox" checked style="accent-color:var(--green);width:18px;height:18px"></div>
+            <div class="r"><div><b>Material uploads</b><div class="tsub">Every upload is human-moderated before publishing</div></div><input type="checkbox" checked style="accent-color:var(--green);width:18px;height:18px"></div>
+            <div class="r"><div><b>Test series and premium</b><div class="tsub">Phase 3 · not before 100k MAU</div></div><input type="checkbox" style="accent-color:var(--green);width:18px;height:18px"></div>
+            <div class="r"><div><b>AI extraction from PDFs</b><div class="tsub">Draft only · never auto-publishes</div></div><input type="checkbox" checked style="accent-color:var(--green);width:18px;height:18px"></div>
+            <div class="r"><div><b>Personalised ads</b><div class="tsub">Off by default for every user, opt-in only</div></div><input type="checkbox" style="accent-color:var(--green);width:18px;height:18px"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:14px"><h3>Data retention</h3>
+          <div class="dl">
+            <div class="r"><span>Inactive accounts</span><b>Anonymise at 3 years</b></div>
+            <div class="r"><span>Ad event rows</span><b>Drop after 90 days</b></div>
+            <div class="r"><span>Audit log</span><b>7 years, immutable</b></div>
+            <div class="r"><span>Deletion request SLA</span><b>30 days</b></div>
+          </div>
+        </div>
+        <div class="card pad note note-bad" style="border-radius:12px"><b>Do not enable Hindi or Tamil yet.</b> Coverage is under 5%. Thin pages in a new language damage rankings across the whole domain, including the Telugu pages that bring most of the traffic.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ============ MODALS ============ -->
+<div class="scrim" id="m-publish" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Publish this notification?</h3><p class="sub">It goes live immediately and 12,400 users with a matching exam preference get a WhatsApp message.</p></div>
+  <div class="modal-b">
+    <div class="note note-warn" style="margin-bottom:14px"><b>Have you verified the dates and eligibility against the official PDF?</b> A wrong date means someone misses an exam, and we do not get that trust back.</div>
+    <div class="checklist">
+      <label><input type="checkbox" checked> All dates match the official PDF</label>
+      <label><input type="checkbox" checked> Eligibility and age relaxation match</label>
+      <label><input type="checkbox" checked> Fee amounts match</label>
+      <label><input type="checkbox"> The official link opens correctly</label>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Publishing as</label><input class="input" value="Sailaja P · Content lead" disabled></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Not yet</button><button class="btn btn-dis" title="Tick every box first">Publish and alert 12,400 users</button></div>
+</div></div>
+
+<div class="scrim" id="m-reject" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Reject this item</h3><p class="sub">It returns to the scraper as handled and will not be re-created.</p></div>
+  <div class="modal-b">
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" checked style="accent-color:var(--green)"> Duplicate of an existing notification</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Not relevant to our users</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Corrigendum only — merge into the parent</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="rj" style="accent-color:var(--green)"> Source page was misread</label>
+    <div class="field" style="margin-top:10px"><label>Note <span class="opt">— visible in the audit log</span></label><textarea class="input" style="min-height:60px"></textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-soft-danger" onclick="closeAll();toast('Item rejected')">Reject</button></div>
+</div></div>
+
+<div class="scrim" id="m-bulk" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Bulk action on 3 items</h3></div>
+  <div class="modal-b">
+    <div class="note note-bad" style="margin-bottom:14px"><b>Bulk publish is disabled for anything with unverified dates.</b> Of the 3 selected, 2 still have eligibility fields awaiting a human. Only 1 can be published this way.</div>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="bk" checked style="accent-color:var(--green)"> Publish the 1 eligible item</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="bk" style="accent-color:var(--green)"> Send all 3 to translation queue</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="bk" style="accent-color:var(--green)"> Mark all 3 as expired</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="bk" style="accent-color:var(--green)"> Assign all 3 to another editor</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('1 item published, 2 held for verification')">Apply</button></div>
+</div></div>
+
+<div class="scrim" id="m-material" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Approve and publish this material?</h3></div>
+  <div class="modal-b">
+    <p style="margin-bottom:14px">You are confirming that you looked at the pages yourself and found no publisher imprint, ISBN, copyright page or third-party watermark.</p>
+    <div class="checklist">
+      <label><input type="checkbox" checked> I opened the file and read several pages</label>
+      <label><input type="checkbox" checked> No publisher or coaching brand marks anywhere</label>
+      <label><input type="checkbox" checked> Content is original or government-published</label>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Credit the uploader as</label><input class="input" value="Anusha L"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Published · 15 points awarded to Anusha L')">Approve and publish</button></div>
+</div></div>
+
+<div class="scrim" id="m-material-no" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Reject this upload</h3><p class="sub">The uploader is told the reason. A second copyright rejection blocks the account permanently.</p></div>
+  <div class="modal-b">
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="mr" checked style="accent-color:var(--green)"> Scanned from a published book</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="mr" style="accent-color:var(--green)"> Carries another brand's watermark</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="mr" style="accent-color:var(--green)"> Unreadable or too low quality</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:7px 0"><input type="radio" name="mr" style="accent-color:var(--green)"> Duplicate of existing material</label>
+    <div class="field" style="margin-top:10px"><label>Message to the uploader</label><textarea class="input" style="min-height:64px">This file appears to be scanned from a published book, which we cannot host. Handwritten or self-typed notes are very welcome.</textarea></div>
+    <label style="display:flex;gap:9px;align-items:center;margin-top:10px;font-size:12.5px"><input type="checkbox" style="accent-color:var(--red)"> Also record a copyright strike against this account</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-soft-danger" onclick="closeAll();toast('Rejected · uploader notified')">Reject</button></div>
+</div></div>
+
+<div class="scrim" id="m-block" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Block this account?</h3></div>
+  <div class="modal-b">
+    <div class="note note-bad" style="margin-bottom:14px">Blocking is permanent and immediate. The person loses their streak, saved jobs and points, and cannot register again with the same number.</div>
+    <div class="field"><label>Reason <span class="req">*</span></label><select class="input"><option>Distributing copyrighted material</option><option>Job-guarantee scam or phone number soliciting</option><option>Claiming to have leaked exam papers</option><option>Impersonating an official</option><option>Repeated harassment</option></select></div>
+    <div class="field"><label>Evidence <span class="opt">— stored with the audit entry</span></label><textarea class="input" style="min-height:60px">Post #88412 offered scanned coaching books for ₹200 with a phone number.</textarea></div>
+    <label style="display:flex;gap:9px;align-items:center;font-size:12.5px"><input type="checkbox" checked style="accent-color:var(--green)"> Also remove all posts by this account</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-danger" onclick="closeAll();toast('Account blocked · 1 post removed')">Block permanently</button></div>
+</div></div>
+
+<div class="scrim" id="m-access" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Why are you opening this record?</h3><p class="sub">Required under the DPDP Act. Your name, the time and this reason are written to the audit log permanently.</p></div>
+  <div class="modal-b">
+    <div class="field"><label>Reason <span class="req">*</span></label><select class="input"><option>Support ticket</option><option>Moderation investigation</option><option>Data export request</option><option>Deletion request</option></select></div>
+    <div class="field"><label>Ticket or case reference <span class="req">*</span></label><input class="input" placeholder="e.g. #4182"></div>
+    <div class="note note-warn">Opening records without a genuine reason is a disciplinary matter. If you are only browsing, close this.</div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();go('a-user')">Open record</button></div>
+</div></div>
+
+<div class="scrim" id="m-moderate" onclick="closeM(event)"><div class="modal wide" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Flagged post</h3><p class="sub">Reported 3 times by users above 300 reputation · auto-hidden 14 minutes ago</p></div>
+  <div class="modal-b">
+    <div class="card pad" style="margin-bottom:14px">
+      <div class="who" style="margin-bottom:10px"><span class="av" style="background:var(--red-s);color:var(--red)">??</span><div><b>New account</b><div class="tsub">Joined 2 September · 1 post · −40 points</div></div></div>
+      <p style="font-size:14px">Group 2 material PDFs available. All coaching institute books scanned. Contact 98•••••••• for the full set at ₹200.</p>
+    </div>
+    <div class="note note-bad" style="margin-bottom:14px"><b>Two policy violations:</b> distributing copyrighted material, and posting a phone number in a public post. Both are permanent-block offences with no warning.</div>
+    <div class="field"><label>Reason shown to the user</label><textarea class="input">Your post offered scanned coaching books, which is copyright infringement, and included a phone number in a public post. This account is permanently blocked.</textarea></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Dismiss report</button><button class="btn btn-sec" onclick="closeAll()">Remove post only</button><button class="btn btn-danger" onclick="closeAll();toast('Post removed and account blocked')">Remove and block</button></div>
+</div></div>
+
+<div class="scrim" id="m-run" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Run a scraper now</h3><p class="sub">Runs immediately outside the schedule. Rate limits still apply.</p></div>
+  <div class="modal-b">
+    <div class="field"><label>Source</label><select class="input"><option>RRB Secunderabad — broken</option><option>TGPSC</option><option>APPSC</option><option>TGLPRB</option></select></div>
+    <label style="display:flex;gap:9px;align-items:center;padding:6px 0;font-size:13px"><input type="checkbox" style="accent-color:var(--green)"> Dry run — parse but create nothing</label>
+    <label style="display:flex;gap:9px;align-items:center;padding:6px 0;font-size:13px"><input type="checkbox" checked style="accent-color:var(--green)"> Show the full log</label>
+    <div class="note note-info" style="margin-top:10px">This source has failed 14 times running. A manual run will most likely fail the same way until the parser selector is updated.</div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();go('a-scraper')">Run now</button></div>
+</div></div>
+
+<div class="scrim" id="m-glossary" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Add a glossary term</h3><p class="sub">Injected into every AI translation prompt and checked during review.</p></div>
+  <div class="modal-b">
+    <div class="g2">
+      <div class="field"><label>English term</label><input class="input" placeholder="Sub Inspector"></div>
+      <div class="field"><label>Telugu</label><input class="input te" placeholder="సబ్ ఇన్‌స్పెక్టర్"></div>
+    </div>
+    <div class="field"><label>Rule</label><select class="input"><option>Transliterate — keep the sound</option><option>Translate — use the Telugu word</option><option>Do not translate — keep Roman letters</option></select></div>
+    <div class="field"><label>Why <span class="opt">— shown to reviewers</span></label><input class="input" placeholder="This is the form people actually search for"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Term added to the glossary')">Add term</button></div>
+</div></div>
+
+<div class="scrim" id="m-import-err" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Import 47 of 50 rows?</h3><p class="sub">Three rows have errors and will be skipped. The valid rows import normally.</p></div>
+  <div class="modal-b">
+    <table class="tbl">
+      <thead><tr><th>Row</th><th>Problem</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>3</td><td>Missing Telugu text</td><td class="tsub">Add question_te and all four option_te columns</td></tr>
+        <tr><td>5</td><td>correct_index is 4</td><td class="tsub">Must be 0–3</td></tr>
+        <tr><td>6</td><td>Only 3 options given</td><td class="tsub">All four option columns are required</td></tr>
+      </tbody>
+    </table>
+    <div class="note note-info" style="margin-top:12px">Download the error report, fix those three rows, and import the corrected file separately.</div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-sec">Download error report</button><button class="btn btn-pri" onclick="closeAll();toast('47 questions imported · 3 skipped')">Import 47 rows</button></div>
+</div></div>
+
+<div class="scrim" id="m-invite" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Invite a team member</h3></div>
+  <div class="modal-b">
+    <div class="field"><label>Work email</label><input class="input" placeholder="name@sadhana.study"></div>
+    <div class="field"><label>Role</label><select class="input"><option>Content editor — draft only, cannot publish</option><option>Content lead — can publish and edit eligibility</option><option>Moderator — community only</option><option>Translator — standard translations only</option></select></div>
+    <div class="note note-warn">New content editors cannot publish, and cannot touch eligibility fields. Give the lead role only when someone has published under supervision for a month.</div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Invitation sent · 2FA setup required on first sign-in')">Send invitation</button></div>
+</div></div>
+
+<div class="scrim" id="m-role" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Change role — Naveen R</h3><p class="sub">Currently Content editor · 62 drafts prepared, 0 published</p></div>
+  <div class="modal-b">
+    <div class="field"><label>New role</label><select class="input"><option>Content editor</option><option>Content lead</option><option>Moderator</option><option>Translator</option></select></div>
+    <div class="note note-warn" style="margin-bottom:12px"><b>Content lead can publish notifications and edit eligibility fields.</b> That is the highest-consequence permission in the product — a wrong date reaches lakhs of people within minutes.</div>
+    <div class="field"><label>Reason <span class="opt">— written to the audit log</span></label><input class="input" placeholder="e.g. completed 3 months supervised"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-pri" onclick="closeAll();toast('Role updated · logged')">Change role</button></div>
+</div></div>
+
+<div class="scrim" id="m-maint" onclick="closeM(event)"><div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-h"><h3>Turn on maintenance mode?</h3></div>
+  <div class="modal-b">
+    <div class="note note-bad" style="margin-bottom:14px"><b>18,402 people are using the site right now.</b> Prefer the degradation ladder over full maintenance — degraded is always better than absent.</div>
+    <div class="field"><label>Message shown to users</label><textarea class="input te" style="min-height:64px">సాధన కొద్దిసేపు అందుబాటులో ఉండదు. 15 నిమిషాల్లో తిరిగి వస్తుంది.</textarea></div>
+    <div class="field"><label>Expected duration</label><select class="input"><option>15 minutes</option><option>30 minutes</option><option>1 hour</option></select></div>
+    <label style="display:flex;gap:9px;align-items:center;font-size:12.5px"><input type="checkbox" checked style="accent-color:var(--green)"> Keep saved jobs and downloaded notes readable offline</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-sec" onclick="closeAll()">Cancel</button><button class="btn btn-danger" onclick="closeAll();toast('Maintenance mode on · 18,402 users affected')">Turn on</button></div>
+</div></div>
+
+<div class="toast" id="toast"><svg width="15" height="15"><use href="#i-check"/></svg><span id="tmsg"></span></div>
+
+<script>
+var NAV = [
+  {g:null, items:[['a-dash','i-chart','Dashboard',null]]},
+  {g:'CONTENT', items:[
+    ['a-review','i-inbox','Review queue','7'],
+    ['a-notifs','i-bell','Notifications',null],
+    ['a-exams','i-book','Exams',null],
+    ['a-material','i-doc','Material','3']
+  ]},
+  {g:'QUIZ', items:[
+    ['a-questions','i-quiz','Question bank',null],
+    ['a-schedule','i-clock','Quiz scheduler',null]
+  ]},
+  {g:'LOCALISATION', items:[
+    ['a-trans','i-globe','Translations','12'],
+    ['a-glossary','i-globe','Glossary',null]
+  ]},
+  {g:'COMMUNITY', items:[
+    ['a-users','i-users','Users',null],
+    ['a-moderation','i-chat','Moderation','2']
+  ]},
+  {g:'GROWTH', items:[
+    ['a-ads','i-money','Ad campaigns',null],
+    ['a-analytics','i-chart','Analytics',null]
+  ]},
+  {g:'SYSTEM', items:[
+    ['a-scrapers','i-spider','Scrapers','!'],
+    ['a-queues','i-gear','Queues &amp; health',null],
+    ['a-audit','i-shield','Audit log',null],
+    ['a-team','i-users','Team &amp; roles',null],
+    ['a-settings','i-gear','Settings',null]
+  ]}
+];
+var ALIAS = {
+  'a-notif-edit':'a-notifs','a-vacancy':'a-notifs',
+  'a-exam-edit':'a-exams','a-syllabus':'a-exams','a-cutoffs':'a-exams',
+  'a-question-edit':'a-questions','a-import':'a-questions',
+  'a-trans-review':'a-trans','a-user':'a-users','a-ad-edit':'a-ads','a-scraper':'a-scrapers'
+};
+function buildNav(viewId){
+  var active = ALIAS[viewId] || viewId;
+  var h = '<div class="lg"><i>స</i>Sadhana</div><div class="env">ADMIN · PRODUCTION</div>';
+  NAV.forEach(function(sec){
+    if(sec.g) h += '<div class="grp">'+sec.g+'</div>';
+    sec.items.forEach(function(it){
+      var cls = it[0]===active ? ' class="on"' : '';
+      var cnt = it[3] ? '<span class="c'+(it[3]==='!'?' red':'')+'">'+(it[3]==='!'?'1':it[3])+'</span>' : '';
+      h += '<a'+cls+' onclick="go(\''+it[0]+'\')"><svg><use href="#'+it[1]+'"/></svg> '+it[2]+cnt+'</a>';
+    });
+  });
+  h += '<div class="me"><span class="av">SP</span><div><b>Sailaja P</b><span>Content lead</span></div></div>';
+  return h;
+}
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.classList.add('on');
+  var nav=document.getElementById('nav-'+id);
+  if(nav) nav.innerHTML=buildNav(id);
+  var sel=document.getElementById('pick');
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===id){sel.selectedIndex=i;break;} }
+  window.scrollTo(0,0);
+  location.hash=id;
+}
+function openM(id){ if(id) document.getElementById(id).classList.add('on'); }
+function closeM(e){ if(e.target.classList.contains('scrim')) e.target.classList.remove('on'); }
+function closeAll(){ document.querySelectorAll('.scrim').forEach(function(s){s.classList.remove('on')}); }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(); });
+function tab(btn,pane){
+  btn.parentElement.querySelectorAll('button').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  var p=document.getElementById(pane);
+  p.parentElement.querySelectorAll('.pane').forEach(function(x){x.classList.remove('on')});
+  p.classList.add('on');
+}
+var tt;
+function toast(m){
+  var t=document.getElementById('toast');
+  document.getElementById('tmsg').textContent=m;
+  t.classList.add('on'); clearTimeout(tt);
+  tt=setTimeout(function(){t.classList.remove('on')},2800);
+}
+document.querySelectorAll('.loctabs').forEach(function(w){
+  w.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){
+      w.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+      this.classList.add('on');
+    });
+  });
+});
+if(location.hash && document.getElementById(location.hash.slice(1))) go(location.hash.slice(1));
+</script>
+</body>
+</html>

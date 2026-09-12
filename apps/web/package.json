@@ -1,0 +1,20 @@
+{
+    "name": "sadhana-web",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "budget": "node scripts/check-bundle-size.js"
+    },
+    "devDependencies": {
+        "vite": "^6.0.0",
+        "laravel-vite-plugin": "^1.1.0",
+        "tailwindcss": "^3.4.0",
+        "autoprefixer": "^10.4.0",
+        "postcss": "^8.4.0",
+        "alpinejs": "^3.14.0",
+        "gzip-size": "^7.0.0"
+    },
+    "//": "JS budget is 100 KB gzipped on first load, enforced by `npm run budget` in CI. The target device is a Rs 8,000 Android on 3G — every kilobyte here is a kilobyte a student pays for out of a limited data pack."
+}

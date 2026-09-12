@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sadhana — Complete UI Specification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12211C; --ink2:#33463E; --muted:#6B7C74; --faint:#9AA8A1;
+  --line:#DDE3DF; --line2:#EDF1EE;
+  --paper:#F7F8F5; --card:#FFFFFF;
+  --green:#0F6B4F; --green-d:#0A4E39; --green-s:#E3F0EA;
+  --gold:#E8A33D; --gold-d:#B67A1F; --gold-s:#FCF1DE;
+  --red:#C4362B; --red-s:#FBE7E4;
+  --blue:#2C5F8A; --blue-s:#E4EDF4;
+  --r:14px; --r-s:9px; --r-l:22px;
+  --sans:"Noto Sans","Noto Sans Telugu",system-ui,sans-serif;
+  --disp:"Gabarito","Noto Sans Telugu",system-ui,sans-serif;
+  --te:"Noto Sans Telugu","Noto Sans",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+.te{font-family:var(--te)}
+
+/* ============ SHELL ============ */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(247,248,245,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:28px;height:60px}
+.brand{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--green);white-space:nowrap}
+.brand span{color:var(--ink);font-weight:500;font-size:13px;margin-left:9px;letter-spacing:0}
+.navlinks{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{font-size:13.5px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:99px;white-space:nowrap;transition:background .15s,color .15s}
+.navlinks a:hover{background:var(--green-s);color:var(--green-d)}
+.wrap{max-width:1400px;margin:0 auto;padding:0 24px}
+
+/* ============ HERO ============ */
+.hero{padding:96px 0 72px;border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;align-items:center}
+.hero h1{font-family:var(--disp);font-size:clamp(42px,5.6vw,74px);line-height:.98;letter-spacing:-.035em;font-weight:800;margin-bottom:22px}
+.hero .te-line{font-family:var(--te);font-size:clamp(19px,2.1vw,26px);color:var(--green);line-height:1.55;margin-bottom:26px;font-weight:500}
+.hero p{font-size:16.5px;color:var(--ink2);max-width:52ch;line-height:1.7}
+.hero-stats{display:flex;gap:38px;margin-top:38px;flex-wrap:wrap}
+.stat b{font-family:var(--disp);display:block;font-size:34px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.stat span{font-size:12.5px;color:var(--muted);margin-top:5px;display:block}
+.hero-art{display:flex;justify-content:center}
+
+/* ============ SECTIONS ============ */
+section{padding:76px 0;border-bottom:1px solid var(--line)}
+.sec-head{margin-bottom:44px;max-width:70ch}
+.sec-num{font-family:var(--disp);font-size:13px;font-weight:700;color:var(--gold-d);margin-bottom:8px}
+.sec-head h2{font-family:var(--disp);font-size:clamp(28px,3.4vw,40px);letter-spacing:-.028em;font-weight:700;line-height:1.1;margin-bottom:12px}
+.sec-head p{color:var(--ink2);font-size:15.5px;max-width:62ch}
+h3.grp{font-family:var(--disp);font-size:21px;font-weight:700;letter-spacing:-.015em;margin:52px 0 6px;padding-top:26px;border-top:1px solid var(--line)}
+h3.grp:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.grp-note{color:var(--muted);font-size:14px;margin-bottom:26px;max-width:64ch}
+
+/* ============ TOKENS ============ */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
+.sw{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.sw-chip{height:88px}
+.sw-body{padding:11px 13px}
+.sw-name{font-weight:600;font-size:13.5px}
+.sw-hex{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sw-use{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
+
+.typerow{display:flex;align-items:baseline;gap:22px;padding:15px 0;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.typerow .lbl{font-size:11.5px;color:var(--faint);width:150px;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+.spacescale{display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap}
+.spacebar{text-align:center}
+.spacebar i{display:block;background:var(--green);border-radius:3px;width:30px}
+.spacebar b{display:block;font-size:11px;color:var(--muted);margin-top:6px;font-weight:500}
+
+/* ============ COMPONENT BOARD ============ */
+.board{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start}
+.cell{min-width:120px}
+.cell-lbl{font-size:11px;color:var(--faint);margin-bottom:9px}
+.cstack{display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+
+/* ============ UI ATOMS (used in mockups too) ============ */
+.btn{font-family:var(--sans);font-size:14px;font-weight:600;border:0;border-radius:var(--r-s);padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;line-height:1.2}
+.btn-pri{background:var(--green);color:#fff}
+.btn-pri:hover{background:var(--green-d)}
+.btn-sec{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn-sec:hover{border-color:var(--ink2)}
+.btn-gold{background:var(--gold);color:#3B2A08}
+.btn-ghost{background:transparent;color:var(--green);padding:11px 6px}
+.btn-danger{background:var(--red);color:#fff}
+.btn-dis{background:var(--line2);color:var(--faint);cursor:not-allowed}
+.btn-sm{font-size:12.5px;padding:8px 13px}
+.btn-full{width:100%;justify-content:center;padding:14px}
+.btn-lg{padding:15px 26px;font-size:15.5px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:99px;line-height:1.4}
+.b-elig{background:var(--green-s);color:var(--green-d)}
+.b-part{background:var(--gold-s);color:var(--gold-d)}
+.b-no{background:var(--line2);color:var(--muted)}
+.b-urgent{background:var(--red-s);color:var(--red)}
+.b-new{background:var(--blue-s);color:var(--blue)}
+
+.chip{font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink2);white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.input{width:100%;font-family:var(--sans);font-size:14.5px;padding:12px 13px;border:1.5px solid var(--line);border-radius:var(--r-s);background:var(--card);color:var(--ink)}
+.input:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)}
+.input.err{border-color:var(--red);background:var(--red-s)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+.hint.err{color:var(--red)}
+
+/* ============ PHONE FRAME ============ */
+.screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:34px 26px}
+.screen{display:flex;flex-direction:column}
+.screen-cap{margin-bottom:11px}
+.screen-cap b{font-family:var(--disp);font-size:15.5px;font-weight:700;display:block;letter-spacing:-.01em}
+.screen-cap span{font-size:12.5px;color:var(--muted);line-height:1.5;display:block;margin-top:3px}
+.phone{width:300px;height:610px;background:var(--ink);border-radius:30px;padding:8px;box-shadow:0 1px 2px rgba(18,33,28,.14),0 12px 30px -12px rgba(18,33,28,.3);position:relative;flex-shrink:0}
+.pscreen{width:100%;height:100%;background:var(--paper);border-radius:23px;overflow:hidden;position:relative;display:flex;flex-direction:column;font-size:12.5px}
+.statusbar{height:24px;background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:10px;font-weight:600;color:var(--ink);flex-shrink:0}
+.pbody{flex:1;overflow:hidden;position:relative}
+.pscroll{height:100%;overflow-y:auto;scrollbar-width:none}
+.pscroll::-webkit-scrollbar{display:none}
+
+/* app chrome inside phone */
+.appbar{background:var(--card);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.appbar .t{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appbar .ic{width:26px;height:26px;display:grid;place-items:center;color:var(--ink2);flex-shrink:0}
+.langpill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--green-s);color:var(--green-d);flex-shrink:0}
+
+.tabbar{background:var(--card);border-top:1px solid var(--line);display:flex;flex-shrink:0;padding:5px 0 7px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;color:var(--faint)}
+.tab svg{width:19px;height:19px}
+.tab.on{color:var(--green)}
+
+.pad{padding:12px 14px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:9px}
+.pcard.flat{border-radius:0;border-left:0;border-right:0;margin-bottom:0;border-top:0}
+
+.n-title{font-weight:600;font-size:13px;line-height:1.4;margin-bottom:3px}
+.n-org{font-size:11px;color:var(--muted);margin-bottom:8px}
+.n-meta{display:flex;gap:14px;font-size:11px;flex-wrap:wrap}
+.n-meta i{color:var(--muted);font-style:normal}
+.n-meta b{font-weight:600}
+.divider{height:1px;background:var(--line);margin:10px 0}
+.sect-t{font-family:var(--disp);font-size:12.5px;font-weight:700;margin:14px 0 7px;letter-spacing:-.005em}
+.small{font-size:11px;color:var(--muted);line-height:1.55}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--line)}
+.chips::-webkit-scrollbar{display:none}
+.chips .chip{font-size:11px;padding:5px 11px;border-width:1.2px}
+
+.crit{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:11.5px}
+.crit:last-child{border-bottom:0}
+.crit .mk{width:16px;height:16px;border-radius:99px;display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.mk.ok{background:var(--green-s);color:var(--green-d)}
+.mk.no{background:var(--red-s);color:var(--red)}
+.crit b{font-weight:600;display:block}
+.crit span{color:var(--muted);font-size:10.5px}
+
+.opt{border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:7px;font-size:12px;line-height:1.45;background:var(--card);display:flex;gap:9px;align-items:flex-start}
+.opt .k{width:18px;height:18px;border-radius:99px;border:1.5px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:9.5px;font-weight:700;color:var(--muted)}
+.opt.correct{border-color:var(--green);background:var(--green-s)}
+.opt.correct .k{background:var(--green);border-color:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:var(--red-s)}
+.opt.wrong .k{background:var(--red);border-color:var(--red);color:#fff}
+.opt.sel{border-color:var(--ink)}
+
+.prog{height:4px;background:var(--line2);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--green);border-radius:99px}
+.prog.gold i{background:var(--gold)}
+
+.emptybox{text-align:center;padding:34px 20px}
+.emptybox .art{width:56px;height:56px;border-radius:99px;background:var(--green-s);display:grid;place-items:center;margin:0 auto 14px;color:var(--green)}
+.emptybox b{font-family:var(--disp);display:block;font-size:14px;font-weight:700;margin-bottom:5px}
+.emptybox p{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+
+.streakring{width:74px;height:74px;border-radius:99px;border:5px solid var(--gold);display:grid;place-items:center;margin:0 auto}
+.streakring b{font-family:var(--disp);font-size:26px;font-weight:800;line-height:1}
+.streakring span{font-size:9px;color:var(--muted)}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal i{aspect-ratio:1;border-radius:5px;background:var(--line2);display:grid;place-items:center;font-size:9px;color:var(--faint);font-style:normal}
+.cal i.done{background:var(--gold);color:#3B2A08;font-weight:700}
+.cal i.frz{background:var(--blue-s);color:var(--blue);font-weight:700}
+
+.lbrow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:11.5px}
+.lbrow .rk{width:20px;font-family:var(--disp);font-weight:700;color:var(--muted);text-align:center;flex-shrink:0}
+.lbrow .av{width:26px;height:26px;border-radius:99px;background:var(--green-s);color:var(--green-d);display:grid;place-items:center;font-weight:700;font-size:10px;flex-shrink:0}
+.lbrow .nm{flex:1;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .sc{font-weight:700;font-variant-numeric:tabular-nums}
+.lbrow.me{background:var(--gold-s);margin:0 -14px;padding:8px 14px;border-radius:0}
+
+.toast{background:var(--ink);color:#fff;padding:11px 13px;border-radius:10px;font-size:11.5px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 20px -6px rgba(18,33,28,.4)}
+.toast.ok{background:var(--green-d)}
+.toast.bad{background:var(--red)}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;padding:8px 14px 16px;box-shadow:0 -8px 34px -8px rgba(18,33,28,.28)}
+.sheet .grab{width:34px;height:4px;background:var(--line);border-radius:99px;margin:0 auto 12px}
+.scrim{position:absolute;inset:0;background:rgba(18,33,28,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--card);border-radius:16px;padding:18px;width:100%;box-shadow:0 18px 40px -10px rgba(18,33,28,.4)}
+.modal h4{font-family:var(--disp);font-size:15px;font-weight:700;margin-bottom:7px;letter-spacing:-.01em}
+.modal p{font-size:11.5px;color:var(--ink2);line-height:1.6;margin-bottom:15px}
+.modal-acts{display:flex;gap:8px}
+.modal-acts .btn{flex:1;justify-content:center;font-size:12.5px;padding:10px}
+
+.skel{background:linear-gradient(90deg,var(--line2) 25%,#F5F7F5 50%,var(--line2) 75%);background-size:200% 100%;border-radius:5px;height:11px;margin-bottom:7px}
+.skel.w70{width:70%}.skel.w45{width:45%}.skel.w90{width:90%}
+
+.step-dots{display:flex;gap:5px;align-items:center}
+.step-dots i{height:3px;flex:1;background:var(--line);border-radius:99px}
+.step-dots i.on{background:var(--green)}
+
+.hero-phone{transform:rotate(-2.5deg)}
+
+/* ============ SPEC TABLE ============ */
+.spec{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.spec th{background:var(--ink);color:#fff;text-align:left;padding:11px 13px;font-weight:600;font-size:12.5px}
+.spec td{padding:10px 13px;border-bottom:1px solid var(--line2);vertical-align:top}
+.spec tr:last-child td{border-bottom:0}
+.spec tbody tr:nth-child(even){background:#FCFDFC}
+.spec code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--green-s);color:var(--green-d);padding:1px 5px;border-radius:4px}
+
+.callout{background:var(--gold-s);border-left:3px solid var(--gold);padding:14px 17px;border-radius:0 var(--r-s) var(--r-s) 0;margin:24px 0}
+.callout b{font-family:var(--disp);font-weight:700}
+.callout p{font-size:14px;color:var(--ink2);line-height:1.65}
+
+footer{padding:56px 0 72px;background:var(--ink);color:#B7C4BD}
+footer .wrap{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-end}
+footer b{font-family:var(--disp);color:#fff;font-size:19px;display:block;margin-bottom:6px;font-weight:700}
+footer p{font-size:13.5px;max-width:46ch;line-height:1.65}
+footer .te{color:var(--gold);font-size:14px;margin-top:10px}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:44px}
+  .hero{padding:56px 0 46px}
+  .navlinks{display:none}
+}
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4z"/><path d="M20 4h-6"/><path d="M20 4v13.5a2.5 2.5 0 0 0-2.5-2.5H14"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.3"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H8l-4 3V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10.5 20a1.8 1.8 0 0 0 3 0"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="5.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17" cy="18.5" r="2.5"/><path d="M8.8 10.8l6-3.6M8.8 13.2l6 3.6"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s1 2 2 2 2-4 2-8z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/></symbol>
+<symbol id="i-wifi-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 8c2-1.6 4.4-2.6 7-2.9M14.5 5.4c2.2.5 4.1 1.4 5.7 2.6M7 12c1.1-.8 2.4-1.4 3.8-1.7M16.5 11.3c.9.3 1.7.8 2.5 1.4M10 15.6c.6-.3 1.3-.5 2-.5s1.4.2 2 .5"/><path d="M3 3l18 18"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">Sadhana<span>UI Specification</span></div>
+    <nav class="navlinks">
+      <a href="#found">Foundations</a>
+      <a href="#comp">Components</a>
+      <a href="#onboard">Onboarding</a>
+      <a href="#feed">Feed</a>
+      <a href="#exam">Exam Hub</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#community">Community</a>
+      <a href="#account">Account</a>
+      <a href="#modals">Modals</a>
+      <a href="#states">States</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Every screen,<br>every button,<br>every state.</h1>
+      <div class="te-line">తెలుగు విద్యార్థుల కోసం రూపొందించిన ప్రతి స్క్రీన్</div>
+      <p>The complete interface specification for Sadhana. Designed for a ₹8,000 Android on a patchy 3G connection, held one-handed on a bus, by someone who reads Telugu faster than English and is making a decision about their career.</p>
+      <div class="hero-stats">
+        <div class="stat"><b>38</b><span>Screens</span></div>
+        <div class="stat"><b>14</b><span>Modals &amp; sheets</span></div>
+        <div class="stat"><b>9</b><span>Forms</span></div>
+        <div class="stat"><b>2</b><span>Languages, every screen</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="phone hero-phone">
+        <div class="pscreen">
+          <div class="statusbar"><span>7:02</span><span>◗◗◗ 3G ▮</span></div>
+          <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+          <div class="pbody"><div class="pscroll">
+            <div style="background:var(--green);color:#fff;padding:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div><div class="te" style="font-size:13px;opacity:.85">రోజు ప్రశ్న</div><div style="font-family:var(--disp);font-size:17px;font-weight:700;margin-top:2px">10 questions ready</div></div>
+                <div style="text-align:center"><div style="font-family:var(--disp);font-size:24px;font-weight:800;line-height:1">14</div><div style="font-size:9px;opacity:.8">day streak</div></div>
+              </div>
+              <button class="btn btn-gold btn-full btn-sm" style="margin-top:11px">Start today's quiz</button>
+            </div>
+            <div class="pad">
+              <div class="row" style="margin-bottom:9px"><b style="font-family:var(--disp);font-size:13px">For you</b><span class="small">3 new</span></div>
+              <div class="pcard">
+                <div class="row" style="align-items:flex-start;margin-bottom:5px">
+                  <div class="n-title te" style="flex:1">తెలంగాణ పోలీస్ కానిస్టేబుల్ నోటిఫికేషన్ 2026</div>
+                  <span class="badge b-elig">✓ అర్హులు</span>
+                </div>
+                <div class="n-org">TGLPRB · Telangana</div>
+                <div class="n-meta"><span><i>ఖాళీలు</i> <b>16,614</b></span><span><i>చివరి తేదీ</i> <b style="color:var(--red)">12 Sep</b></span></div>
+              </div>
+              <div class="pcard">
+                <div class="row" style="align-items:flex-start;margin-bottom:5px">
+                  <div class="n-title te" style="flex:1">TGPSC గ్రూప్ 2 సర్వీసెస్ 2026</div>
+                  <span class="badge b-part">3/4</span>
+                </div>
+                <div class="n-org">TGPSC · Telangana</div>
+                <div class="n-meta"><span><i>ఖాళీలు</i> <b>783</b></span><span><i>చివరి తేదీ</i> <b>04 Oct</b></span></div>
+              </div>
+            </div>
+          </div></div>
+          <div class="tabbar">
+            <div class="tab on"><svg><use href="#i-home"/></svg>Feed</div>
+            <div class="tab"><svg><use href="#i-book"/></svg>Exams</div>
+            <div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div>
+            <div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div>
+            <div class="tab"><svg><use href="#i-user"/></svg>You</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FOUNDATIONS ================= -->
+<section id="found">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <h2>Foundations</h2>
+    <p>Deep officialdom green carries authority without the coldness of civic blue. Marigold is the accent because it is the colour of exam-morning temple visits and of a deadline that matters — warm urgency rather than alarm. Red is reserved strictly for the last three days before a deadline, so it never loses its meaning.</p>
+  </div>
+
+  <h3 class="grp">Colour</h3>
+  <p class="grp-note">Nine values, no gradients. Every state a user can be in maps to exactly one of these.</p>
+  <div class="swatches">
+    <div class="sw"><div class="sw-chip" style="background:#12211C"></div><div class="sw-body"><div class="sw-name">Ink</div><div class="sw-hex">#12211C</div><div class="sw-use">Body text, headers, phone chrome</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#33463E"></div><div class="sw-body"><div class="sw-name">Ink soft</div><div class="sw-hex">#33463E</div><div class="sw-use">Secondary text, labels</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#6B7C74"></div><div class="sw-body"><div class="sw-name">Muted</div><div class="sw-hex">#6B7C74</div><div class="sw-use">Meta, captions, placeholders</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#0F6B4F"></div><div class="sw-body"><div class="sw-name">Green</div><div class="sw-hex">#0F6B4F</div><div class="sw-use">Primary action, eligible, active tab</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#E3F0EA"></div><div class="sw-body"><div class="sw-name">Green wash</div><div class="sw-hex">#E3F0EA</div><div class="sw-use">Eligible badge, correct answer</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#E8A33D"></div><div class="sw-body"><div class="sw-name">Marigold</div><div class="sw-hex">#E8A33D</div><div class="sw-use">Streaks, partial match, quiz CTA</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#FCF1DE"></div><div class="sw-body"><div class="sw-name">Marigold wash</div><div class="sw-hex">#FCF1DE</div><div class="sw-use">Partial badge, your row on leaderboard</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#C4362B"></div><div class="sw-body"><div class="sw-name">Red</div><div class="sw-hex">#C4362B</div><div class="sw-use">Deadline under 3 days, errors only</div></div></div>
+    <div class="sw"><div class="sw-chip" style="background:#F7F8F5;border-bottom:1px solid var(--line)"></div><div class="sw-body"><div class="sw-name">Paper</div><div class="sw-hex">#F7F8F5</div><div class="sw-use">App background. Cooler than cream — reads as document, not warmth</div></div></div>
+  </div>
+
+  <h3 class="grp">Type</h3>
+  <p class="grp-note">Gabarito sets headings: its round terminals sit comfortably beside Telugu's open bowls. Noto Sans handles body because it shares metrics with Noto Sans Telugu, so a bilingual line never jumps in weight or height.</p>
+  <div class="board" style="display:block">
+    <div class="typerow"><span class="lbl">Display / 32px / 800</span><span style="font-family:var(--disp);font-size:32px;font-weight:800;letter-spacing:-.03em">Am I eligible?</span></div>
+    <div class="typerow"><span class="lbl">Screen title / 20px / 700</span><span style="font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:-.015em">Today's notifications</span></div>
+    <div class="typerow"><span class="lbl">Telugu title / 20px / 600</span><span class="te" style="font-size:20px;font-weight:600">నేటి నోటిఫికేషన్‌లు</span></div>
+    <div class="typerow"><span class="lbl">Card title / 15px / 600</span><span style="font-size:15px;font-weight:600">TGPSC Group 2 Services 2026</span></div>
+    <div class="typerow"><span class="lbl">Telugu card / 15px / 600</span><span class="te" style="font-size:15px;font-weight:600;line-height:1.85">TGPSC గ్రూప్ 2 సర్వీసెస్ 2026</span></div>
+    <div class="typerow"><span class="lbl">Body / 14px / 400</span><span style="font-size:14px">Age limit 18–46 years as on 1 July 2026</span></div>
+    <div class="typerow"><span class="lbl">Telugu body / 14px / 400</span><span class="te" style="font-size:14px;line-height:1.85">వయస్సు పరిమితి 18–46 సంవత్సరాలు</span></div>
+    <div class="typerow"><span class="lbl">Meta / 12px / 500</span><span style="font-size:12px;font-weight:500;color:var(--muted)">Last verified 6 September 2026</span></div>
+  </div>
+  <div class="callout">
+    <p><b>The rule that governs every layout:</b> Telugu strings run 15–30% longer than their English equivalent, and the glyphs are taller. Line-height is 1.85 on Telugu and 1.6 on Latin. Numerals stay Latin everywhere — 2026, ₹28,940, 16,614 — because Telugu numerals are not read fluently by this audience.</p>
+  </div>
+
+  <h3 class="grp">Spacing and radius</h3>
+  <p class="grp-note">A four-point scale. Radius encodes hierarchy rather than decorating: sheets 20, cards 11, controls 9, pills 99.</p>
+  <div class="board">
+    <div class="cell" style="flex:1;min-width:280px">
+      <div class="cell-lbl">Spacing scale</div>
+      <div class="spacescale">
+        <div class="spacebar"><i style="height:4px"></i><b>4</b></div>
+        <div class="spacebar"><i style="height:8px"></i><b>8</b></div>
+        <div class="spacebar"><i style="height:12px"></i><b>12</b></div>
+        <div class="spacebar"><i style="height:16px"></i><b>16</b></div>
+        <div class="spacebar"><i style="height:24px"></i><b>24</b></div>
+        <div class="spacebar"><i style="height:32px"></i><b>32</b></div>
+        <div class="spacebar"><i style="height:48px"></i><b>48</b></div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-lbl">Radius</div>
+      <div style="display:flex;gap:9px;align-items:flex-end">
+        <div style="text-align:center"><div style="width:44px;height:44px;background:var(--green-s);border:1.5px solid var(--green);border-radius:9px"></div><b style="font-size:11px;color:var(--muted)">9</b></div>
+        <div style="text-align:center"><div style="width:44px;height:44px;background:var(--green-s);border:1.5px solid var(--green);border-radius:11px"></div><b style="font-size:11px;color:var(--muted)">11</b></div>
+        <div style="text-align:center"><div style="width:44px;height:44px;background:var(--green-s);border:1.5px solid var(--green);border-radius:20px 20px 0 0"></div><b style="font-size:11px;color:var(--muted)">20</b></div>
+        <div style="text-align:center"><div style="width:44px;height:24px;background:var(--green-s);border:1.5px solid var(--green);border-radius:99px"></div><b style="font-size:11px;color:var(--muted)">99</b></div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-lbl">Minimum tap target</div>
+      <div style="width:48px;height:48px;border:1.5px dashed var(--gold-d);border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--gold-d)">48</div>
+      <div class="hint" style="max-width:150px">One-handed use on a moving bus. Nothing smaller, anywhere.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= COMPONENTS ================= -->
+<section id="comp">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <h2>Components</h2>
+    <p>Every interactive element in the product, in every state it can occupy. If a screen needs something that is not here, the component gets added to this page first.</p>
+  </div>
+
+  <h3 class="grp">Buttons</h3>
+  <p class="grp-note">One primary action per screen. The label always names the outcome — “Save notification”, never “Submit”.</p>
+  <div class="board">
+    <div class="cell"><div class="cell-lbl">Primary</div><div class="cstack"><button class="btn btn-pri">Start today's quiz</button><button class="btn btn-pri btn-sm">Save</button><button class="btn btn-pri btn-lg">Apply now</button></div></div>
+    <div class="cell"><div class="cell-lbl">Secondary</div><div class="cstack"><button class="btn btn-sec">View syllabus</button><button class="btn btn-sec btn-sm">Filter</button></div></div>
+    <div class="cell"><div class="cell-lbl">Accent</div><div class="cstack"><button class="btn btn-gold">Continue streak</button><button class="btn btn-gold btn-sm">Share result</button></div></div>
+    <div class="cell"><div class="cell-lbl">Text</div><div class="cstack"><button class="btn btn-ghost">See all 24 exams</button><button class="btn btn-ghost btn-sm">Skip for now</button></div></div>
+    <div class="cell"><div class="cell-lbl">Destructive</div><div class="cstack"><button class="btn btn-danger">Delete account</button></div></div>
+    <div class="cell"><div class="cell-lbl">Disabled &amp; loading</div><div class="cstack"><button class="btn btn-dis" disabled>Verify</button><button class="btn btn-pri" style="opacity:.72"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:99px"></span>Sending</button></div></div>
+    <div class="cell" style="width:200px"><div class="cell-lbl">Full width (mobile default)</div><button class="btn btn-pri btn-full">Send OTP</button></div>
+    <div class="cell"><div class="cell-lbl">Telugu labels</div><div class="cstack"><button class="btn btn-pri te">క్విజ్ మొదలుపెట్టండి</button><button class="btn btn-sec te">సిలబస్ చూడండి</button></div></div>
+  </div>
+
+  <h3 class="grp">Eligibility badges</h3>
+  <p class="grp-note">The most important component in the product. Four states, and the fourth is deliberate: a logged-out user sees no badge at all rather than a misleading one.</p>
+  <div class="board">
+    <div class="cell"><div class="cell-lbl">Fully eligible</div><span class="badge b-elig">✓ You are eligible</span><br><br><span class="badge b-elig te">✓ మీరు అర్హులు</span></div>
+    <div class="cell"><div class="cell-lbl">Partial — never hidden</div><span class="badge b-part">3 of 4 match</span><br><br><span class="badge b-part te">4లో 3 సరిపోతాయి</span></div>
+    <div class="cell"><div class="cell-lbl">Not eligible</div><span class="badge b-no">Age limit exceeded</span></div>
+    <div class="cell"><div class="cell-lbl">Unknown — no profile</div><span class="badge b-no" style="border:1.2px dashed var(--line)">Add your details</span></div>
+    <div class="cell"><div class="cell-lbl">Deadline</div><span class="badge b-urgent">2 days left</span></div>
+    <div class="cell"><div class="cell-lbl">Fresh</div><span class="badge b-new">Posted today</span></div>
+  </div>
+
+  <h3 class="grp">Form controls</h3>
+  <div class="board">
+    <div class="cell" style="width:230px">
+      <div class="cell-lbl">Text input — rest, focus, error</div>
+      <div class="field"><label>Phone number</label><input class="input" value="98480 12345" readonly></div>
+      <div class="field"><label>Phone number</label><input class="input" value="98480 12345" style="outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)" readonly></div>
+      <div class="field"><label>Phone number</label><input class="input err" value="9848" readonly><div class="hint err">Enter all 10 digits</div></div>
+    </div>
+    <div class="cell" style="width:230px">
+      <div class="cell-lbl">Select &amp; date</div>
+      <div class="field"><label>Highest qualification</label><select class="input"><option>Degree (any stream)</option></select></div>
+      <div class="field"><label>Date of birth</label><input class="input" value="14 / 08 / 2001" readonly><div class="hint">Used only to check age eligibility</div></div>
+    </div>
+    <div class="cell" style="width:230px">
+      <div class="cell-lbl">Choice controls</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <label style="display:flex;gap:9px;align-items:center;font-size:13.5px"><span style="width:19px;height:19px;border-radius:5px;background:var(--green);display:grid;place-items:center;color:#fff"><svg width="12" height="12"><use href="#i-check"/></svg></span> I have read the privacy notice</label>
+        <label style="display:flex;gap:9px;align-items:center;font-size:13.5px"><span style="width:19px;height:19px;border-radius:5px;border:1.5px solid var(--line)"></span> Send me WhatsApp alerts</label>
+        <label style="display:flex;gap:9px;align-items:center;font-size:13.5px"><span style="width:19px;height:19px;border-radius:99px;border:5px solid var(--green)"></span> SC</label>
+        <div style="display:flex;gap:9px;align-items:center;font-size:13.5px"><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span> Daily quiz reminder</div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-lbl">OTP entry</div>
+      <div style="display:flex;gap:7px">
+        <span style="width:38px;height:46px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">4</span>
+        <span style="width:38px;height:46px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">1</span>
+        <span style="width:38px;height:46px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">7</span>
+        <span style="width:38px;height:46px;border:1.5px solid var(--ink);border-radius:9px;display:grid;place-items:center"><i style="width:1.5px;height:20px;background:var(--ink);display:block"></i></span>
+        <span style="width:38px;height:46px;border:1.5px solid var(--line);border-radius:9px"></span>
+        <span style="width:38px;height:46px;border:1.5px solid var(--line);border-radius:9px"></span>
+      </div>
+      <div class="hint">Resend in 0:24</div>
+    </div>
+  </div>
+
+  <h3 class="grp">Filter chips, tabs, progress</h3>
+  <div class="board">
+    <div class="cell" style="width:100%">
+      <div class="cell-lbl">Filter chips — horizontally scrollable, never a dropdown on mobile</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <span class="chip on">Eligible for me</span><span class="chip">Closing soon</span><span class="chip">Degree</span><span class="chip">Karimnagar</span><span class="chip">Police</span><span class="chip te">ప్రభుత్వ ఉద్యోగాలు</span>
+      </div>
+    </div>
+    <div class="cell" style="width:260px">
+      <div class="cell-lbl">Quiz progress</div>
+      <div class="prog"><i style="width:60%"></i></div>
+      <div class="hint">Question 6 of 10</div>
+      <div class="cell-lbl" style="margin-top:16px">Profile completion</div>
+      <div class="step-dots"><i class="on"></i><i class="on"></i><i></i></div>
+      <div class="hint">Step 2 of 3</div>
+    </div>
+    <div class="cell" style="width:230px">
+      <div class="cell-lbl">Loading skeleton</div>
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px">
+        <div class="skel w90"></div><div class="skel w45"></div><div style="height:7px"></div><div class="skel w70"></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="grp">Feedback</h3>
+  <div class="board">
+    <div class="cell" style="width:250px"><div class="cell-lbl">Toast — confirmation</div><div class="toast ok"><svg width="15" height="15"><use href="#i-check"/></svg>Saved. We'll remind you on 9 Sep.</div></div>
+    <div class="cell" style="width:250px"><div class="cell-lbl">Toast — failure</div><div class="toast bad">Couldn't save. Check your connection.</div></div>
+    <div class="cell" style="width:250px"><div class="cell-lbl">Toast — Telugu</div><div class="toast ok te">సేవ్ చేయబడింది</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ================= ONBOARDING ================= -->
+<section id="onboard">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <h2>Getting in</h2>
+    <p>Nine screens from cold open to a usable feed. The language choice comes before anything else, because for this audience it is not a setting — it is the product. Every step after it is skippable, but the app keeps explaining what skipping costs.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>01 · Language first</b><span>Before the logo, before the pitch. Telugu is pre-selected; English is one tap away.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:02</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody"><div class="pscroll" style="display:flex;flex-direction:column;justify-content:center;padding:26px 20px;background:var(--green)">
+      <div style="font-family:var(--disp);color:#fff;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px">Sadhana</div>
+      <div class="te" style="color:#BFE0D0;font-size:14px;line-height:1.8;margin-bottom:32px">మీ భాషను ఎంచుకోండి<br><span style="opacity:.7">Choose your language</span></div>
+      <div style="background:#fff;border-radius:11px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <div><div class="te" style="font-size:18px;font-weight:600">తెలుగు</div><div class="small">Telugu</div></div>
+        <span style="width:22px;height:22px;border-radius:99px;background:var(--green);display:grid;place-items:center;color:#fff"><svg width="13" height="13"><use href="#i-check"/></svg></span>
+      </div>
+      <div style="background:rgba(255,255,255,.13);border:1.5px solid rgba(255,255,255,.3);border-radius:11px;padding:15px;color:#fff">
+        <div style="font-size:18px;font-weight:600">English</div><div style="font-size:11px;opacity:.7">ఇంగ్లీష్</div>
+      </div>
+      <button class="btn btn-gold btn-full" style="margin-top:26px">Continue</button>
+      <div style="text-align:center;color:#9CCBB5;font-size:10.5px;margin-top:12px">You can change this any time</div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>02 · What this does</b><span>Three claims, no carousel dots to swipe past. Everything on one screen because a second screen is a second chance to leave.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:03</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody"><div class="pscroll" style="padding:24px 20px;display:flex;flex-direction:column;height:100%">
+      <div style="font-family:var(--disp);font-size:23px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin-bottom:6px">Never miss a notification again</div>
+      <div class="te" style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:24px">ఇక ఏ నోటిఫికేషన్ మిస్ కారు</div>
+      <div style="display:flex;gap:12px;margin-bottom:18px"><span style="width:34px;height:34px;border-radius:9px;background:var(--green-s);color:var(--green);display:grid;place-items:center;flex-shrink:0"><svg width="18" height="18"><use href="#i-bell"/></svg></span><div><b style="font-size:13px;display:block">Every job, within the hour</b><span class="small">TGPSC, APPSC, SSC, Railways, Police, Banking and private jobs</span></div></div>
+      <div style="display:flex;gap:12px;margin-bottom:18px"><span style="width:34px;height:34px;border-radius:9px;background:var(--green-s);color:var(--green);display:grid;place-items:center;flex-shrink:0"><svg width="18" height="18"><use href="#i-check"/></svg></span><div><b style="font-size:13px;display:block">We check if you qualify</b><span class="small">Tell us your age and qualification once. We do the reading.</span></div></div>
+      <div style="display:flex;gap:12px"><span style="width:34px;height:34px;border-radius:9px;background:var(--gold-s);color:var(--gold-d);display:grid;place-items:center;flex-shrink:0"><svg width="18" height="18"><use href="#i-flame"/></svg></span><div><b style="font-size:13px;display:block">Ten questions every morning</b><span class="small">Free, in Telugu, at 7 AM</span></div></div>
+      <div style="flex:1"></div>
+      <button class="btn btn-pri btn-full">Get started</button>
+      <div style="text-align:center;margin-top:9px"><span class="btn btn-ghost btn-sm">Look around first</span></div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>03 · Phone number</b><span>No email, no password. The keypad opens automatically and the country code is fixed.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:04</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Sign in</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:20px 16px">
+      <div style="font-family:var(--disp);font-size:19px;font-weight:700;margin-bottom:4px">What's your number?</div>
+      <div class="te small" style="margin-bottom:20px">మీ ఫోన్ నంబర్ ఎంటర్ చేయండి</div>
+      <div class="field"><label>Mobile number</label>
+        <div style="display:flex;gap:8px"><span style="padding:12px 11px;border:1.5px solid var(--line);border-radius:9px;font-size:14px;font-weight:600;background:var(--line2)">+91</span><input class="input" value="98480 12345" readonly></div>
+        <div class="hint">We'll send a 6-digit code on WhatsApp</div>
+      </div>
+      <button class="btn btn-pri btn-full" style="margin-top:6px">Send code</button>
+      <div class="small" style="margin-top:18px;line-height:1.7">By continuing you agree to our <u>Terms</u> and <u>Privacy notice</u>. We never share your number.</div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>04 · Verify code</b><span>Auto-advancing boxes, auto-read from SMS where the OS allows it. The resend timer is visible from the first second.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:04</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Verify</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:20px 16px">
+      <div style="font-family:var(--disp);font-size:19px;font-weight:700;margin-bottom:4px">Enter the 6-digit code</div>
+      <div class="small" style="margin-bottom:20px">Sent to +91 98480 12345 · <u style="color:var(--green)">Change</u></div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <span style="flex:1;height:48px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">4</span>
+        <span style="flex:1;height:48px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">1</span>
+        <span style="flex:1;height:48px;border:1.5px solid var(--green);border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700">7</span>
+        <span style="flex:1;height:48px;border:1.5px solid var(--ink);border-radius:9px"></span>
+        <span style="flex:1;height:48px;border:1.5px solid var(--line);border-radius:9px"></span>
+        <span style="flex:1;height:48px;border:1.5px solid var(--line);border-radius:9px"></span>
+      </div>
+      <div class="row"><span class="small">Didn't get it?</span><span class="small" style="font-weight:600">Resend in 0:24</span></div>
+      <button class="btn btn-dis btn-full" style="margin-top:20px">Verify</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>05 · Profile, step 1</b><span>Every field here exists because the eligibility engine reads it. The screen says so, in those words.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:05</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">About you</div><span class="btn btn-ghost btn-sm" style="padding:4px 6px">Skip</span></div>
+    <div style="padding:10px 14px 0"><div class="step-dots"><i class="on"></i><i></i><i></i></div></div>
+    <div class="pbody"><div class="pscroll" style="padding:14px 16px">
+      <div class="small" style="margin-bottom:16px;background:var(--green-s);padding:9px 11px;border-radius:9px;color:var(--green-d);line-height:1.6">We use these three answers to tell you which jobs you qualify for. Nothing else.</div>
+      <div class="field"><label>Date of birth</label><input class="input" value="14 / 08 / 2001" readonly><div class="hint">Age is calculated on each notification's own cut-off date</div></div>
+      <div class="field"><label>Category</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip">General</span><span class="chip">OBC</span><span class="chip on">SC</span><span class="chip">ST</span><span class="chip">EWS</span></div>
+        <div class="hint">Age relaxation is applied automatically</div>
+      </div>
+      <div class="field"><label>Gender</label>
+        <div style="display:flex;gap:6px"><span class="chip on">Male</span><span class="chip">Female</span><span class="chip">Other</span></div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12px;line-height:1.55"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;margin-top:1px"></span> I have a benchmark disability certificate</label>
+      </div>
+      <button class="btn btn-pri btn-full" style="margin-top:8px">Next</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>06 · Profile, step 2</b><span>Qualification uses the government's own vocabulary, not a tidied-up version, because that is what notifications say.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:06</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Your education</div><span class="btn btn-ghost btn-sm" style="padding:4px 6px">Skip</span></div>
+    <div style="padding:10px 14px 0"><div class="step-dots"><i class="on"></i><i class="on"></i><i></i></div></div>
+    <div class="pbody"><div class="pscroll" style="padding:14px 16px">
+      <div class="field"><label>Highest qualification completed</label>
+        <div class="cstack" style="gap:7px">
+          <div class="opt" style="width:100%"><span class="k"></span><div>10th / SSC</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>Intermediate / 12th</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>ITI or Diploma</div></div>
+          <div class="opt sel" style="width:100%"><span class="k" style="background:var(--ink);border-color:var(--ink);color:#fff">✓</span><div>Degree — any stream</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>B.Tech / B.E.</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>Post graduation</div></div>
+        </div>
+      </div>
+      <div class="field"><label>Stream</label><select class="input"><option>B.Sc — Computer Science</option></select></div>
+      <div class="field"><label>District</label><select class="input"><option>Karimnagar</option></select><div class="hint">Some notifications are district-restricted</div></div>
+      <button class="btn btn-pri btn-full">Next</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>07 · Profile, step 3</b><span>Exam interests decide what floats to the top of the feed. Nothing is ever hidden — only re-ordered.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:07</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">What are you preparing for?</div></div>
+    <div style="padding:10px 14px 0"><div class="step-dots"><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+    <div class="pbody"><div class="pscroll" style="padding:14px 16px">
+      <input class="input" placeholder="Search exams" style="margin-bottom:12px">
+      <div class="small" style="margin-bottom:10px">Pick as many as you like. These come first in your feed.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="chip on">TGPSC Group 2</span><span class="chip on">TS Police Constable</span><span class="chip">TGPSC Group 4</span><span class="chip on">SSC CGL</span><span class="chip">SSC CHSL</span><span class="chip">RRB NTPC</span><span class="chip">RRB Group D</span><span class="chip">APPSC Group 2</span><span class="chip">DSC / TET</span><span class="chip">IBPS PO</span><span class="chip">VRO / VRA</span><span class="chip">Gurukul</span>
+      </div>
+      <div style="margin-top:22px;background:var(--gold-s);border-radius:9px;padding:11px;font-size:11.5px;line-height:1.6;color:var(--gold-d)">Three selected. You'll get a WhatsApp alert when any of these opens.</div>
+      <button class="btn btn-pri btn-full" style="margin-top:14px">Finish</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>08 · Consent</b><span>DPDP itemised consent. Each line states its purpose. The first is required; the rest genuinely optional and off by default.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:08</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Before we start</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:16px">
+      <div class="small" style="margin-bottom:16px;line-height:1.7">We store your date of birth, category, qualification and district. Here is exactly what each is used for.</div>
+      <div style="display:flex;gap:10px;margin-bottom:14px"><span style="width:19px;height:19px;border-radius:5px;background:var(--green);display:grid;place-items:center;color:#fff;flex-shrink:0;margin-top:1px"><svg width="12" height="12"><use href="#i-check"/></svg></span><div><b style="font-size:12.5px;display:block">Check my eligibility</b><span class="small">Your age, category and qualification are compared against each notification. Required.</span></div></div>
+      <div style="display:flex;gap:10px;margin-bottom:14px"><span style="width:19px;height:19px;border-radius:5px;background:var(--green);display:grid;place-items:center;color:#fff;flex-shrink:0;margin-top:1px"><svg width="12" height="12"><use href="#i-check"/></svg></span><div><b style="font-size:12.5px;display:block">Alert me on WhatsApp</b><span class="small">Notifications for your chosen exams, and deadline reminders. Stop any time by replying STOP.</span></div></div>
+      <div style="display:flex;gap:10px;margin-bottom:14px"><span style="width:19px;height:19px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;margin-top:1px"></span><div><b style="font-size:12.5px;display:block">Show me relevant ads</b><span class="small">Coaching centres and libraries in your district. Off by default.</span></div></div>
+      <div class="small" style="background:var(--line2);padding:10px;border-radius:9px;line-height:1.65">You can download or delete everything we hold, any time, from Settings.</div>
+      <button class="btn btn-pri btn-full" style="margin-top:14px">Agree and continue</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>09 · Guest mode banner</b><span>If they skipped the profile, the feed still works — but a persistent, dismissible bar names what they're missing.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:09</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="background:var(--gold-s);padding:11px 14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--gold)">
+        <div style="flex:1"><b style="font-size:12px;display:block;color:var(--gold-d)">We can't tell if you qualify</b><span class="small" style="color:var(--gold-d)">Add your age and qualification — takes 40 seconds</span></div>
+        <button class="btn btn-gold btn-sm" style="padding:6px 10px">Add</button>
+      </div>
+      <div class="pad">
+        <div class="pcard"><div class="n-title">TS Police Constable 2026</div><div class="n-org">TGLPRB · Telangana</div><div class="n-meta"><span><i>Vacancies</i> <b>16,614</b></span><span><i>Closes</i> <b style="color:var(--red)">12 Sep</b></span></div></div>
+        <div class="pcard"><div class="n-title">TGPSC Group 2 Services 2026</div><div class="n-org">TGPSC · Telangana</div><div class="n-meta"><span><i>Vacancies</i> <b>783</b></span><span><i>Closes</i> <b>04 Oct</b></span></div></div>
+        <div class="pcard"><div class="n-title">SSC CGL 2026 — Tier 1</div><div class="n-org">Staff Selection Commission</div><div class="n-meta"><span><i>Vacancies</i> <b>17,727</b></span><span><i>Closes</i> <b>24 Sep</b></span></div></div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab on"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= FEED ================= -->
+<section id="feed">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <h2>Notifications</h2>
+    <p>The home screen answers one question before anything else: is there something new that I can actually apply for? The quiz banner sits above the fold because the habit is what brings people back; the feed is what keeps them.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>10 · Feed</b><span>Quiz banner, then personalised notifications. Preferred exams float up; nothing is ever removed.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:12</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span><span class="ic"><svg><use href="#i-search"/></svg></span><span class="ic"><svg><use href="#i-bell"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="background:var(--green);color:#fff;padding:14px">
+        <div class="row"><div><div class="te" style="font-size:12.5px;opacity:.85">రోజు ప్రశ్న</div><div style="font-family:var(--disp);font-size:16px;font-weight:700;margin-top:2px">Today's 10 questions</div></div>
+        <div style="text-align:center"><div style="font-family:var(--disp);font-size:23px;font-weight:800;line-height:1">14</div><div style="font-size:9px;opacity:.8">day streak</div></div></div>
+        <button class="btn btn-gold btn-full btn-sm" style="margin-top:11px">Start</button>
+      </div>
+      <div class="chips"><span class="chip on">Eligible for me</span><span class="chip">Closing soon</span><span class="chip">My exams</span><span class="chip">Police</span></div>
+      <div class="pad">
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title" style="flex:1">TS Police Constable 2026</div><span class="badge b-elig">✓ Eligible</span></div>
+          <div class="n-org">TGLPRB · Telangana</div>
+          <div class="n-meta"><span><i>Vacancies</i> <b>16,614</b></span><span><i>Closes</i> <b style="color:var(--red)">12 Sep</b></span></div>
+          <div class="divider"></div>
+          <div class="row"><button class="btn btn-pri btn-sm">View details</button><span class="ic" style="color:var(--muted)"><svg width="17" height="17"><use href="#i-save"/></svg></span></div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title" style="flex:1">TGPSC Group 2 Services 2026</div><span class="badge b-part">3 of 4</span></div>
+          <div class="n-org">TGPSC · Telangana</div>
+          <div class="n-meta"><span><i>Vacancies</i> <b>783</b></span><span><i>Closes</i> <b>04 Oct</b></span></div>
+        </div>
+        <div style="background:var(--line2);border:1px dashed var(--line);border-radius:11px;padding:12px;margin-bottom:9px;text-align:center">
+          <div style="font-size:9px;color:var(--faint);margin-bottom:4px">Sponsored</div>
+          <div style="font-size:12px;font-weight:600">Sri Chaitanya Study Circle, Karimnagar</div>
+          <div class="small">Group 2 batch starts 15 September</div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title" style="flex:1">SSC CGL 2026 — Tier 1</div><span class="badge b-elig">✓ Eligible</span></div>
+          <div class="n-org">Staff Selection Commission</div>
+          <div class="n-meta"><span><i>Vacancies</i> <b>17,727</b></span><span><i>Closes</i> <b>24 Sep</b></span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab on"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>11 · Feed in Telugu</b><span>The same screen, same layout, longer strings. This is the layout test every component must pass.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:12</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t te">సాధన</div><span class="langpill">తె</span><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip on te">నాకు అర్హత ఉన్నవి</span><span class="chip te">త్వరలో ముగుస్తాయి</span><span class="chip te">నా పరీక్షలు</span></div>
+      <div class="pad">
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title te" style="flex:1">తెలంగాణ పోలీస్ కానిస్టేబుల్ నోటిఫికేషన్ 2026</div><span class="badge b-elig te">✓ అర్హులు</span></div>
+          <div class="n-org te">తెలంగాణ పోలీస్ రిక్రూట్‌మెంట్ బోర్డ్</div>
+          <div class="n-meta"><span class="te"><i>ఖాళీలు</i> <b>16,614</b></span><span class="te"><i>చివరి తేదీ</i> <b style="color:var(--red)">12 Sep</b></span></div>
+          <div class="divider"></div>
+          <div class="row"><button class="btn btn-pri btn-sm te">వివరాలు చూడండి</button><span class="ic" style="color:var(--muted)"><svg width="17" height="17"><use href="#i-save"/></svg></span></div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title te" style="flex:1">TGPSC గ్రూప్ 2 సర్వీసెస్ 2026</div><span class="badge b-part te">4లో 3</span></div>
+          <div class="n-org te">తెలంగాణ పబ్లిక్ సర్వీస్ కమిషన్</div>
+          <div class="n-meta"><span class="te"><i>ఖాళీలు</i> <b>783</b></span><span class="te"><i>చివరి తేదీ</i> <b>04 Oct</b></span></div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start;margin-bottom:4px"><div class="n-title te" style="flex:1">స్టాఫ్ సెలెక్షన్ కమిషన్ CGL 2026 — టైర్ 1</div><span class="badge b-elig te">✓ అర్హులు</span></div>
+          <div class="n-org te">స్టాఫ్ సెలెక్షన్ కమిషన్</div>
+          <div class="n-meta"><span class="te"><i>ఖాళీలు</i> <b>17,727</b></span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab on"><svg><use href="#i-home"/></svg><span class="te">ఫీడ్</span></div><div class="tab"><svg><use href="#i-book"/></svg><span class="te">పరీక్షలు</span></div><div class="tab"><svg><use href="#i-quiz"/></svg><span class="te">క్విజ్</span></div><div class="tab"><svg><use href="#i-chat"/></svg><span class="te">సందేహాలు</span></div><div class="tab"><svg><use href="#i-user"/></svg><span class="te">మీరు</span></div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>12 · Filter sheet</b><span>Opens from the filter chip. Applies live — no “Apply” button, because every tap already changed the count above.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:13</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span></div>
+    <div class="pbody" style="background:rgba(18,33,28,.35)">
+      <div class="sheet" style="max-height:88%;overflow:auto">
+        <div class="grab"></div>
+        <div class="row" style="margin-bottom:14px"><b style="font-family:var(--disp);font-size:15px">Filter</b><span class="btn btn-ghost btn-sm" style="padding:2px 4px">Clear all</span></div>
+        <div class="sect-t">Qualification</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip">10th</span><span class="chip">Inter</span><span class="chip on">Degree</span><span class="chip">B.Tech</span><span class="chip">PG</span></div>
+        <div class="sect-t">Department</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip on">Police</span><span class="chip">Revenue</span><span class="chip">Railways</span><span class="chip">Banking</span><span class="chip">Teaching</span></div>
+        <div class="sect-t">District</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip on">Karimnagar</span><span class="chip">Hyderabad</span><span class="chip">Warangal</span><span class="chip">All districts</span></div>
+        <div class="sect-t">Deadline</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip">This week</span><span class="chip on">This month</span><span class="chip">Any</span></div>
+        <button class="btn btn-pri btn-full" style="margin-top:16px">Show 12 results</button>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>13 · Notification detail</b><span>Eligibility is answered at the top, before the reader scrolls. The official source is always one tap away.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:14</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Notification</div><span class="ic"><svg><use href="#i-save"/></svg></span><span class="ic"><svg><use href="#i-share"/></svg></span></div>
+    <div class="pbody"><div class="pscroll" style="padding-bottom:56px">
+      <div style="padding:14px;background:var(--card);border-bottom:1px solid var(--line)">
+        <div class="n-title" style="font-size:15px;margin-bottom:4px">TS Police Constable (Civil &amp; AR) 2026</div>
+        <div class="n-org">Telangana Police Recruitment Board</div>
+        <div style="display:flex;gap:6px;margin-top:8px"><span class="badge b-elig">✓ You are eligible</span><span class="badge b-urgent">5 days left</span></div>
+      </div>
+      <div style="padding:12px 14px;background:var(--green-s)">
+        <div style="font-family:var(--disp);font-size:12.5px;font-weight:700;color:var(--green-d);margin-bottom:7px">Why you qualify</div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Qualification</b><span>Degree — you have B.Sc</span></div></div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Age 25 on 1 July 2026</b><span>Limit 18–22, plus 5 years SC relaxation = 27</span></div></div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Domicile</b><span>Telangana</span></div></div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Gender</b><span>Open to all</span></div></div>
+      </div>
+      <div class="pad">
+        <div class="sect-t">Vacancies</div>
+        <div class="pcard" style="padding:10px">
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Civil Constable</span><b>13,142</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Armed Reserve</span><b>2,908</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0;border-top:1px solid var(--line);margin-top:4px;padding-top:7px"><b>Total</b><b>16,614</b></div>
+        </div>
+        <div class="sect-t">Important dates</div>
+        <div class="pcard" style="padding:10px">
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Applications opened</span><b>18 Aug 2026</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Last date to apply</span><b style="color:var(--red)">12 Sep 2026</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Preliminary exam</span><b>08 Nov 2026</b></div>
+        </div>
+        <div class="sect-t">Application fee</div>
+        <div class="pcard" style="padding:10px">
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>General / OBC</span><b>₹800</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>SC / ST / EWS</span><b>₹400</b></div>
+        </div>
+        <div style="background:var(--line2);border-radius:9px;padding:11px;margin-top:12px">
+          <div class="small" style="line-height:1.65">Last verified 6 September 2026 against the official notification. Always confirm details on the official website before you apply.</div>
+          <button class="btn btn-sec btn-sm" style="margin-top:9px;width:100%;justify-content:center"><svg width="14" height="14"><use href="#i-doc"/></svg> Open official PDF</button>
+        </div>
+        <div style="text-align:center;margin-top:12px"><span class="small" style="text-decoration:underline">Something wrong here? Report it</span></div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:9px 14px;display:flex;gap:8px">
+      <button class="btn btn-sec btn-sm" style="flex:0 0 auto"><svg width="15" height="15"><use href="#i-save"/></svg></button>
+      <button class="btn btn-pri btn-sm" style="flex:1;justify-content:center">Apply on official site</button>
+    </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>14 · Not eligible — still shown</b><span>The one screen that proves the principle. Failing a criterion never hides the notification; it explains the gap.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:15</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Notification</div><span class="ic"><svg><use href="#i-save"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="padding:14px;background:var(--card);border-bottom:1px solid var(--line)">
+        <div class="n-title" style="font-size:15px;margin-bottom:4px">TGPSC Assistant Engineer (Civil) 2026</div>
+        <div class="n-org">Telangana Public Service Commission</div>
+        <div style="margin-top:8px"><span class="badge b-part">2 of 4 match</span></div>
+      </div>
+      <div style="padding:12px 14px;background:var(--gold-s)">
+        <div style="font-family:var(--disp);font-size:12.5px;font-weight:700;color:var(--gold-d);margin-bottom:7px">Where you stand</div>
+        <div class="crit"><span class="mk no">✕</span><div><b>Qualification</b><span>Needs B.E. or B.Tech in Civil Engineering</span></div></div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Age 25</b><span>Limit 18–34 including your relaxation</span></div></div>
+        <div class="crit"><span class="mk ok">✓</span><div><b>Domicile</b><span>Telangana</span></div></div>
+        <div class="crit"><span class="mk no">✕</span><div><b>Experience</b><span>2 years required, not recorded on your profile</span></div></div>
+        <div class="small" style="margin-top:10px;color:var(--gold-d);line-height:1.6">If your details have changed, <u>update your profile</u> and we'll check again.</div>
+      </div>
+      <div class="pad">
+        <div class="sect-t">Similar jobs you do qualify for</div>
+        <div class="pcard"><div class="n-title" style="font-size:12.5px">TGPSC Junior Assistant 2026</div><div class="n-org">TGPSC</div><span class="badge b-elig" style="margin-top:6px">✓ Eligible</span></div>
+        <div class="pcard"><div class="n-title" style="font-size:12.5px">Panchayat Secretary Grade IV</div><div class="n-org">TS Panchayat Raj</div><span class="badge b-elig" style="margin-top:6px">✓ Eligible</span></div>
+      </div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>15 · Saved</b><span>Grouped by how close the deadline is, not by when it was saved. Urgency is the organising principle.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:16</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Saved</div></div>
+    <div class="pbody"><div class="pscroll" class="pad">
+      <div class="pad">
+        <div style="font-family:var(--disp);font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">Closing this week</div>
+        <div class="pcard" style="border-left:3px solid var(--red)">
+          <div class="n-title" style="font-size:12.5px">TS Police Constable 2026</div>
+          <div class="n-meta" style="margin-top:6px"><span><i>Closes</i> <b style="color:var(--red)">12 Sep · 5 days</b></span></div>
+          <div class="small" style="margin-top:6px">Reminder set for 9 Sep</div>
+        </div>
+        <div style="font-family:var(--disp);font-size:12px;font-weight:700;color:var(--gold-d);margin:16px 0 8px">Later this month</div>
+        <div class="pcard"><div class="n-title" style="font-size:12.5px">SSC CGL 2026 — Tier 1</div><div class="n-meta" style="margin-top:6px"><span><i>Closes</i> <b>24 Sep · 17 days</b></span></div></div>
+        <div class="pcard"><div class="n-title" style="font-size:12.5px">TGPSC Group 2 Services</div><div class="n-meta" style="margin-top:6px"><span><i>Closes</i> <b>04 Oct · 27 days</b></span></div></div>
+        <div style="font-family:var(--disp);font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px">Applied</div>
+        <div class="pcard" style="opacity:.65"><div class="n-title" style="font-size:12.5px">RRB NTPC 2026</div><div class="small" style="margin-top:4px">Marked applied on 2 Sep</div></div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab on"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>16 · Search</b><span>Results grouped by type. Recent searches persist offline; the notification archive is searchable back to launch.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:17</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><input class="input" value="group 2" style="padding:8px 11px;font-size:13px" readonly></div>
+    <div class="pbody"><div class="pscroll" style="padding:12px 14px">
+      <div style="font-family:var(--disp);font-size:11px;font-weight:700;color:var(--muted);margin-bottom:7px">Exams</div>
+      <div class="pcard" style="padding:10px"><div style="font-size:12.5px;font-weight:600">TGPSC Group 2 Services</div><div class="small">Syllabus, papers, cutoffs</div></div>
+      <div class="pcard" style="padding:10px"><div style="font-size:12.5px;font-weight:600">APPSC Group 2</div><div class="small">Syllabus, papers, cutoffs</div></div>
+      <div style="font-family:var(--disp);font-size:11px;font-weight:700;color:var(--muted);margin:14px 0 7px">Notifications</div>
+      <div class="pcard" style="padding:10px"><div style="font-size:12.5px;font-weight:600">TGPSC Group 2 Services 2026</div><div class="small">783 vacancies · closes 04 Oct</div></div>
+      <div style="font-family:var(--disp);font-size:11px;font-weight:700;color:var(--muted);margin:14px 0 7px">Doubts</div>
+      <div class="pcard" style="padding:10px"><div class="te" style="font-size:12px;font-weight:600">గ్రూప్ 2 పేపర్ 2 సిలబస్‌లో ఏమి ముఖ్యం?</div><div class="small">7 answers</div></div>
+    </div></div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= EXAM HUB ================= -->
+<section id="exam">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <h2>Exam hub</h2>
+    <p>These pages carry most of the site's search traffic, so they are built to be read by a person and parsed by a crawler at the same time. Section order is fixed across every exam — that consistency is what teaches both Google and the returning user where to look.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>17 · Exam directory</b><span>Grouped by conducting body. The live-notification count is the reason to tap.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:20</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Exams</div><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip on">All</span><span class="chip">Telangana</span><span class="chip">Andhra Pradesh</span><span class="chip">All-India</span></div>
+      <div class="pad">
+        <div style="font-family:var(--disp);font-size:12.5px;font-weight:700;margin-bottom:8px">State Public Service</div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">TGPSC Group 2</div><div class="small">Telangana PSC</div></div><span class="badge b-new">1 live</span></div></div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">TGPSC Group 4</div><div class="small">Telangana PSC</div></div></div></div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">APPSC Group 2</div><div class="small">Andhra Pradesh PSC</div></div></div></div>
+        <div style="font-family:var(--disp);font-size:12.5px;font-weight:700;margin:16px 0 8px">Police</div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">TS Police Constable</div><div class="small">TGLPRB</div></div><span class="badge b-urgent">Closing</span></div></div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">TS Police SI</div><div class="small">TGLPRB</div></div></div></div>
+        <div style="font-family:var(--disp);font-size:12.5px;font-weight:700;margin:16px 0 8px">All-India</div>
+        <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">SSC CGL</div><div class="small">Staff Selection Commission</div></div><span class="badge b-new">1 live</span></div></div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab"><svg><use href="#i-home"/></svg>Feed</div><div class="tab on"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>18 · Exam hub</b><span>Twelve sections in a fixed order. Everything above the fold answers “is this open, and can I write it?”</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:21</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">TGPSC Group 2</div><span class="ic"><svg><use href="#i-share"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="padding:14px;background:var(--card);border-bottom:1px solid var(--line)">
+        <div style="font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:-.015em">TGPSC Group 2 Services 2026</div>
+        <div class="small" style="margin-top:3px">Telangana Public Service Commission</div>
+      </div>
+      <div style="background:var(--green-s);padding:11px 14px;border-bottom:1px solid var(--line)">
+        <div class="row"><div><b style="font-size:12px;color:var(--green-d);display:block">Applications are open</b><span class="small" style="color:var(--green-d)">783 posts · closes 4 October</span></div><button class="btn btn-pri btn-sm">View</button></div>
+      </div>
+      <div class="pad">
+        <div class="sect-t">At a glance</div>
+        <div class="pcard" style="padding:10px">
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Conducted by</span><b>TGPSC</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Qualification</span><b>Degree</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Age</span><b>18–46</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>Papers</span><b>4 + interview</b></div>
+        </div>
+        <div class="sect-t">Exam pattern</div>
+        <div class="pcard" style="padding:10px">
+          <div class="row" style="font-size:11px;padding:3px 0;color:var(--muted)"><span>Paper</span><span>Marks · Time</span></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>I — General Studies</span><b>150 · 150m</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>II — History &amp; Society</span><b>150 · 150m</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>III — Economy</span><b>150 · 150m</b></div>
+          <div class="row" style="font-size:11.5px;padding:3px 0"><span>IV — Telangana Movement</span><b>150 · 150m</b></div>
+        </div>
+        <div class="sect-t">Syllabus</div>
+        <div class="pcard" style="padding:0">
+          <div class="row" style="padding:10px;border-bottom:1px solid var(--line2)"><span style="font-size:12px;font-weight:500">Paper I — General Studies</span><span style="color:var(--muted)">+</span></div>
+          <div class="row" style="padding:10px;border-bottom:1px solid var(--line2);background:var(--paper)"><span style="font-size:12px;font-weight:600">Paper II — History</span><span style="color:var(--muted)">−</span></div>
+          <div style="padding:0 10px 10px;background:var(--paper)"><div class="small" style="line-height:1.8">• Socio-cultural history of India<br>• Telangana history from 1724<br>• Social exclusion and rights issues<br>• Constitution of India</div></div>
+          <div class="row" style="padding:10px"><span style="font-size:12px;font-weight:500">Paper III — Economy</span><span style="color:var(--muted)">+</span></div>
+        </div>
+        <button class="btn btn-sec btn-sm" style="width:100%;justify-content:center;margin-top:8px"><svg width="14" height="14"><use href="#i-doc"/></svg> Download full syllabus (PDF)</button>
+      </div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>19 · Cutoffs</b><span>Five years, by category. The data nobody else has organised, and the reason people return to this page.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:22</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Previous cutoffs</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:12px 14px">
+      <div class="chips" style="padding:0 0 12px;border:0;background:transparent"><span class="chip on">SC</span><span class="chip">General</span><span class="chip">OBC</span><span class="chip">ST</span><span class="chip">EWS</span></div>
+      <div class="pcard" style="padding:12px">
+        <div style="display:flex;align-items:flex-end;gap:9px;height:104px;margin-bottom:9px">
+          <div style="flex:1;text-align:center"><div style="background:var(--green);height:62px;border-radius:4px 4px 0 0"></div><b style="font-size:9px;color:var(--muted)">2021</b></div>
+          <div style="flex:1;text-align:center"><div style="background:var(--green);height:74px;border-radius:4px 4px 0 0"></div><b style="font-size:9px;color:var(--muted)">2022</b></div>
+          <div style="flex:1;text-align:center"><div style="background:var(--green);height:68px;border-radius:4px 4px 0 0"></div><b style="font-size:9px;color:var(--muted)">2023</b></div>
+          <div style="flex:1;text-align:center"><div style="background:var(--green);height:88px;border-radius:4px 4px 0 0"></div><b style="font-size:9px;color:var(--muted)">2024</b></div>
+          <div style="flex:1;text-align:center"><div style="background:var(--gold);height:96px;border-radius:4px 4px 0 0"></div><b style="font-size:9px;color:var(--muted)">2025</b></div>
+        </div>
+        <div class="small" style="text-align:center">SC cutoff, out of 600</div>
+      </div>
+      <div class="pcard" style="padding:10px">
+        <div class="row" style="font-size:11px;padding:4px 0;color:var(--muted);border-bottom:1px solid var(--line)"><span>Year</span><span>Cutoff</span><span>Vacancies</span></div>
+        <div class="row" style="font-size:11.5px;padding:6px 0"><span>2025</span><b>331.5</b><span>602</span></div>
+        <div class="row" style="font-size:11.5px;padding:6px 0"><span>2024</span><b>305.0</b><span>783</span></div>
+        <div class="row" style="font-size:11.5px;padding:6px 0"><span>2023</span><b>236.5</b><span>582</span></div>
+        <div class="row" style="font-size:11.5px;padding:6px 0"><span>2022</span><b>257.0</b><span>440</span></div>
+        <div class="row" style="font-size:11.5px;padding:6px 0"><span>2021</span><b>214.0</b><span>331</span></div>
+      </div>
+      <div class="small" style="margin-top:10px;line-height:1.6">Figures compiled from official TGPSC result notifications. Cutoffs vary by zone.</div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>20 · Study material</b><span>Only government documents and notes the uploader wrote themselves. Every file shows its source.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:23</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Material</div><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip on">All</span><span class="chip">Official</span><span class="chip">Student notes</span><span class="chip">Papers</span></div>
+      <div class="pad">
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start"><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Telangana Movement — full notes</div><div class="small">Official TGPSC syllabus document · 2.4 MB</div></div><span class="badge b-elig" style="font-size:10px">Official</span></div>
+          <div class="row" style="margin-top:9px"><span class="small">1,204 downloads</span><button class="btn btn-sec btn-sm" style="padding:6px 11px">Open</button></div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start"><div style="flex:1"><div class="te" style="font-size:12px;font-weight:600">ఇండియన్ పాలిటీ — నా నోట్స్</div><div class="small">By Ravi K · verified own work · 890 KB</div></div><span class="badge b-part" style="font-size:10px">Notes</span></div>
+          <div class="row" style="margin-top:9px"><span class="small">642 downloads</span><button class="btn btn-sec btn-sm" style="padding:6px 11px">Open</button></div>
+        </div>
+        <div class="pcard">
+          <div class="row" style="align-items:flex-start"><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Group 2 Paper I — 2024 question paper</div><div class="small">With official answer key · 1.1 MB</div></div><span class="badge b-elig" style="font-size:10px">Official</span></div>
+          <div class="row" style="margin-top:9px"><span class="small">3,118 downloads</span><button class="btn btn-sec btn-sm" style="padding:6px 11px">Open</button></div>
+        </div>
+        <div style="background:var(--line2);border-radius:9px;padding:11px;margin-top:6px">
+          <div class="small" style="line-height:1.6">We host only government documents and notes people wrote themselves. Scanned coaching books are removed and the account is blocked.</div>
+        </div>
+      </div>
+    </div></div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="quiz">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <h2>Daily quiz</h2>
+    <p>The retention engine. Ten questions, one screen each, published at 7 AM. The language toggle sits on every question rather than in settings, because someone may know the Telugu term and read the English option faster — the app should not make them choose once for everything.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>21 · Quiz start</b><span>Streak first, question count second. What is at stake is more motivating than what is involved.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:30</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Today's quiz</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:22px 18px;text-align:center">
+      <div class="streakring"><div><b>14</b><span>days</span></div></div>
+      <div style="font-family:var(--disp);font-size:19px;font-weight:700;margin-top:16px">Keep it going</div>
+      <div class="te small" style="margin-bottom:20px">14 రోజుల స్ట్రీక్ — ఈరోజు కూడా కొనసాగించండి</div>
+      <div class="pcard" style="text-align:left;padding:12px">
+        <div class="row" style="font-size:11.5px;padding:3px 0"><span>Questions</span><b>10</b></div>
+        <div class="row" style="font-size:11.5px;padding:3px 0"><span>Current affairs</span><b>5</b></div>
+        <div class="row" style="font-size:11.5px;padding:3px 0"><span>General studies</span><b>3</b></div>
+        <div class="row" style="font-size:11.5px;padding:3px 0"><span>Previous year</span><b>2</b></div>
+        <div class="row" style="font-size:11.5px;padding:3px 0;border-top:1px solid var(--line);margin-top:5px;padding-top:8px"><span>Roughly</span><b>6 minutes</b></div>
+      </div>
+      <button class="btn btn-pri btn-full" style="margin-top:16px">Start</button>
+      <div class="small" style="margin-top:12px">6,412 people have taken it today</div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>22 · Question</b><span>Per-question language toggle, top right. Options are large enough to hit with a thumb without looking.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:31</span><span>◗◗◗ ▮</span></div>
+    <div style="padding:11px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+      <div class="row" style="margin-bottom:8px"><span class="small">Question 6 of 10</span><div style="display:flex;gap:4px"><span class="chip" style="padding:3px 9px;font-size:10px">EN</span><span class="chip on te" style="padding:3px 9px;font-size:10px">తె</span></div></div>
+      <div class="prog"><i style="width:60%"></i></div>
+    </div>
+    <div class="pbody"><div class="pscroll" style="padding:16px 14px">
+      <span class="badge b-new" style="margin-bottom:10px">Current affairs</span>
+      <div class="te" style="font-size:14px;font-weight:600;line-height:1.85;margin-bottom:16px">2026లో తెలంగాణ రాష్ట్ర ప్రభుత్వం ప్రారంభించిన 'ఇందిరమ్మ ఇళ్లు' పథకం కింద మొదటి దశలో ఎన్ని ఇళ్లు మంజూరు చేశారు?</div>
+      <div class="opt te"><span class="k">అ</span><div>3.5 లక్షలు</div></div>
+      <div class="opt te"><span class="k">ఆ</span><div>4.5 లక్షలు</div></div>
+      <div class="opt te"><span class="k">ఇ</span><div>5.0 లక్షలు</div></div>
+      <div class="opt te"><span class="k">ఈ</span><div>6.0 లక్షలు</div></div>
+      <div class="row" style="margin-top:14px"><span class="small">0:24</span><span class="btn btn-ghost btn-sm te" style="padding:4px 6px">దాటవేయండి</span></div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>23 · Answer feedback</b><span>Shown immediately, with the explanation. The answer locks — a quiz you can edit teaches nothing.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:31</span><span>◗◗◗ ▮</span></div>
+    <div style="padding:11px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+      <div class="row" style="margin-bottom:8px"><span class="small">Question 6 of 10</span><div style="display:flex;gap:4px"><span class="chip" style="padding:3px 9px;font-size:10px">EN</span><span class="chip on te" style="padding:3px 9px;font-size:10px">తె</span></div></div>
+      <div class="prog"><i style="width:60%"></i></div>
+    </div>
+    <div class="pbody"><div class="pscroll" style="padding:16px 14px;padding-bottom:60px">
+      <div class="te" style="font-size:13.5px;font-weight:600;line-height:1.85;margin-bottom:14px">2026లో తెలంగాణ రాష్ట్ర ప్రభుత్వం ప్రారంభించిన 'ఇందిరమ్మ ఇళ్లు' పథకం కింద మొదటి దశలో ఎన్ని ఇళ్లు మంజూరు చేశారు?</div>
+      <div class="opt te"><span class="k">అ</span><div>3.5 లక్షలు</div></div>
+      <div class="opt wrong te"><span class="k">ఆ</span><div>4.5 లక్షలు</div></div>
+      <div class="opt correct te"><span class="k">ఇ</span><div>5.0 లక్షలు</div></div>
+      <div class="opt te"><span class="k">ఈ</span><div>6.0 లక్షలు</div></div>
+      <div style="background:var(--green-s);border-radius:9px;padding:11px;margin-top:12px">
+        <b style="font-size:11.5px;color:var(--green-d);display:block;margin-bottom:4px">Correct answer: 5.0 లక్షలు</b>
+        <div class="te small" style="color:var(--green-d);line-height:1.8">మొదటి దశలో ప్రతి నియోజకవర్గానికి 3,500 ఇళ్ల చొప్పున మొత్తం 5 లక్షల ఇళ్లు మంజూరు చేశారు.</div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:var(--card);border-top:1px solid var(--line)"><button class="btn btn-pri btn-full btn-sm">Next question</button></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>24 · Result</b><span>Score, streak, and the one topic to work on. Share is the second action, never the first.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:37</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="background:var(--green);color:#fff;padding:24px 18px;text-align:center">
+        <div style="font-family:var(--disp);font-size:44px;font-weight:800;line-height:1">8<span style="font-size:22px;opacity:.6">/10</span></div>
+        <div style="font-size:12px;opacity:.85;margin-top:5px">Better than 71% today</div>
+        <div style="background:rgba(255,255,255,.14);border-radius:11px;padding:11px;margin-top:16px;display:flex;justify-content:space-around">
+          <div><div style="font-family:var(--disp);font-size:19px;font-weight:700">15</div><div style="font-size:9px;opacity:.8">day streak</div></div>
+          <div><div style="font-family:var(--disp);font-size:19px;font-weight:700">5:42</div><div style="font-size:9px;opacity:.8">time taken</div></div>
+          <div><div style="font-family:var(--disp);font-size:19px;font-weight:700">#284</div><div style="font-size:9px;opacity:.8">in Karimnagar</div></div>
+        </div>
+      </div>
+      <div class="pad">
+        <div style="background:var(--gold-s);border-radius:9px;padding:11px;margin-bottom:12px">
+          <b style="font-size:12px;color:var(--gold-d);display:block;margin-bottom:3px">Work on: Indian Polity</b>
+          <div class="small" style="color:var(--gold-d)">You missed both Polity questions this week.</div>
+          <button class="btn btn-sm" style="background:var(--gold-d);color:#fff;margin-top:9px">Open free Polity notes</button>
+        </div>
+        <button class="btn btn-gold btn-full" style="margin-bottom:8px"><svg width="15" height="15"><use href="#i-share"/></svg> Share your score</button>
+        <button class="btn btn-sec btn-full" style="margin-bottom:8px">Review all 10 answers</button>
+        <div class="divider"></div>
+        <div class="sect-t">Your week</div>
+        <div class="cal">
+          <i class="done">M</i><i class="done">T</i><i class="frz">W</i><i class="done">T</i><i class="done">F</i><i class="done">S</i><i style="border:1.5px dashed var(--gold)">S</i>
+        </div>
+        <div class="small" style="margin-top:7px">Wednesday used your monthly streak freeze.</div>
+      </div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>25 · Share card</b><span>1080×1920, generated server-side. Designed to be legible as a WhatsApp status thumbnail.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:38</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:rgba(18,33,28,.5)">
+      <div style="padding:16px;display:flex;flex-direction:column;height:100%;justify-content:center">
+        <div style="background:var(--green);border-radius:14px;padding:24px 18px;text-align:center;color:#fff;aspect-ratio:9/16;display:flex;flex-direction:column;justify-content:center">
+          <div class="te" style="font-size:13px;opacity:.8;margin-bottom:6px">ఈరోజు రోజు ప్రశ్న</div>
+          <div style="font-family:var(--disp);font-size:56px;font-weight:800;line-height:1">8/10</div>
+          <div style="width:38px;height:3px;background:var(--gold);margin:16px auto"></div>
+          <div style="display:flex;justify-content:center;gap:6px;align-items:center;font-family:var(--disp);font-size:20px;font-weight:700"><svg width="19" height="19" style="color:var(--gold)"><use href="#i-flame"/></svg> 15 రోజులు</div>
+          <div class="te" style="font-size:11px;opacity:.75;margin-top:5px">వరుసగా</div>
+          <div style="margin-top:auto;padding-top:26px;font-size:12px;font-weight:600;letter-spacing:.02em">sadhana.study</div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div style="display:flex;gap:14px;justify-content:space-around;padding:6px 0 4px">
+          <div style="text-align:center"><div style="width:44px;height:44px;border-radius:12px;background:#25D366;margin-bottom:5px"></div><span style="font-size:9.5px">WhatsApp</span></div>
+          <div style="text-align:center"><div style="width:44px;height:44px;border-radius:12px;background:var(--ink2);margin-bottom:5px"></div><span style="font-size:9.5px">Status</span></div>
+          <div style="text-align:center"><div style="width:44px;height:44px;border-radius:12px;background:var(--blue);margin-bottom:5px"></div><span style="font-size:9.5px">Telegram</span></div>
+          <div style="text-align:center"><div style="width:44px;height:44px;border-radius:12px;background:var(--line);margin-bottom:5px"></div><span style="font-size:9.5px">Save</span></div>
+        </div>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>26 · Leaderboard</b><span>Three scopes. Your own row is always pinned into view with two neighbours — everyone sees themselves.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:40</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Leaderboard</div></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip">Telangana</span><span class="chip on">Karimnagar</span><span class="chip">Group 2</span></div>
+      <div class="pad">
+        <div class="small" style="margin-bottom:9px">This week · resets Monday 7 AM</div>
+        <div class="lbrow"><span class="rk">1</span><span class="av" style="background:var(--gold);color:#3B2A08">SR</span><span class="nm">Srinivas R</span><span class="sc">68</span></div>
+        <div class="lbrow"><span class="rk">2</span><span class="av">PK</span><span class="nm">Praveen K</span><span class="sc">66</span></div>
+        <div class="lbrow"><span class="rk">3</span><span class="av">AL</span><span class="nm">Anusha L</span><span class="sc">65</span></div>
+        <div class="lbrow"><span class="rk">4</span><span class="av">MV</span><span class="nm">Madhavi V</span><span class="sc">63</span></div>
+        <div class="lbrow"><span class="rk">5</span><span class="av">KS</span><span class="nm">Kiran S</span><span class="sc">61</span></div>
+        <div style="text-align:center;color:var(--faint);font-size:14px;padding:5px 0">···</div>
+        <div class="lbrow"><span class="rk">282</span><span class="av">NB</span><span class="nm">Naveen B</span><span class="sc">42</span></div>
+        <div class="lbrow"><span class="rk">283</span><span class="av">SD</span><span class="nm">Swathi D</span><span class="sc">42</span></div>
+        <div class="lbrow me"><span class="rk">284</span><span class="av" style="background:var(--gold-d);color:#fff">RV</span><span class="nm"><b>You</b></span><span class="sc">41</span></div>
+        <div class="lbrow"><span class="rk">285</span><span class="av">HP</span><span class="nm">Harish P</span><span class="sc">41</span></div>
+        <div class="lbrow"><span class="rk">286</span><span class="av">LM</span><span class="nm">Lakshmi M</span><span class="sc">40</span></div>
+        <div class="small" style="margin-top:12px;text-align:center;line-height:1.6">Score three more this week to enter the top 250.</div>
+      </div>
+    </div></div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= COMMUNITY ================= -->
+<section id="community">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">07</div>
+    <h2>Doubts</h2>
+    <p>Opens only after the product has five thousand daily users, because an empty forum reads as a dead product. Voice notes are a first-class input: typing Telugu on a cheap keyboard is slow enough that many people simply will not ask.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>27 · Doubt list</b><span>Unanswered questions surface first. The answer count and the verified badge are the trust signals.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:02</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Doubts</div><span class="ic"><svg><use href="#i-search"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip on">Unanswered</span><span class="chip">My exams</span><span class="chip">Polity</span><span class="chip">History</span></div>
+      <div class="pad">
+        <div class="pcard">
+          <div class="te" style="font-size:12.5px;font-weight:600;line-height:1.75;margin-bottom:6px">గ్రూప్ 2 పేపర్ 2లో తెలంగాణ ఉద్యమం ఎన్ని మార్కులకు వస్తుంది?</div>
+          <div class="row"><span class="small">Asked by Kiran · 2h ago</span><span class="badge b-part">No answers</span></div>
+        </div>
+        <div class="pcard">
+          <div class="te" style="font-size:12.5px;font-weight:600;line-height:1.75;margin-bottom:6px">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా లెక్కిస్తారు?</div>
+          <div class="row"><span class="small">Asked by Ravi · 5h ago</span><span class="badge b-elig">7 answers</span></div>
+        </div>
+        <div class="pcard">
+          <div style="font-size:12.5px;font-weight:600;line-height:1.6;margin-bottom:6px">Is negative marking applicable in Group 2 Paper I?</div>
+          <div class="row"><span class="small">Asked by Sailaja · 1d ago</span><span class="badge b-elig">3 answers</span></div>
+        </div>
+        <div class="pcard">
+          <div class="te" style="font-size:12.5px;font-weight:600;line-height:1.75;margin-bottom:6px">కానిస్టేబుల్ ఫిజికల్ టెస్ట్‌కి ఎలా ప్రిపేర్ అవ్వాలి?</div>
+          <div class="row"><span class="small">Asked by Naveen · 1d ago</span><span class="badge b-elig">12 answers</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;right:14px;bottom:14px"><button class="btn btn-pri" style="border-radius:99px;width:46px;height:46px;padding:0;justify-content:center"><svg width="21" height="21"><use href="#i-plus"/></svg></button></div>
+    </div>
+    <div class="tabbar"><div class="tab"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab on"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>28 · Doubt detail</b><span>Accepted answer pinned to the top with the asker's tick. Cleared candidates carry a verified badge.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:04</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Doubt</div><span class="ic"><svg><use href="#i-share"/></svg></span></div>
+    <div class="pbody"><div class="pscroll" style="padding-bottom:52px">
+      <div style="padding:14px;background:var(--card);border-bottom:1px solid var(--line)">
+        <div class="te" style="font-size:13.5px;font-weight:600;line-height:1.8;margin-bottom:8px">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా లెక్కిస్తారు?</div>
+        <div class="row"><span class="small">Ravi K · 5h ago · Group 2</span><span class="small">▲ 12</span></div>
+      </div>
+      <div class="pad">
+        <div class="pcard" style="border-left:3px solid var(--green)">
+          <div class="row" style="margin-bottom:7px"><div style="display:flex;gap:7px;align-items:center"><span class="av" style="width:24px;height:24px;border-radius:99px;background:var(--green-s);color:var(--green-d);display:grid;place-items:center;font-size:9px;font-weight:700">PS</span><div><b style="font-size:11.5px;display:block">Prasad S</b><span class="small">Group 2 · selected 2024</span></div></div><span class="badge b-elig" style="font-size:9.5px">✓ Best</span></div>
+          <div class="te" style="font-size:11.5px;line-height:1.85">నోటిఫికేషన్‌లో ఇచ్చిన కట్-ఆఫ్ తేదీ ఆధారంగానే లెక్కిస్తారు. చాలా TGPSC నోటిఫికేషన్లలో అది జూలై 1. దరఖాస్తు చివరి తేదీ కాదు — ఇది చాలా మంది చేసే పొరపాటు.</div>
+          <div class="row" style="margin-top:9px"><span class="small">▲ 24 · 2h ago</span><span class="small">Reply</span></div>
+        </div>
+        <div class="pcard">
+          <div style="display:flex;gap:7px;align-items:center;margin-bottom:7px"><span style="width:24px;height:24px;border-radius:99px;background:var(--line2);color:var(--muted);display:grid;place-items:center;font-size:9px;font-weight:700">AK</span><div><b style="font-size:11.5px;display:block">Anil K</b><span class="small">1,240 points</span></div></div>
+          <div class="te" style="font-size:11.5px;line-height:1.85">అవును, ప్రతి నోటిఫికేషన్‌లో "as on" తేదీ ఉంటుంది. దాన్ని చూడండి.</div>
+          <div class="row" style="margin-top:9px"><span class="small">▲ 8 · 3h ago</span><span class="small">Reply</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center">
+      <input class="input" placeholder="Write an answer" style="padding:9px 11px;font-size:12px">
+      <span style="width:34px;height:34px;border-radius:99px;background:var(--green-s);color:var(--green);display:grid;place-items:center;flex-shrink:0">🎙</span>
+    </div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>29 · Ask a doubt</b><span>Similar questions appear as you type. This is how the archive stays clean and the same doubt is not asked a thousand times.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:06</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Ask a doubt</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:14px">
+      <div class="field"><label>Your question</label><textarea class="input te" rows="3" style="resize:none">వయస్సు సడలింపు ఎలా</textarea></div>
+      <div style="background:var(--gold-s);border-radius:9px;padding:11px;margin-bottom:14px">
+        <b style="font-size:11.5px;color:var(--gold-d);display:block;margin-bottom:6px">Already asked — these may answer it</b>
+        <div class="te" style="font-size:11px;line-height:1.75;padding:5px 0;border-bottom:1px solid rgba(182,122,31,.2)">SC అభ్యర్థులకు వయస్సు సడలింపు ఏ తేదీ ఆధారంగా? <span style="color:var(--gold-d)">· 7 answers</span></div>
+        <div class="te" style="font-size:11px;line-height:1.75;padding:5px 0">PwD వయస్సు సడలింపు ఎన్ని సంవత్సరాలు? <span style="color:var(--gold-d)">· 4 answers</span></div>
+      </div>
+      <div class="field"><label>Exam</label><select class="input"><option>TGPSC Group 2</option></select></div>
+      <div class="field"><label>Subject</label><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip on">Eligibility</span><span class="chip">Polity</span><span class="chip">History</span><span class="chip">Exam pattern</span></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-sec btn-sm" style="flex:1;justify-content:center">📷 Add photo</button>
+        <button class="btn btn-sec btn-sm" style="flex:1;justify-content:center">🎙 Record</button>
+      </div>
+      <button class="btn btn-pri btn-full">Post doubt</button>
+    </div></div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= ACCOUNT ================= -->
+<section id="account">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">08</div>
+    <h2>Account and settings</h2>
+    <p>Notification controls are granular and default to conservative, because over-notifying is how an app gets permanently muted. Data export and deletion are real, working buttons on the first screen of settings — not buried, not a support email.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>30 · Your profile</b><span>The eligibility summary sits at the top, because that is what the profile is for.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:10</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">You</div><span class="ic"><svg><use href="#i-bell"/></svg></span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="padding:16px 14px;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center">
+        <span style="width:48px;height:48px;border-radius:99px;background:var(--green);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-size:19px;font-weight:700">RV</span>
+        <div style="flex:1"><b style="font-size:14px;display:block">Ravi Varma</b><span class="small">+91 98480 12345 · Karimnagar</span></div>
+        <span class="btn btn-ghost btn-sm" style="padding:4px">Edit</span>
+      </div>
+      <div style="background:var(--green-s);padding:11px 14px">
+        <div class="row" style="font-size:11.5px;padding:2px 0;color:var(--green-d)"><span>Degree — B.Sc</span><b>SC · Age 25</b></div>
+        <div class="small" style="color:var(--green-d);margin-top:4px">Eligible for 34 of 41 open notifications</div>
+      </div>
+      <div class="pad">
+        <div class="pcard" style="padding:0">
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">Saved notifications</span><b style="font-size:12px">6</b></div>
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">My exams</span><b style="font-size:12px">3</b></div>
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">Quiz history</span><b style="font-size:12px">62 taken</b></div>
+          <div class="row" style="padding:12px"><span style="font-size:12.5px">My doubts &amp; answers</span><b style="font-size:12px">1,240 pts</b></div>
+        </div>
+        <div class="pcard" style="padding:12px;background:var(--gold-s);border-color:var(--gold)">
+          <div class="row"><div style="display:flex;gap:9px;align-items:center"><svg width="19" height="19" style="color:var(--gold-d)"><use href="#i-flame"/></svg><div><b style="font-size:12.5px;color:var(--gold-d);display:block">15 day streak</b><span class="small" style="color:var(--gold-d)">Longest: 31 days</span></div></div><span class="btn btn-ghost btn-sm" style="padding:4px;color:var(--gold-d)">View</span></div>
+        </div>
+        <div class="pcard" style="padding:0">
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">Notifications</span><span style="color:var(--muted)">›</span></div>
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">Language</span><span class="small">తెలుగు ›</span></div>
+          <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">Privacy &amp; data</span><span style="color:var(--muted)">›</span></div>
+          <div class="row" style="padding:12px"><span style="font-size:12.5px">Help</span><span style="color:var(--muted)">›</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab on"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>31 · Notification settings</b><span>Per-type toggles plus a visible daily cap. Quiet hours are on by default.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:12</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Notifications</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:12px 14px">
+      <div class="pcard" style="padding:0">
+        <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><div style="flex:1"><b style="font-size:12.5px;display:block">Daily quiz</b><span class="small">7:00 AM every day</span></div><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative;flex-shrink:0"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+        <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><div style="flex:1"><b style="font-size:12.5px;display:block">New notifications</b><span class="small">Only for your 3 chosen exams</span></div><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative;flex-shrink:0"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+        <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><div style="flex:1"><b style="font-size:12.5px;display:block">Deadline reminders</b><span class="small">3 days and 1 day before</span></div><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative;flex-shrink:0"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+        <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><div style="flex:1"><b style="font-size:12.5px;display:block">Streak reminder</b><span class="small">9:00 PM, only if you haven't studied</span></div><span style="width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;flex-shrink:0"><i style="position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+        <div class="row" style="padding:12px"><div style="flex:1"><b style="font-size:12.5px;display:block">Replies to my doubts</b><span class="small">Batched, at most once every 4 hours</span></div><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative;flex-shrink:0"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+      </div>
+      <div class="sect-t">Where</div>
+      <div class="pcard" style="padding:0">
+        <div class="row" style="padding:12px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px">WhatsApp</span><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+        <div class="row" style="padding:12px"><span style="font-size:12.5px">Phone notifications</span><span style="width:38px;height:22px;border-radius:99px;background:var(--green);position:relative"><i style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:99px;background:#fff"></i></span></div>
+      </div>
+      <div style="background:var(--line2);border-radius:9px;padding:11px;margin-top:12px"><div class="small" style="line-height:1.65">We send at most 5 notifications a day, and none between 10 PM and 6 AM.</div></div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>32 · Privacy and data</b><span>Export and delete are ordinary buttons, on this screen, working. Consent is shown as a record with dates.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:14</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Privacy &amp; data</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:12px 14px">
+      <div class="sect-t">What we hold</div>
+      <div class="pcard" style="padding:12px">
+        <div class="small" style="line-height:1.85">Name, phone number, date of birth, category, qualification, district, your saved notifications and quiz history.</div>
+      </div>
+      <div class="sect-t">What you agreed to</div>
+      <div class="pcard" style="padding:0">
+        <div class="row" style="padding:11px;border-bottom:1px solid var(--line2)"><div style="flex:1"><span style="font-size:12px">Eligibility checking</span><div class="small">Agreed 12 Aug 2026</div></div><span class="badge b-elig" style="font-size:9.5px">On</span></div>
+        <div class="row" style="padding:11px;border-bottom:1px solid var(--line2)"><div style="flex:1"><span style="font-size:12px">WhatsApp alerts</span><div class="small">Agreed 12 Aug 2026</div></div><span class="badge b-elig" style="font-size:9.5px">On</span></div>
+        <div class="row" style="padding:11px"><div style="flex:1"><span style="font-size:12px">Personalised ads</span><div class="small">Never agreed</div></div><span class="badge b-no" style="font-size:9.5px">Off</span></div>
+      </div>
+      <div class="sect-t">Your data</div>
+      <button class="btn btn-sec btn-full btn-sm" style="margin-bottom:8px">Download everything we hold</button>
+      <button class="btn btn-sec btn-full btn-sm" style="margin-bottom:14px">Correct my details</button>
+      <div class="divider"></div>
+      <button class="btn btn-full btn-sm" style="background:var(--red-s);color:var(--red)">Delete my account</button>
+      <div class="small" style="margin-top:9px;line-height:1.6">Deleting removes your profile, saved jobs and quiz history within 30 days. Your posted answers stay, shown as anonymous.</div>
+    </div></div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= MODALS ================= -->
+<section id="modals">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">09</div>
+    <h2>Modals and sheets</h2>
+    <p>A modal interrupts, so it has to earn it. Every one below either prevents a mistake that cannot be undone, or asks for a permission the operating system requires. Nothing here exists to announce a feature.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>33 · Push permission</b><span>Asked after the first completed quiz, never on first open. The ask names what will actually arrive.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:38</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div><div class="skel w45"></div></div><div class="pcard"><div class="skel w70"></div><div class="skel w90"></div></div></div>
+      <div class="scrim"><div class="modal">
+        <div style="width:40px;height:40px;border-radius:11px;background:var(--gold-s);color:var(--gold-d);display:grid;place-items:center;margin-bottom:11px"><svg width="21" height="21"><use href="#i-bell"/></svg></div>
+        <h4>Want tomorrow's quiz at 7 AM?</h4>
+        <p>We'll send one reminder each morning, and an alert when a job you qualify for opens. Nothing else.</p>
+        <div class="modal-acts"><button class="btn btn-sec">Not now</button><button class="btn btn-pri">Yes, remind me</button></div>
+      </div></div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>34 · Install app</b><span>Shown on the third visit. The pitch is offline access, which is the thing this audience actually values.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:20</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div><div class="skel w45"></div></div></div>
+      <div style="position:absolute;inset:0;background:rgba(18,33,28,.45)"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <span style="width:44px;height:44px;border-radius:11px;background:var(--green);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:19px">స</span>
+          <div><b style="font-family:var(--disp);font-size:14px;display:block">Add Sadhana to your home screen</b><span class="small">Under 2 MB. Works without internet.</span></div>
+        </div>
+        <div class="small" style="line-height:1.85;margin-bottom:14px">Saved notifications and downloaded notes stay readable when you have no signal.</div>
+        <div style="display:flex;gap:8px"><button class="btn btn-sec btn-sm" style="flex:1;justify-content:center">Later</button><button class="btn btn-pri btn-sm" style="flex:2;justify-content:center">Add to home screen</button></div>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>35 · Streak milestone</b><span>The only celebratory moment in the product. It appears at 3, 7, 30 and 100 days, and nowhere else.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:37</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--green)">
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:#fff">
+        <div style="width:96px;height:96px;border-radius:99px;background:var(--gold);display:grid;place-items:center;margin-bottom:20px"><svg width="46" height="46" style="color:#3B2A08"><use href="#i-flame"/></svg></div>
+        <div style="font-family:var(--disp);font-size:38px;font-weight:800;line-height:1">30 days</div>
+        <div class="te" style="font-size:14px;opacity:.85;margin:10px 0 6px;line-height:1.8">వరుసగా 30 రోజులు</div>
+        <div style="font-size:12.5px;opacity:.75;max-width:24ch;line-height:1.65">Only 4% of people who start reach thirty.</div>
+        <button class="btn btn-gold" style="margin-top:26px"><svg width="15" height="15"><use href="#i-share"/></svg> Share this</button>
+        <span class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,.7);margin-top:6px">Keep going</span>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>36 · Streak freeze used</b><span>Told after the fact, not asked in advance. A person who missed a day has a reason; the app does not interrogate it.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>7:31</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div><div class="skel w45"></div></div></div>
+      <div class="scrim"><div class="modal">
+        <div style="width:40px;height:40px;border-radius:11px;background:var(--blue-s);color:var(--blue);display:grid;place-items:center;margin-bottom:11px;font-size:19px">❄</div>
+        <h4>Your streak is safe</h4>
+        <p>You missed yesterday, so we used your monthly freeze. Your 14-day streak carries on. You'll get another freeze on 1 October.</p>
+        <div class="modal-acts"><button class="btn btn-pri" style="flex:1">Start today's quiz</button></div>
+      </div></div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>37 · Report an error</b><span>Wrong dates are the most damaging failure this product can have, so reporting one is two taps from any notification.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:25</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div><div class="skel w70"></div></div></div>
+      <div style="position:absolute;inset:0;background:rgba(18,33,28,.45)"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <b style="font-family:var(--disp);font-size:14px;display:block;margin-bottom:3px">What's wrong here?</b>
+        <div class="small" style="margin-bottom:12px">We check reports within two hours.</div>
+        <div class="cstack" style="gap:7px;margin-bottom:12px">
+          <div class="opt sel" style="width:100%"><span class="k" style="background:var(--ink);border-color:var(--ink);color:#fff">✓</span><div>A date is wrong</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>Eligibility details are wrong</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>The official link is broken</div></div>
+          <div class="opt" style="width:100%"><span class="k"></span><div>This notification was cancelled</div></div>
+        </div>
+        <textarea class="input" rows="2" placeholder="Tell us more (optional)" style="resize:none;font-size:12px"></textarea>
+        <button class="btn btn-pri btn-full btn-sm" style="margin-top:10px">Send report</button>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>38 · Delete account</b><span>Typed confirmation. States exactly what goes, what stays, and how long it takes.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:30</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w70"></div><div class="skel w90"></div></div></div>
+      <div class="scrim"><div class="modal">
+        <h4>Delete your account?</h4>
+        <p><b>Removed within 30 days:</b> your profile, saved notifications, quiz history and streak.<br><br><b>Kept:</b> answers you posted in Doubts, shown as anonymous, so other people's questions stay answered.<br><br>This cannot be undone.</p>
+        <div class="field"><label>Type DELETE to confirm</label><input class="input" placeholder="DELETE" style="font-size:13px;padding:10px"></div>
+        <div class="modal-acts"><button class="btn btn-sec">Keep my account</button><button class="btn btn-dis">Delete</button></div>
+      </div></div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>39 · Language switch</b><span>Available from every screen. Switching keeps you on the page you were reading.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:32</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div><div class="skel w45"></div></div></div>
+      <div style="position:absolute;inset:0;background:rgba(18,33,28,.45)"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <b style="font-family:var(--disp);font-size:14px;display:block;margin-bottom:12px">Language</b>
+        <div class="row" style="padding:11px 0;border-bottom:1px solid var(--line2)"><div><div class="te" style="font-size:15px;font-weight:600">తెలుగు</div><span class="small">Telugu</span></div><span style="width:20px;height:20px;border-radius:99px;background:var(--green);display:grid;place-items:center;color:#fff"><svg width="12" height="12"><use href="#i-check"/></svg></span></div>
+        <div class="row" style="padding:11px 0;border-bottom:1px solid var(--line2)"><div><div style="font-size:15px;font-weight:600">English</div><span class="small te">ఇంగ్లీష్</span></div></div>
+        <div class="row" style="padding:11px 0;opacity:.45"><div><div style="font-size:15px;font-weight:600">हिन्दी</div><span class="small">Hindi · coming soon</span></div></div>
+        <div class="row" style="padding:11px 0;opacity:.45"><div><div style="font-size:15px;font-weight:600">தமிழ்</div><span class="small">Tamil · coming soon</span></div></div>
+      </div>
+    </div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>40 · Session expired</b><span>Explains what happened without apology, and puts the fix in the same modal.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>9:02</span><span>◗◗◗ ▮</span></div>
+    <div class="pbody" style="background:var(--paper)"><div class="pad" style="opacity:.35"><div class="pcard"><div class="skel w90"></div></div></div>
+      <div class="scrim"><div class="modal">
+        <h4>You've been signed out</h4>
+        <p>For your security we sign you out after 60 days. Your saved notifications and streak are untouched.</p>
+        <div class="modal-acts"><button class="btn btn-pri" style="flex:1">Sign in with phone</button></div>
+      </div></div>
+    </div></div></div></div>
+
+  </div>
+</div>
+</section>
+
+<!-- ================= STATES ================= -->
+<section id="states">
+<div class="wrap">
+  <div class="sec-head">
+    <div class="sec-num">10</div>
+    <h2>Empty, error and offline</h2>
+    <p>These screens get more design attention than the happy path, because they are where trust is won or lost. An empty screen names the next action. An error names what happened and how to fix it, and never apologises.</p>
+  </div>
+  <div class="screens">
+
+    <div class="screen"><div class="screen-cap"><b>41 · Empty feed after filtering</b><span>Names the specific filter to remove, rather than saying “no results”.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:40</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="chips"><span class="chip on">Eligible for me</span><span class="chip on">Karimnagar</span><span class="chip on">Banking</span></div>
+      <div class="emptybox">
+        <div class="art"><svg width="26" height="26"><use href="#i-filter"/></svg></div>
+        <b>Nothing matches all three filters</b>
+        <p>There are 12 banking jobs open, but none are restricted to Karimnagar.</p>
+        <button class="btn btn-pri btn-sm">Remove the district filter</button>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab on"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>42 · No saved items</b><span>An empty screen is an invitation. It shows what saving would have done for you.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:41</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Saved</div></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="emptybox">
+        <div class="art"><svg width="24" height="24"><use href="#i-save"/></svg></div>
+        <b>Nothing saved yet</b>
+        <p>Save a notification and we'll remind you three days before it closes, and again the day before.</p>
+        <button class="btn btn-pri btn-sm">Browse notifications</button>
+      </div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>43 · Offline</b><span>What still works is listed first. The retry button is there, but so is everything they can do without it.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:44</span><span>✕ no signal</span></div>
+    <div class="appbar" style="background:var(--gold-s);border-color:var(--gold)"><span class="ic" style="color:var(--gold-d)"><svg><use href="#i-wifi-off"/></svg></span><div class="t" style="color:var(--gold-d);font-size:13px">You're offline</div></div>
+    <div class="pbody"><div class="pscroll" style="padding:14px">
+      <div class="small" style="margin-bottom:14px;line-height:1.7">Showing what you saved. New notifications will appear when you're back online.</div>
+      <div class="sect-t">Available now</div>
+      <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">6 saved notifications</div><div class="small">Last updated 7:12 AM today</div></div><span style="color:var(--muted)">›</span></div></div>
+      <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">Today's quiz</div><div class="small">Downloaded · answers sync later</div></div><span style="color:var(--muted)">›</span></div></div>
+      <div class="pcard" style="padding:11px"><div class="row"><div><div style="font-size:12.5px;font-weight:600">3 downloaded notes</div><div class="small">Polity, Telangana Movement, Economy</div></div><span style="color:var(--muted)">›</span></div></div>
+      <button class="btn btn-sec btn-full btn-sm" style="margin-top:12px">Try again</button>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>44 · Server error</b><span>Says what broke and that we know. No cartoon, no apology, no error code the reader cannot use.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:46</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><span class="ic"><svg><use href="#i-back"/></svg></span><div class="t">Notification</div></div>
+    <div class="pbody"><div class="pscroll">
+      <div class="emptybox">
+        <div class="art" style="background:var(--red-s);color:var(--red)">!</div>
+        <b>This page didn't load</b>
+        <p>Something on our side failed. We've been told automatically and are looking at it.</p>
+        <button class="btn btn-pri btn-sm" style="margin-bottom:8px">Try again</button><br>
+        <span class="btn btn-ghost btn-sm">Go back to the feed</span>
+      </div>
+      <div style="padding:0 20px"><div class="small" style="text-align:center;line-height:1.6">If it's urgent, the official notification is at <u>tgprb.in</u></div></div>
+    </div></div></div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>45 · Loading</b><span>Skeletons match the shape of what's coming, so the layout never jumps when content arrives.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>8:47</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div><span class="langpill">తె</span></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="background:var(--green);padding:14px"><div class="skel w45" style="background:rgba(255,255,255,.2);height:13px"></div><div class="skel w70" style="background:rgba(255,255,255,.14);height:16px"></div></div>
+      <div class="pad">
+        <div class="pcard"><div class="skel w90"></div><div class="skel w45"></div><div style="height:8px"></div><div class="skel w70"></div></div>
+        <div class="pcard"><div class="skel w70"></div><div class="skel w45"></div><div style="height:8px"></div><div class="skel w90"></div></div>
+        <div class="pcard"><div class="skel w90"></div><div class="skel w45"></div><div style="height:8px"></div><div class="skel w70"></div></div>
+      </div>
+    </div></div>
+    <div class="tabbar"><div class="tab on"><svg><use href="#i-home"/></svg>Feed</div><div class="tab"><svg><use href="#i-book"/></svg>Exams</div><div class="tab"><svg><use href="#i-quiz"/></svg>Quiz</div><div class="tab"><svg><use href="#i-chat"/></svg>Doubts</div><div class="tab"><svg><use href="#i-user"/></svg>You</div></div>
+    </div></div></div>
+
+    <div class="screen"><div class="screen-cap"><b>46 · Degraded mode</b><span>Notification day, 50× traffic. Personalisation is shed first; the facts stay. Degraded beats absent.</span></div>
+    <div class="phone"><div class="pscreen"><div class="statusbar"><span>10:02</span><span>◗◗◗ ▮</span></div>
+    <div class="appbar"><div class="t">Sadhana</div></div>
+    <div class="pbody"><div class="pscroll">
+      <div style="background:var(--gold-s);padding:10px 14px;border-bottom:1px solid var(--gold)"><div class="small" style="color:var(--gold-d);line-height:1.6"><b>Very busy right now.</b> We've turned off personalised eligibility for a few minutes so the site stays up for everyone.</div></div>
+      <div class="pad">
+        <div class="pcard"><div class="n-title">TS Police Constable 2026</div><div class="n-org">TGLPRB · Telangana</div><div class="n-meta"><span><i>Vacancies</i> <b>16,614</b></span><span><i>Closes</i> <b style="color:var(--red)">12 Sep</b></span></div><div class="small" style="margin-top:7px">Degree · Age 18–22 · SC/ST +5 years</div></div>
+        <div class="pcard"><div class="n-title">TGPSC Group 2 Services 2026</div><div class="n-org">TGPSC · Telangana</div><div class="n-meta"><span><i>Vacancies</i> <b>783</b></span><span><i>Closes</i> <b>04 Oct</b></span></div><div class="small" style="margin-top:7px">Degree · Age 18–46</div></div>
+      </div>
+    </div></div></div></div></div>
+
+  </div>
+
+  <h3 class="grp" style="margin-top:60px">Screen inventory</h3>
+  <p class="grp-note">Forty-six screens across six flows. Phase 2 screens are drawn but not built until the daily-quiz retention target is met.</p>
+  <table class="spec">
+    <thead><tr><th style="width:22%">Flow</th><th style="width:36%">Screens</th><th style="width:20%">Forms</th><th style="width:22%">Modals &amp; sheets</th></tr></thead>
+    <tbody>
+      <tr><td><b>Getting in</b></td><td>Language, intro, phone, OTP, profile ×3, consent, guest banner</td><td>Phone, OTP, profile steps 1–3</td><td>—</td></tr>
+      <tr><td><b>Notifications</b></td><td>Feed, feed (Telugu), detail, not-eligible detail, saved, search</td><td>Filter, report error</td><td>Filter sheet, report sheet</td></tr>
+      <tr><td><b>Exam hub</b></td><td>Directory, hub, cutoffs, material</td><td>Material upload <span style="color:var(--muted)">(Phase 2)</span></td><td>Syllabus accordion</td></tr>
+      <tr><td><b>Quiz</b></td><td>Start, question, feedback, result, share, leaderboard</td><td>—</td><td>Share sheet, milestone, freeze used</td></tr>
+      <tr><td><b>Doubts</b> <span class="badge b-part" style="font-size:9.5px">Phase 2</span></td><td>List, detail, ask</td><td>Ask doubt, answer</td><td>Report post, moderation</td></tr>
+      <tr><td><b>Account</b></td><td>Profile, notification settings, privacy &amp; data, language</td><td>Edit profile, preferences</td><td>Delete account, language, sign out</td></tr>
+      <tr><td><b>System</b></td><td>Empty ×2, offline, error, loading, degraded</td><td>—</td><td>Push permission, install, session expired</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p><b>Three rules that produced most of these decisions.</b> A notification is never hidden, only labelled — a person may hold a relaxation the system does not know about. The official source is reachable from every screen that states a fact, because we are a convenience layer over the government's own words, not a replacement for them. And no screen sends more than five notifications a day, because the fastest way to lose this audience is to become the app they muted.</p>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <b>Sadhana — UI Specification</b>
+      <p>Volume 5 of the Sadhana documentation set. Read alongside Vol 1 (research), Vol 2 (implementation), Vol 3 (sprints) and Vol 4 (modules).</p>
+      <div class="te">తెలుగు విద్యార్థుల కోసం</div>
+    </div>
+    <div style="font-size:13px;text-align:right">
+      <div>46 screens · 14 modals · 9 forms</div>
+      <div style="margin-top:5px;color:#7E9088">Version 1.0 · September 2026</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
