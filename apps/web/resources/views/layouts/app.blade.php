@@ -34,6 +34,7 @@
                         ['route' => 'notifications.index', 'label' => __('Notifications')],
                         ['route' => 'exams.index',         'label' => __('Exams')],
                         ['route' => 'quiz.today',          'label' => __('Daily quiz')],
+                        ['route' => 'ask',                'label' => __('Ask')],
                     ];
                 @endphp
                 @foreach ($nav as $item)
@@ -46,6 +47,13 @@
             </nav>
 
             <div class="ml-auto flex items-center gap-2">
+
+                {{-- Ask sits beside search because it is the same intent -- "I have a
+                     question" -- expressed two ways. A person who cannot find something
+                     in search should fall into it naturally. --}}
+                <a href="{{ route('ask') }}" aria-label="{{ __('Ask Sadhana') }}"
+                   class="tap rounded-control px-2 text-lg text-green hover:bg-green-wash">✦</a>
+
 
                 {{-- Language switch. For this audience it is not a setting, it is the
                      product, so it stays visible on every screen rather than being
@@ -107,7 +115,7 @@
                     ['route' => 'notifications.index', 'label' => __('Feed'),  'icon' => '📋'],
                     ['route' => 'exams.index',         'label' => __('Exams'), 'icon' => '🎓'],
                     ['route' => 'quiz.today',          'label' => __('Quiz'),  'icon' => '✏️'],
-                    ['route' => 'quiz.leaderboard',    'label' => __('Ranks'), 'icon' => '🏆'],
+                    ['route' => 'ask',                 'label' => __('Ask'),   'icon' => '✦'],
                     ['route' => auth()->check() ? 'dashboard' : 'home', 'label' => __('You'), 'icon' => '👤'],
                 ];
             @endphp

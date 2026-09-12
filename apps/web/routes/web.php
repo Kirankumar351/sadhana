@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AskController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
@@ -62,6 +63,13 @@ Route::group([
     // ---- exam hub: the SEO engine ----
     Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');
     Route::get('/exams/{slug}', [ExamController::class, 'show'])->name('exams.show');
+
+    // ---- Ask Sadhana ----
+    //
+    // Its own route AND a persistent entry point beside search, because a feature nobody
+    // can find is a feature nobody uses. Ask sits next to search deliberately: they are
+    // the same intent -- "I have a question" -- expressed two ways.
+    Route::get('/ask', [AskController::class, 'index'])->name('ask');
 
     // ---- the daily habit ----
     Route::get('/quiz', [QuizController::class, 'today'])->name('quiz.today');

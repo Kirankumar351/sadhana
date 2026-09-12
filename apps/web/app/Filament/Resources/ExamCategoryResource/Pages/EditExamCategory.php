@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\ExamCategoryResource\Pages;
 
 use App\Filament\Resources\ExamCategoryResource;
