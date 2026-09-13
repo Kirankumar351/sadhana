@@ -9,7 +9,7 @@ Written to be read by someone deciding what to do next — not as a progress rep
 
 ## Verified working
 
-**236 tests, 357 assertions, all passing.** 28 public routes and 30 admin screens render
+**254 tests, 388 assertions, all passing.** 28 public routes and 31 admin screens render
 against a running server in both locales.
 
 | Area | State |
@@ -17,9 +17,9 @@ against a running server in both locales.
 | Schema | 15 migrations, 85 tables, 150 indexes |
 | Models | 74 |
 | Student portal | 28 routes, bilingual |
-| Admin portal | 30 screens across 8 navigation groups |
-| AI layer | Gateway, guards, corpus, Ask Sadhana |
-| Agents | Runtime, tool registry, memory, 10 catalogued — all disabled |
+| Admin portal | 31 screens across 8 navigation groups |
+| AI layer | Gateway, guards, corpus, Ask Sadhana, cost dashboard |
+| Agents | Runtime, 4 tools, memory, 10 catalogued — all disabled |
 | Commerce | Razorpay, entitlements, invoices, coupons |
 | Push | FCM + WhatsApp, budget, waves |
 | PWA | Service worker, offline, manifest |
@@ -61,9 +61,15 @@ Recorded because each one was invisible on paper and would have been expensive i
 | 9 | `StreakMilestoneReached` dispatched, never existed | Fatal on every 7-day streak |
 | 10 | Vote change moved the score by one, not two | Wrong scores, wrong reputation |
 | 11 | **`posts.user_id` was NOT NULL** | **Erasure policy unimplementable** |
+| 12 | Vote change moved the score by one, not two | Wrong scores and wrong reputation |
+| 13 | Tool registry keyed by registration name, policy looked up by `$tool->key()` | A draft-writing tool could inherit a read-only safety policy |
 
 Number 11 is the one worth remembering: the DPDP erasure policy was written, agreed and
 documented — and the schema made it impossible. Only writing the test found it.
+
+Number 13 is the same shape in miniature. The safety rule was correct, the enforcement was
+correct, and a mismatch between two identifiers would have quietly applied the wrong policy.
+Narrow, unlikely, and invisible until the day it mattered.
 
 ---
 
