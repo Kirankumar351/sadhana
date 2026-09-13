@@ -11,6 +11,7 @@ use App\Http\Controllers\CurrentAffairsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PrivacyController;
@@ -157,6 +158,11 @@ Route::group([
         // ---- data rights (DPDP Act 2023) ----
         //
         // Built in v1, not retrofitted. The deletion actually deletes.
+        // Flashcards live under the quiz tab: they come out of quiz mistakes and
+        // feed back into quiz performance, so they belong with practice rather
+        // than with material.
+        Route::get('/flashcards', [LearningController::class, 'flashcards'])->name('flashcards');
+
         Route::get('/settings', [AccountController::class, 'settings'])->name('account.settings');
 
         Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy');

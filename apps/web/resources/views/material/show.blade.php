@@ -35,6 +35,11 @@
         A 40 MB scan is unusable on a 2 GB phone and invisible to Google. The HTML twin is
         faster, searchable, and indexable — the PDF is the fallback, not the other way round.
     --}}
+    {{-- Select any sentence to have it rewritten in plainer Telugu. Most quality
+         preparation material in India is in dense English, and a Telugu-medium
+         graduate loses hours decoding it before they can start learning. --}}
+    @livewire('ai.explain-simpler', ['materialId' => $material->id])
+
     @if ($material->html_content)
         <div class="prose mt-8 max-w-none text-body leading-relaxed text-ink-soft">
             {!! $material->html_content !!}

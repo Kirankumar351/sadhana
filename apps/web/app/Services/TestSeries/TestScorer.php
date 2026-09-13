@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\TestSeries;
 
+use App\Jobs\BuildFlashcardsFromAttempt;
 use App\Models\Question;
 use App\Models\QuizAttempt;
 use App\Models\Test;
@@ -109,7 +110,7 @@ final class TestScorer
 
         asort($topicStrength);
 
-        return DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $attempt, $test, $score, $sectionBreakdown, $topicStrength, $timePerQuestion
         ): TestResult {
             $attempt->update([
@@ -131,6 +132,13 @@ final class TestScorer
                 'weak_areas' => array_slice(array_keys($topicStrength), 0, 3),
             ]);
         });
+
+        // A mock test is the richest source of mistakes there is — three hours of them.
+        // Dispatched after the transaction so a worker can never pick the attempt up
+        // before it is committed.
+        BuildFlashcardsFromAttempt::dispatch($attempt->id);
+
+        return $result;
     }
 
     /**

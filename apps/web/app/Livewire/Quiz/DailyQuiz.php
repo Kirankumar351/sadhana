@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Quiz;
 
+use App\Jobs\BuildFlashcardsFromAttempt;
 use App\Models\DailyQuiz as DailyQuizModel;
 use App\Models\Question;
 use App\Models\QuizAttempt;
@@ -185,6 +186,10 @@ class DailyQuiz extends Component
         });
 
         $streaks->record($user);
+
+        // Every question missed becomes a card due today. This is the loop that makes the
+        // quiz worth doing daily: mistakes do not just get scored, they come back.
+        BuildFlashcardsFromAttempt::dispatch($attempt->id);
 
         return $this->redirectRoute('quiz.result', ['attempt' => $attempt->id], navigate: true);
     }

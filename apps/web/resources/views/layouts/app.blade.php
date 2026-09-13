@@ -34,6 +34,7 @@
                         ['route' => 'notifications.index', 'label' => __('Notifications')],
                         ['route' => 'exams.index',         'label' => __('Exams')],
                         ['route' => 'quiz.today',          'label' => __('Daily quiz')],
+                        ['route' => 'flashcards',          'label' => __('Flashcards'), 'auth' => true],
                         ['route' => 'material.index',     'label' => __('Material')],
                         ['route' => 'community.index',    'label' => __('Doubts')],
                         ['route' => 'ask',                'label' => __('Ask')],
@@ -41,6 +42,7 @@
                     ];
                 @endphp
                 @foreach ($nav as $item)
+                    @continue(($item['auth'] ?? false) && ! auth()->check())
                     <a href="{{ route($item['route']) }}"
                        class="tap rounded-control px-3 text-body font-medium transition
                               {{ request()->routeIs($item['route']) ? 'bg-green-wash text-green' : 'text-ink-soft hover:bg-ink/5' }}">

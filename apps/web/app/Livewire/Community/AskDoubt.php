@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Community;
 
+use App\Jobs\AnswerDoubtWithAi;
 use App\Models\Post;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -101,6 +102,17 @@ class AskDoubt extends Component
             'image_path' => $this->image?->store('doubts/images', 'public'),
             'audio_path' => $this->audio?->store('doubts/audio', 'public'),
         ]);
+
+        /**
+         * An instant first answer so nobody waits three hours for something the
+         * material already covers. Queued, not inline - the student's own question
+         * must appear immediately rather than waiting on a model call.
+         *
+         * It posts nothing at all below the confidence floor: a hedging machine
+         * answer at the top of an empty thread looks answered, so the person who
+         * actually knows scrolls past.
+         */
+        AnswerDoubtWithAi::dispatch($post->id);
 
         return $this->redirectRoute('community.show', ['slug' => $post->slug], navigate: true);
     }

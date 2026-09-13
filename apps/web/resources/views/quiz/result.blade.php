@@ -93,6 +93,18 @@
         </div>
     </section>
 
+    {{-- The loop that makes the quiz worth doing daily: every question missed is already a
+         flashcard due today, so the mistake has somewhere to go other than a feeling. --}}
+    @if ($attempt->score < $attempt->total_marks)
+        <section class="card mt-6 border-marigold bg-marigold-wash p-4">
+            <p class="text-card-title">{{ __('Your mistakes are now flashcards') }}</p>
+            <p class="mt-1 text-body text-ink-soft">
+                {{ __('Every question you missed today is waiting in your deck. Five minutes now is worth more than re-reading the chapter.') }}
+            </p>
+            <a href="{{ route('flashcards') }}" class="btn-primary mt-3">{{ __('Revise them') }}</a>
+        </section>
+    @endif
+
     <div class="mt-6 flex flex-wrap gap-3">
         <a href="{{ route('quiz.leaderboard') }}" class="btn-secondary">{{ __('Leaderboard') }}</a>
         <a href="{{ route('notifications.index') }}" class="btn-primary">{{ __('See new notifications') }}</a>
