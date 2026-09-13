@@ -163,6 +163,8 @@ Route::group([
         // than with material.
         Route::get('/flashcards', [LearningController::class, 'flashcards'])->name('flashcards');
 
+        Route::get('/study-plan', [LearningController::class, 'studyPlan'])->name('study-plan');
+
         Route::get('/notes', [LearningController::class, 'notes'])->name('notes.index');
         Route::get('/notes/{note}', [LearningController::class, 'showNote'])->name('notes.show');
         Route::delete('/notes/{note}', [LearningController::class, 'destroyNote'])->name('notes.destroy');

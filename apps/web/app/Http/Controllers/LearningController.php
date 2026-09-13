@@ -65,4 +65,14 @@ class LearningController extends Controller
             ->route('notes.index', ['locale' => app()->getLocale()])
             ->with('status', __('Note deleted.'));
     }
+
+    public function studyPlan(): View
+    {
+        return view('learning.study-plan', [
+            'seo' => SeoBuilder::private(
+                __('Study plan'),
+                __('Your remaining days, allocated across the topics where they are worth the most.'),
+            ),
+        ]);
+    }
 }
