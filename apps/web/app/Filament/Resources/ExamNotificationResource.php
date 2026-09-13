@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ExamNotificationResource\Pages;
 use App\Models\ExamNotification;
+use App\Services\Ingestion\NotificationPublisher;
 use App\Support\Locale;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -292,14 +293,10 @@ class ExamNotificationResource extends Resource
                             ->label('The official PDF link opens and is the right notification')
                             ->accepted()->validationMessages(['accepted' => 'Required.']),
                     ])
-                    ->action(function (ExamNotification $record): void {
-                        $record->update([
-                            'status' => 'published',
-                            'published_at' => $record->published_at ?? now(),
-                            'verified_by' => auth()->id(),
-                            'verified_at' => now(),
-                        ]);
-                    }),
+                    // Through the publisher, so this screen and the review queue record
+                    // the same verification signature.
+                    ->action(fn (ExamNotification $record) => app(NotificationPublisher::class)
+                        ->publish($record, auth()->user())),
 
                 Tables\Actions\Action::make('unpublish')
                     ->icon('heroicon-o-eye-slash')
@@ -307,7 +304,7 @@ class ExamNotificationResource extends Resource
                     ->visible(fn (ExamNotification $record): bool => $record->status === 'published')
                     ->requiresConfirmation()
                     ->modalDescription('Use this the moment an error is reported. Correcting fast costs less trust than being right first time.')
-                    ->action(fn (ExamNotification $record) => $record->update(['status' => 'draft'])),
+                    ->action(fn (ExamNotification $record) => app(NotificationPublisher::class)->unpublish($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
