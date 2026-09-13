@@ -36,3 +36,29 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+/**
+ * Install prompt.
+ *
+ * Deliberately NOT shown on first visit. A prompt to install an app the visitor has not
+ * yet decided they want is the fastest way to get a permanent dismissal, and the browser
+ * only gives one chance. It is stored and offered later, from a button the user can find
+ * when they already know the product is useful.
+ */
+let deferredInstall = null;
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstall = event;
+    document.dispatchEvent(new CustomEvent('sadhana:installable'));
+});
+
+window.promptInstall = async () => {
+    if (!deferredInstall) return false;
+
+    deferredInstall.prompt();
+    const { outcome } = await deferredInstall.userChoice;
+    deferredInstall = null;
+
+    return outcome === 'accepted';
+};

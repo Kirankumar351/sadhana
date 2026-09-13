@@ -25,6 +25,13 @@ use Illuminate\Support\Facades\Route;
  * fragment backlinks and double the sitemap for no gain.
  */
 
+/**
+ * The offline fallback, outside the locale group so the service worker can cache one
+ * copy rather than one per language. It is the only page in the product that must be
+ * reachable with no network at all.
+ */
+Route::view('/offline', 'offline')->name('offline');
+
 // Bare "/" resolves by cookie, then by browser preference, then to Telugu.
 Route::get('/', function () {
     $cookie = request()->cookie('locale');
