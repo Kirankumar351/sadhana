@@ -106,10 +106,10 @@
         @endif
     </section>
 
-    <p class="mt-4 text-meta text-muted">
-        {{ __('Something wrong on this page?') }}
-        <a href="#" class="text-green hover:underline">{{ __('Report an error') }}</a>
-    </p>
+    {{-- Open to guests deliberately: the person most likely to catch a wrong date is
+         someone who has just read the official PDF, and they will not create an account
+         to tell us. --}}
+    @livewire('notifications.report-error', ['notificationId' => $n->id])
 
 </article>
 
