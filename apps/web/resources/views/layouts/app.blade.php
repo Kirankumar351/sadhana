@@ -35,6 +35,7 @@
                         ['route' => 'exams.index',         'label' => __('Exams')],
                         ['route' => 'quiz.today',          'label' => __('Daily quiz')],
                         ['route' => 'flashcards',          'label' => __('Flashcards'), 'auth' => true],
+                        ['route' => 'notes.index',         'label' => __('Notes'), 'auth' => true],
                         ['route' => 'material.index',     'label' => __('Material')],
                         ['route' => 'community.index',    'label' => __('Doubts')],
                         ['route' => 'ask',                'label' => __('Ask')],

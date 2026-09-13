@@ -59,6 +59,22 @@ final class SeoBuilder
      * @param  array<string, mixed>  $params
      * @return array{title: string, description: string, canonical: string, alternates: array<string, string>, type: string}
      */
+    /**
+     * A page behind a login.
+     *
+     * No canonical and no alternates, because there is nothing to rank and nothing for a
+     * crawler to reciprocate with — only the instruction not to index it.
+     */
+    public static function private(string $title, string $description = ''): array
+    {
+        return [
+            'title' => $title,
+            'description' => $description,
+            'noindex' => true,
+            'type' => 'website',
+        ];
+    }
+
     public static function forRoute(string $route, string $title, string $description, array $params = []): array
     {
         return [

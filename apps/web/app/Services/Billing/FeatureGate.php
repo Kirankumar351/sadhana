@@ -48,8 +48,9 @@ final class FeatureGate
     {
         $this->assertGatable($key);
 
-        // Open posture: every capability is available to everyone, signed in or not.
-        if ($this->gatesOpen()) {
+        // Open posture: every capability is available to everyone, signed in or not —
+        // except the keys that buy headroom rather than access. See `commerce.cost_capped`.
+        if ($this->gatesOpen() && ! $this->protectsCost($key)) {
             return true;
         }
 
@@ -72,6 +73,18 @@ final class FeatureGate
         $this->assertGatable($key);
 
         return true;
+    }
+
+    /**
+     * Whether this key raises a cost limit rather than unlocking a feature.
+     *
+     * A revenue gate withholds something in order to sell it, and follows the open posture.
+     * A cost cap withholds nothing — it protects unit economics — so it is checked against
+     * the entitlement whether gates are open or closed.
+     */
+    public function protectsCost(string $key): bool
+    {
+        return in_array($key, (array) config('commerce.cost_capped', []), true);
     }
 
     public function gatesOpen(): bool

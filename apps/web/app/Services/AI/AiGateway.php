@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\AI;
 
 use App\Models\User;
+use App\Services\AI\Contracts\ModelClient;
 use App\Services\AI\Exceptions\CapExceededException;
 use App\Services\AI\Exceptions\GuardrailException;
 use Illuminate\Support\Facades\Log;

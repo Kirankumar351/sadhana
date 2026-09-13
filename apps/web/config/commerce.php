@@ -45,6 +45,23 @@ return [
     ],
 
     /**
+     * Cost caps, not revenue gates.
+     *
+     * `gates_open` is a decision about what we WITHHOLD in order to sell it. These keys
+     * withhold nothing — they raise a per-user limit that exists to keep the AI bill inside
+     * the budget in `ai.cost`. Letting them follow the open posture hands every signed-up
+     * user the premium allowance (200 notes a month, 200 questions a day, 60 answer
+     * evaluations) against a budget of 40 paise per active user per month.
+     *
+     * That is not generosity, it is an accident of how the posture was written — exactly
+     * what FeatureGate exists to prevent. So these stay entitlement-checked whether gates
+     * are open or closed. Nobody loses a feature: the free caps are sized for genuine study.
+     */
+    'cost_capped' => [
+        'ai_higher_caps',
+    ],
+
+    /**
      * Entitlement keys. Feature code NEVER asks "is this user premium" — it asks
      * "does this user hold this key". That indirection is what lets a plan change, a coupon,
      * a campus deal, a refund and a manual grant all flow through one code path.

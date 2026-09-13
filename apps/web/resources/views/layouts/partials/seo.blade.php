@@ -17,6 +17,13 @@
 <title>{{ $title }}{{ $title === config('app.name') ? '' : ' · Sadhana' }}</title>
 <meta name="description" content="{{ $description }}">
 
+{{-- A private page emits no canonical and no hreflang cluster, only noindex. Anything
+     behind a login has nothing for a crawler, and a half-built alternates cluster on a
+     personal page weakens the reciprocity of the exam hubs that carry the ranking. --}}
+@if ($seo['noindex'] ?? false)
+    <meta name="robots" content="noindex, nofollow">
+@endif
+
 @isset($seo['canonical'])
     <link rel="canonical" href="{{ $seo['canonical'] }}">
 @endisset
