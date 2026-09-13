@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Http\Controllers\AskController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizController;
@@ -92,6 +94,22 @@ Route::group([
     Route::get('/quiz/result/{attempt}', [QuizController::class, 'result'])->name('quiz.result');
     Route::get('/leaderboard', [QuizController::class, 'leaderboard'])->name('quiz.leaderboard');
 
+    // ---- material library ----
+    //
+    // Downloads go through the application, never a direct object URL. A taken-down file
+    // must stop being reachable immediately, and an unlisted R2 URL that leaks is public
+    // forever.
+    Route::get('/material', [MaterialController::class, 'index'])->name('material.index');
+    Route::get('/material/{slug}', [MaterialController::class, 'show'])->name('material.show');
+    Route::get('/material/{slug}/download', [MaterialController::class, 'download'])->name('material.download');
+
+    // ---- doubt community ----
+    //
+    // Decision D8: this does not open until 5,000+ DAU, seeded with real answered
+    // questions. An empty forum signals a dead product.
+    Route::get('/doubts', [CommunityController::class, 'index'])->name('community.index');
+    Route::get('/doubts/{slug}', [CommunityController::class, 'show'])->name('community.show');
+
     // ---- money ----
     Route::get('/premium', [BillingController::class, 'plans'])->name('billing.plans');
 
@@ -104,5 +122,10 @@ Route::group([
 
         Route::post('/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::get('/checkout/callback', [BillingController::class, 'callback'])->name('billing.callback');
+
+        // Contributing requires an account, so an upload and a doubt can be attributed
+        // and, where necessary, acted on.
+        Route::get('/doubts/ask/new', [CommunityController::class, 'create'])->name('community.create');
+        Route::get('/material/share/new', [MaterialController::class, 'create'])->name('material.create');
     });
 });

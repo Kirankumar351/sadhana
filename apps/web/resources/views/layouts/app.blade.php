@@ -34,6 +34,8 @@
                         ['route' => 'notifications.index', 'label' => __('Notifications')],
                         ['route' => 'exams.index',         'label' => __('Exams')],
                         ['route' => 'quiz.today',          'label' => __('Daily quiz')],
+                        ['route' => 'material.index',     'label' => __('Material')],
+                        ['route' => 'community.index',    'label' => __('Doubts')],
                         ['route' => 'ask',                'label' => __('Ask')],
                         ['route' => 'billing.plans',      'label' => __('Premium')],
                     ];
