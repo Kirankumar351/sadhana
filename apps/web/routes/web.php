@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AskController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillingController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TestSeriesController;
 use App\Support\Locale;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +87,13 @@ Route::group([
     Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');
     Route::get('/exams/{slug}', [ExamController::class, 'show'])->name('exams.show');
 
+    // ---- search ----
+    //
+    // Searches notifications, exams, material and answered doubts together, because
+    // a student searching "group 2 syllabus" does not know which content type holds
+    // the answer and should not have to.
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
+
     // ---- Ask Sadhana ----
     //
     // Its own route AND a persistent entry point beside search, because a feature nobody
@@ -148,6 +157,8 @@ Route::group([
         // ---- data rights (DPDP Act 2023) ----
         //
         // Built in v1, not retrofitted. The deletion actually deletes.
+        Route::get('/settings', [AccountController::class, 'settings'])->name('account.settings');
+
         Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy');
         Route::get('/privacy/export', [PrivacyController::class, 'export'])->name('privacy.export');
         Route::delete('/privacy', [PrivacyController::class, 'destroy'])->name('privacy.destroy');

@@ -167,3 +167,45 @@ it('lets a signed-in user reach the dashboard', function (): void {
 it('rejects a phone number that is not a valid Indian mobile', function (): void {
     $this->post('/te/sign-in', ['phone' => '1234567890'])->assertSessionHasErrors('phone');
 });
+
+// ================================================================ screens added later
+
+/**
+ * Web Portal screen 06. Searches every content type at once, because a student searching
+ * "group 2 syllabus" does not know which of ours holds the answer.
+ */
+it('serves the search screen and finds across content types', function (): void {
+    $this->get('/te/search')->assertSuccessful();
+
+    $this->get('/en/search?q=TGPSC')
+        ->assertSuccessful()
+        ->assertSee('TGPSC', false);
+});
+
+it('offers a way out when search finds nothing', function (): void {
+    $this->get('/en/search?q=zzzznothingmatchesthis')
+        ->assertSuccessful()
+        ->assertSee('Ask Sadhana instead');
+});
+
+/**
+ * Web Portal screen 20. Until this existed, notification preferences were writable only by
+ * the system — a user could not turn anything off without uninstalling.
+ */
+it('keeps account settings behind auth and renders them for a user', function (): void {
+    $this->get('/te/settings')->assertRedirect();
+
+    $this->actingAs(User::factory()->create())
+        ->get('/te/settings')
+        ->assertSuccessful();
+});
+
+/**
+ * The cap is stated on the settings page rather than implied. A specific promise someone
+ * can hold us to is worth more than wording about "relevant updates".
+ */
+it('tells the user the daily notification cap', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/en/settings')
+        ->assertSee('never send more than', false);
+});

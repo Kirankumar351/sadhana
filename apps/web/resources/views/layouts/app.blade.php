@@ -51,6 +51,9 @@
 
             <div class="ml-auto flex items-center gap-2">
 
+                <a href="{{ route('search') }}" aria-label="{{ __('Search') }}"
+                   class="tap rounded-control px-2 text-lg text-ink-soft hover:bg-ink/5">🔍</a>
+
                 {{-- Ask sits beside search because it is the same intent -- "I have a
                      question" -- expressed two ways. A person who cannot find something
                      in search should fall into it naturally. --}}

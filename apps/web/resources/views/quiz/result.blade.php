@@ -25,6 +25,11 @@
         @endif
     </div>
 
+    {{-- The viral loop. A WhatsApp status seen by a hundred classmates costs us
+         nothing and carries the only proof that matters: a real person, in this
+         district, doing this every morning. --}}
+    @livewire('quiz.share-result', ['attempt' => $attempt])
+
     {{-- Weak area routes back into free material rather than a paywall. This is the
          moment a student is most receptive to being told what to study next. --}}
     @if ($weak = $attempt->weakestSubject())
