@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Jobs\ReindexChunks;
+use App\Jobs\SendNotificationAlert;
 use App\Models\Exam;
 use App\Models\ExamNotification;
 use App\Support\Locale;
@@ -27,6 +28,31 @@ class CorpusObserver
     {
         $this->reindex($model);
         $this->purgeCache($model);
+        $this->alertOnFirstPublish($model);
+    }
+
+    /**
+     * A notification going live for the first time alerts the people it is for.
+     *
+     * Guarded on the status actually CHANGING to published, so re-saving an already-live
+     * notification to fix a typo does not push it to everyone a second time. That mistake
+     * is invisible in review and extremely visible to a user.
+     */
+    private function alertOnFirstPublish(Model $model): void
+    {
+        if (! $model instanceof ExamNotification) {
+            return;
+        }
+
+        if ($model->status !== 'published') {
+            return;
+        }
+
+        if ($model->getOriginal('status') === 'published') {
+            return;
+        }
+
+        SendNotificationAlert::dispatch((int) $model->getKey());
     }
 
     public function deleted(Model $model): void

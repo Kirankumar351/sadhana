@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -7,10 +9,9 @@ return [
     | Third Party Services
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | Credentials for third party services. Nothing here has a default that would
+    | work in production — a missing key must be an obvious failure, never a silent
+    | fallback to somebody else's account.
     |
     */
 
@@ -33,6 +34,32 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Push delivery
+    |--------------------------------------------------------------------------
+    |
+    | Web push via FCM is free and reaches anyone who granted permission, so it is the
+    | default channel for everything.
+    |
+    | WhatsApp has by far the best open rate in this market — it is why Vol 1 treats it
+    | as 25% of acquisition rather than an afterthought — but it costs money per message
+    | and careless use gets the business account restricted, which would take the channel
+    | away from every user at once. It is therefore reserved for messages where silence
+    | genuinely costs someone something: a closing deadline, or a job they qualify for.
+    |
+    */
+
+    'fcm' => [
+        'server_key' => env('FCM_SERVER_KEY'),
+    ],
+
+    'whatsapp' => [
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
     ],
 
 ];

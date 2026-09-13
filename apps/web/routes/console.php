@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendDailyQuizPush;
+use App\Jobs\SendDeadlineReminders;
+use App\Jobs\SendStreakReminder;
 use Illuminate\Support\Facades\Schedule;
 
 /**
@@ -35,6 +38,27 @@ Schedule::command('scrape:run')
  */
 Schedule::command('quiz:publish')
     ->dailyAt('06:45')
+    ->timezone('Asia/Kolkata');
+
+Schedule::job(new SendDailyQuizPush)
+    ->dailyAt('07:00')
+    ->timezone('Asia/Kolkata');
+
+/**
+ * The 21:00 nudge, only for people who have a streak and have NOT been active
+ * today. Reminding someone who already did the quiz this morning is the fastest
+ * way to get the whole channel muted.
+ */
+Schedule::job(new SendStreakReminder)
+    ->dailyAt('21:00')
+    ->timezone('Asia/Kolkata');
+
+/**
+ * Deadline reminders at 09:00, when someone can actually act on them. The same
+ * message at 23:00 is an anxiety generator rather than a service.
+ */
+Schedule::job(new SendDeadlineReminders)
+    ->dailyAt('09:00')
     ->timezone('Asia/Kolkata');
 
 // ---------------------------------------------------------------- corpus
