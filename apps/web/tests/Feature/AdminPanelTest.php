@@ -45,14 +45,49 @@ it('renders every admin resource for a staff member', function (string $path): v
 
     $this->actingAs($user)->get($path)->assertSuccessful();
 })->with([
+    // Content
     '/admin/exam-notifications',
     '/admin/exam-notifications/create',
     '/admin/exams',
-    '/admin/questions',
-    '/admin/glossaries',
-    '/admin/users',
-    '/admin/daily-quizzes',
     '/admin/exam-categories',
+    '/admin/materials',
+
+    // Quiz
+    '/admin/questions',
+    '/admin/daily-quizzes',
+    '/admin/test-series',
+    '/admin/tests',
+
+    // AI — a content editor may draft, but prompts and agents are Owner-only.
+    '/admin/news-items',
+    '/admin/ai-drafts',
+    '/admin/ai-prompts',
+    '/admin/agent-definitions',
+    '/admin/agent-runs',
+
+    // Community
+    '/admin/posts',
+    '/admin/answers',
+    '/admin/moderation-flags',
+
+    // Localisation
+    '/admin/glossaries',
+    '/admin/translation-queues',
+
+    // Money
+    '/admin/plans',
+    '/admin/orders',
+    '/admin/subscriptions',
+    '/admin/coupons',
+    '/admin/advertisers',
+    '/admin/ad-campaigns',
+
+    // People and system
+    '/admin/users',
+    '/admin/scrape-sources',
+    '/admin/data-requests',
+    '/admin/feature-flags',
+    '/admin/audit-logs',
 ]);
 
 /**

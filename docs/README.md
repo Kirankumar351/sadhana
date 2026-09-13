@@ -11,6 +11,7 @@
 | 04 | [Commerce](04-COMMERCE.md) | Money. Read before touching it. |
 | 05 | [Build order](05-BUILD-ORDER.md) | What to do on Monday |
 | 06 | [Runbook](06-RUNBOOK.md) | Notification day, incidents, reconciliation |
+| 07 | [Build status](07-BUILD-STATUS.md) | What exists, what is verified, what is not |
 
 Plus [`../CLAUDE.md`](../CLAUDE.md) — the context primer, loaded automatically in every
 AI-assisted coding session in this repository.

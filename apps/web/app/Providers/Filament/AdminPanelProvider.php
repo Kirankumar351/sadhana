@@ -62,7 +62,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Content'),
                 NavigationGroup::make('Quiz'),
                 NavigationGroup::make('AI'),
+                NavigationGroup::make('Community'),
                 NavigationGroup::make('Localisation'),
+                NavigationGroup::make('Money'),
                 NavigationGroup::make('People'),
                 NavigationGroup::make('System'),
             ])
