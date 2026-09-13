@@ -49,7 +49,7 @@ final class NotificationExtractor
             return ['official_pdf_url' => str_ends_with($sourceUrl, '.pdf') ? $sourceUrl : null];
         }
 
-        return $this->sanitise($raw, $text, $sourceUrl);
+        return $this->sanitise($raw->data, $text, $sourceUrl);
     }
 
     private function instruction(): string

@@ -11,6 +11,7 @@ use App\Services\AI\Contracts\ModelClient;
 use App\Services\AI\Contracts\VectorStore;
 use App\Services\AI\ModelResponse;
 use App\Services\AI\ResolvedPrompt;
+use App\Services\AI\StructuredResponse;
 
 /**
  * Test doubles at the provider boundary.
@@ -26,10 +27,12 @@ final class FakeAi
      * Install the fakes and index some passages.
      *
      * @param  list<array{content: string, title?: string, locale?: string, source_type?: string, exam_id?: int}>  $corpus
+     * @param  array<string, mixed>  $extraction  what a structured call returns
      */
-    public static function install(string $answer = 'A grounded answer.', array $corpus = []): FakeModelClient
+    public static function install(string $answer = 'A grounded answer.', array $corpus = [], array $extraction = []): FakeModelClient
     {
         $client = new FakeModelClient($answer);
+        $client->extraction = $extraction;
 
         app()->instance(ModelClient::class, $client);
         app()->instance(EmbeddingClient::class, new FakeEmbeddingClient);
@@ -75,6 +78,12 @@ final class FakeModelClient implements ModelClient
     /** @var array<string, mixed> */
     public array $extraction = [];
 
+    /** @var list<string> */
+    public array $instructions = [];
+
+    /** @var list<string> */
+    public array $contents = [];
+
     public function __construct(public string $answer = 'A grounded answer.') {}
 
     public function complete(ResolvedPrompt $prompt, array $passages, string $question, string $tier = 'large'): ModelResponse
@@ -91,9 +100,17 @@ final class FakeModelClient implements ModelClient
         );
     }
 
-    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): array
+    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): StructuredResponse
     {
-        return $this->extraction;
+        $this->instructions[] = $instruction;
+        $this->contents[] = $content;
+
+        return new StructuredResponse(
+            data: $this->extraction,
+            model: 'fake-model',
+            inputTokens: 400,
+            outputTokens: 300,
+        );
     }
 
     public function decide(string $system, array $tools, array $transcript, array $input, string $tier = 'large'): AgentDecision

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\AI\Contracts\ModelClient;
+use App\Services\AI\StructuredResponse;
 use App\Services\Ingestion\NotificationExtractor;
 
 /**
@@ -15,7 +16,12 @@ use App\Services\Ingestion\NotificationExtractor;
 function extractorReturning(array $payload): NotificationExtractor
 {
     $client = Mockery::mock(ModelClient::class);
-    $client->shouldReceive('extract')->andReturn($payload);
+    $client->shouldReceive('extract')->andReturn(new StructuredResponse(
+        data: $payload,
+        model: 'fake-model',
+        inputTokens: 400,
+        outputTokens: 300,
+    ));
 
     return new NotificationExtractor($client);
 }

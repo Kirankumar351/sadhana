@@ -8,6 +8,7 @@ use App\Services\Agents\AgentDecision;
 use App\Services\AI\ModelResponse;
 use App\Services\AI\ResolvedPrompt;
 use App\Services\AI\RetrievedPassage;
+use App\Services\AI\StructuredResponse;
 
 /**
  * The provider boundary.
@@ -37,10 +38,13 @@ interface ModelClient
      * a hallucinated deadline is the single worst failure this product can produce, and
      * everything the extractor returns goes to human review regardless.
      *
+     * Returns the usage alongside the data, because the two features that lean on this —
+     * answer evaluation and mock interview — are the most expensive calls in the product
+     * and were invisible to CostMeter while this returned a bare array.
+     *
      * @param  array<string, mixed>  $schema  JSON Schema the output must satisfy
-     * @return array<string, mixed>
      */
-    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): array;
+    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): StructuredResponse;
 
     /**
      * One step of an agent loop: given a goal, the available tools and the transcript so

@@ -57,14 +57,14 @@
         <article class="card mt-4 min-h-[16rem] p-6">
             <p class="text-meta text-muted">{{ __('Question') }}</p>
             <p class="mt-2 text-card-title leading-relaxed">
-                {{ $card->front[app()->getLocale()] ?? reset($card->front) }}
+                {{ \App\Support\Translated::from($card->front) }}
             </p>
 
             @if ($revealed)
                 <div class="mt-5 border-t border-ink/10 pt-4">
                     <p class="text-meta text-muted">{{ __('Answer') }}</p>
                     <p class="mt-2 text-card-title leading-relaxed text-green">
-                        {{ $card->back[app()->getLocale()] ?? reset($card->back) }}
+                        {{ \App\Support\Translated::from($card->back) }}
                     </p>
                 </div>
             @endif

@@ -75,4 +75,30 @@ class LearningController extends Controller
             ),
         ]);
     }
+
+    /**
+     * Answer evaluation and mock interview — Group 1 features, and the two most expensive
+     * calls in the product. Both are premium capabilities, usable now because gates are
+     * open, and both are capped per month regardless: the cap protects the AI budget rather
+     * than revenue, so it applies whatever the posture.
+     */
+    public function evaluate(): View
+    {
+        return view('learning.evaluate', [
+            'seo' => SeoBuilder::private(
+                __('Answer evaluation'),
+                __('Descriptive answers read against a published rubric.'),
+            ),
+        ]);
+    }
+
+    public function interview(): View
+    {
+        return view('learning.interview', [
+            'seo' => SeoBuilder::private(
+                __('Mock interview'),
+                __('Interview practice built from your own bio-data.'),
+            ),
+        ]);
+    }
 }

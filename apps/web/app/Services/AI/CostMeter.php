@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\AI;
 
 use App\Models\AiRequest;
+use App\Models\InterviewSession;
 use App\Models\User;
 use App\Services\AI\Exceptions\CapExceededException;
 use App\Services\Billing\FeatureGate;
@@ -90,6 +91,24 @@ final class CostMeter
 
     public function usage(User $user, string $feature, string $window = 'day'): int
     {
+        /**
+         * A MOCK INTERVIEW IS ONE UNIT, NOT TWENTY.
+         *
+         * Every turn of an interview is its own metered call — it has to be, or the cost of
+         * the most expensive feature in the product would be invisible. But the cap the
+         * student was told about is "one mock interview a month", and counting requests
+         * would spend it on the first question and end the interview there.
+         *
+         * So the cost is metered per turn and the allowance is counted per session. The
+         * two numbers answer different questions and it is correct for them to differ.
+         */
+        if ($feature === 'mock_interview') {
+            return InterviewSession::query()
+                ->where('user_id', $user->id)
+                ->where('created_at', '>=', $this->windowStart($window))
+                ->count();
+        }
+
         $key = $this->counterKey($user, $feature, $window);
 
         $cached = Cache::get($key);

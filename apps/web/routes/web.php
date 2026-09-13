@@ -165,6 +165,9 @@ Route::group([
 
         Route::get('/study-plan', [LearningController::class, 'studyPlan'])->name('study-plan');
 
+        Route::get('/answer-evaluation', [LearningController::class, 'evaluate'])->name('answer-evaluation');
+        Route::get('/mock-interview', [LearningController::class, 'interview'])->name('mock-interview');
+
         Route::get('/notes', [LearningController::class, 'notes'])->name('notes.index');
         Route::get('/notes/{note}', [LearningController::class, 'showNote'])->name('notes.show');
         Route::delete('/notes/{note}', [LearningController::class, 'destroyNote'])->name('notes.destroy');

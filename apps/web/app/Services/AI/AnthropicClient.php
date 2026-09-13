@@ -63,10 +63,12 @@ final class AnthropicClient implements ModelClient
      * @param  array<string, mixed>  $schema
      * @return array<string, mixed>
      */
-    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): array
+    public function extract(string $instruction, string $content, array $schema, string $tier = 'large'): StructuredResponse
     {
+        $model = $this->modelFor($tier);
+
         $body = $this->post([
-            'model' => $this->modelFor($tier),
+            'model' => $model,
             'max_tokens' => 2000,
             'system' => $instruction."\n\nReturn ONLY valid JSON matching the given schema. "
                 .'Use null for anything not clearly stated. NEVER guess a date.',
@@ -83,7 +85,12 @@ final class AnthropicClient implements ModelClient
 
         $decoded = json_decode($text, true);
 
-        return is_array($decoded) ? $decoded : [];
+        return new StructuredResponse(
+            data: is_array($decoded) ? $decoded : [],
+            model: $model,
+            inputTokens: (int) data_get($body, 'usage.input_tokens', 0),
+            outputTokens: (int) data_get($body, 'usage.output_tokens', 0),
+        );
     }
 
     /**

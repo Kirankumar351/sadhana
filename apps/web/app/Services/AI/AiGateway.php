@@ -156,6 +156,72 @@ final class AiGateway
         }
     }
 
+    /**
+     * A structured call: JSON in a known shape rather than prose.
+     *
+     * Answer evaluation and mock interview need a rubric breakdown, not a paragraph, and
+     * they still have to pass through here — caps and cost metering are exactly what they
+     * need most, being the most expensive calls in the product.
+     *
+     * DELIBERATELY NOT CACHED. The response cache is content-keyed, which is right for a
+     * syllabus topic and wrong for a person's own exam answer: it would hand one student's
+     * evaluation to another whose text happened to match, and it would put private writing
+     * in a shared store. Every call here is a real call.
+     *
+     * `enforceCap` exists for allowances counted in units larger than one call. A mock
+     * interview is twenty turns and one allowance: the cap is checked when the session
+     * opens, and the turns inside it are already paid for. Every turn still meters its
+     * cost — the allowance and the bill answer different questions.
+     *
+     * @param  array<string, mixed>  $schema
+     */
+    public function structured(
+        string $instruction,
+        string $content,
+        array $schema,
+        ?User $user,
+        string $feature,
+        string $tier = 'large',
+        bool $enforceCap = true,
+    ): AiStructured {
+        $started = microtime(true);
+
+        try {
+            if ($enforceCap) {
+                $this->meter->assertWithinCaps($user, $feature);
+            }
+
+            $response = $this->client->extract($instruction, $content, $schema, $tier);
+
+            if ($response->isEmpty()) {
+                $this->meter->recordRefusal($user, $feature, 'empty_extraction');
+
+                return AiStructured::failed('empty_extraction');
+            }
+
+            $this->meter->record(
+                user: $user,
+                feature: $feature,
+                model: $response->model,
+                promptVersion: null,
+                inputTokens: $response->inputTokens,
+                outputTokens: $response->outputTokens,
+                confidence: 1.0,
+                sources: [],
+                latencyMs: (int) ((microtime(true) - $started) * 1000),
+            );
+
+            return AiStructured::ok($response->data);
+        } catch (CapExceededException $e) {
+            return AiStructured::capReached($e->resetsAt, $e->used, $e->limit);
+        } catch (Throwable $e) {
+            report($e);
+            Log::warning('ai.gateway.structured_failed', ['feature' => $feature, 'error' => $e->getMessage()]);
+
+            return AiStructured::failed('provider_unavailable');
+        }
+    }
+
     private function promptKeyFor(string $feature): string
     {
         return match ($feature) {
