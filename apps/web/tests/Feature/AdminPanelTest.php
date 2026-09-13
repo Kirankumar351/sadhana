@@ -88,6 +88,9 @@ it('renders every admin resource for a staff member', function (string $path): v
     '/admin/data-requests',
     '/admin/feature-flags',
     '/admin/audit-logs',
+
+    // The cost page. The free product only works while this number stays small.
+    '/admin/ai-cost',
 ]);
 
 /**
