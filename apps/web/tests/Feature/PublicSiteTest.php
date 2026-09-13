@@ -7,6 +7,7 @@ use App\Models\ExamCategory;
 use App\Models\ExamNotification;
 use App\Models\Profile;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
 
 beforeEach(function (): void {
     $category = ExamCategory::create(['slug' => 'state-psc', 'name' => ['en' => 'State PSC', 'te' => 'రాష్ట్ర PSC']]);
@@ -208,4 +209,26 @@ it('tells the user the daily notification cap', function (): void {
     $this->actingAs(User::factory()->create())
         ->get('/en/settings')
         ->assertSee('never send more than', false);
+});
+
+it('returns 404 for a dead URL rather than 500', function (): void {
+    /**
+     * THE REGRESSION THIS GUARDS.
+     *
+     * SetLocale is route middleware, so it never runs for a URL that matches no route. The
+     * 404 view then called route('notifications.index'), had no locale to fill {locale}
+     * with, and threw - turning every mistyped URL and every bot probe into a 500.
+     *
+     * On an SEO-driven product that is the expensive kind of broken: Google reads 500 as
+     * "come back later" and keeps the dead URL indexed, where 404 means "this is gone".
+     */
+    $this->get('/te/no-such-page')->assertNotFound();
+    $this->get('/en/no-such-page')->assertNotFound();
+});
+
+it('renders the 404 page with no locale in the URL defaults', function (): void {
+    // Exactly the state an unmatched route leaves the request in.
+    URL::defaults([]);
+
+    $this->get('/te/definitely-not-a-page')->assertNotFound();
 });
