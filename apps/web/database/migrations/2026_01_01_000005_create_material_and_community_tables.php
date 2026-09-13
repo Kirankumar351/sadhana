@@ -70,7 +70,17 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $t) {
             $t->id();
             $t->uuid()->unique();
-            $t->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+            /**
+             * Nullable, and nullOnDelete rather than cascade.
+             *
+             * The DPDP right to erasure is satisfied by severing authorship, not by
+             * destroying the content. Deleting an answered doubt would break a page other
+             * people rely on and that Google has indexed — harming readers who had no part
+             * in the request. A NOT NULL column here would make the correct behaviour
+             * impossible, which is exactly what it did until the privacy tests caught it.
+             */
+            $t->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $t->foreignId('exam_id')->nullable()->constrained()->nullOnDelete();
             $t->string('slug', 250)->unique();
             $t->string('title', 300);
@@ -105,7 +115,7 @@ return new class extends Migration
         Schema::create('answers', function (Blueprint $t) {
             $t->id();
             $t->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $t->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $t->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $t->longText('body');
             $t->char('source_locale', 5);
             $t->string('image_path', 500)->nullable();

@@ -6,13 +6,16 @@ use App\Http\Controllers\AskController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\CurrentAffairsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\TestSeriesController;
 use App\Support\Locale;
 use Illuminate\Support\Facades\Route;
 
@@ -110,6 +113,20 @@ Route::group([
     Route::get('/doubts', [CommunityController::class, 'index'])->name('community.index');
     Route::get('/doubts/{slug}', [CommunityController::class, 'show'])->name('community.show');
 
+    // ---- current affairs ----
+    //
+    // The most SEO-valuable page type in the product: daily fresh Telugu content on
+    // high-volume queries, with a permanent URL per date so the archive accumulates
+    // instead of being overwritten.
+    Route::get('/current-affairs', [CurrentAffairsController::class, 'index'])->name('current-affairs.index');
+    Route::get('/current-affairs/{date}', [CurrentAffairsController::class, 'show'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('current-affairs.show');
+
+    // ---- test series ----
+    Route::get('/tests', [TestSeriesController::class, 'index'])->name('tests.index');
+    Route::get('/tests/{slug}', [TestSeriesController::class, 'show'])->name('tests.show');
+
     // ---- money ----
     Route::get('/premium', [BillingController::class, 'plans'])->name('billing.plans');
 
@@ -127,5 +144,14 @@ Route::group([
         // and, where necessary, acted on.
         Route::get('/doubts/ask/new', [CommunityController::class, 'create'])->name('community.create');
         Route::get('/material/share/new', [MaterialController::class, 'create'])->name('material.create');
+
+        // ---- data rights (DPDP Act 2023) ----
+        //
+        // Built in v1, not retrofitted. The deletion actually deletes.
+        Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy');
+        Route::get('/privacy/export', [PrivacyController::class, 'export'])->name('privacy.export');
+        Route::delete('/privacy', [PrivacyController::class, 'destroy'])->name('privacy.destroy');
+
+        Route::get('/tests/result/{result}', [TestSeriesController::class, 'result'])->name('tests.result');
     });
 });
