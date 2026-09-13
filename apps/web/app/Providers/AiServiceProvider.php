@@ -18,6 +18,8 @@ use App\Services\AI\Contracts\ModelClient;
 use App\Services\AI\Contracts\VectorStore;
 use App\Services\AI\QdrantStore;
 use App\Services\AI\VoyageEmbedder;
+use App\Services\Billing\Contracts\PaymentGateway;
+use App\Services\Billing\RazorpayGateway;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -38,6 +40,16 @@ class AiServiceProvider extends ServiceProvider
         $this->app->singleton(VectorStore::class, fn () => match (config('ai.vector.driver')) {
             'qdrant' => new QdrantStore,
             default => new QdrantStore,
+        });
+
+        /**
+         * Bound to the interface so the gateway stays a reversible decision. Gateways
+         * change their terms, their fees, and occasionally their appetite for a
+         * category, and none of that should reach further than one class.
+         */
+        $this->app->singleton(PaymentGateway::class, fn () => match (config('commerce.gateway.driver')) {
+            'razorpay' => new RazorpayGateway,
+            default => new RazorpayGateway,
         });
     }
 

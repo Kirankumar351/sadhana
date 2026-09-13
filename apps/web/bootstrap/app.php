@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /**
+         * The payment webhook is a server-to-server call authenticated by an HMAC
+         * signature. A gateway has no session and cannot present a CSRF token.
+         */
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         $middleware->alias([
             'setlocale' => SetLocale::class,
         ]);

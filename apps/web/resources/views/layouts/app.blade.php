@@ -35,6 +35,7 @@
                         ['route' => 'exams.index',         'label' => __('Exams')],
                         ['route' => 'quiz.today',          'label' => __('Daily quiz')],
                         ['route' => 'ask',                'label' => __('Ask')],
+                        ['route' => 'billing.plans',      'label' => __('Premium')],
                     ];
                 @endphp
                 @foreach ($nav as $item)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AskController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
@@ -31,6 +32,14 @@ use Illuminate\Support\Facades\Route;
  * reachable with no network at all.
  */
 Route::view('/offline', 'offline')->name('offline');
+
+/**
+ * Gateway webhook. Outside the locale group and outside auth deliberately - it is a
+ * server-to-server call authenticated by signature, and a payment gateway has no
+ * session and no language.
+ */
+Route::post('/webhooks/razorpay', [BillingController::class, 'webhook'])
+    ->name('webhooks.razorpay');
 
 // Bare "/" resolves by cookie, then by browser preference, then to Telugu.
 Route::get('/', function () {
@@ -83,11 +92,17 @@ Route::group([
     Route::get('/quiz/result/{attempt}', [QuizController::class, 'result'])->name('quiz.result');
     Route::get('/leaderboard', [QuizController::class, 'leaderboard'])->name('quiz.leaderboard');
 
+    // ---- money ----
+    Route::get('/premium', [BillingController::class, 'plans'])->name('billing.plans');
+
     // ---- signed in ----
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/saved', [NotificationController::class, 'saved'])->name('saved');
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+        Route::post('/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+        Route::get('/checkout/callback', [BillingController::class, 'callback'])->name('billing.callback');
     });
 });
