@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
 
             DemoContentSeeder::class,
             ScrapeSourceSeeder::class,
+            AgentSeeder::class,
 
             // Local and staging only — the seeder refuses to run in production.
             StaffSeeder::class,

@@ -79,8 +79,26 @@ final class ToolRegistry
             );
         }
 
-        /** @var Tool */
-        return $this->container->make($this->tools[$key]);
+        /** @var Tool $tool */
+        $tool = $this->container->make($this->tools[$key]);
+
+        /**
+         * The registration key and the tool's own key must be the same string.
+         *
+         * The allowlist is keyed by registration name, but the safety policy is looked up
+         * by `$tool->key()`. If those diverge, a tool registered under the wrong name
+         * silently inherits ANOTHER tool's safety properties — a draft-only tool could end
+         * up bound with the policy of a read-only one. Narrow, but exactly the kind of
+         * mismatch that is invisible until it matters.
+         */
+        if ($tool->key() !== $key) {
+            throw new UnsafeToolBindingException(
+                "Tool registered as '{$key}' reports its key as '{$tool->key()}'. The two "
+                .'must match, or the safety policy looked up for it belongs to a different tool.'
+            );
+        }
+
+        return $tool;
     }
 
     /**
