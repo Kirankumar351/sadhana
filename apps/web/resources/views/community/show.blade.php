@@ -22,12 +22,12 @@
     {{-- Photo and voice: typing Telugu on a phone is painful, so a doubt is often a
          photograph of one line in a textbook. --}}
     @if ($post->image_path)
-        <img src="{{ Storage::url($post->image_path) }}" alt="{{ __('Attached image') }}"
+        <img src="{{ route('community.attachment', ['slug' => $post->slug, 'type' => 'image']) }}" alt="{{ __('Attached image') }}"
              class="mt-4 rounded-card border border-ink/10" loading="lazy">
     @endif
 
     @if ($post->audio_path)
-        <audio controls src="{{ Storage::url($post->audio_path) }}" class="mt-4 w-full"></audio>
+        <audio controls src="{{ route('community.attachment', ['slug' => $post->slug, 'type' => 'audio']) }}" class="mt-4 w-full"></audio>
     @endif
 
     @livewire('community.answer-thread', ['post' => $post])

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Material;
 
+use App\Models\Exam;
 use App\Models\Material;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -118,8 +120,27 @@ class UploadNotes extends Component
         return $slug;
     }
 
+    /**
+     * The exam list the form offers.
+     *
+     * Loaded here, not passed down from the page: a Livewire component does not inherit the
+     * parent view's variables, so the controller handing $exams to material/create.blade.php
+     * never reached this form and the screen 500'd on an undefined variable.
+     *
+     * @return Collection<int, Exam>
+     */
+    public function getExamsProperty()
+    {
+        return Exam::query()
+            ->active()
+            ->orderBy('short_name')
+            ->get(['id', 'slug', 'name', 'short_name']);
+    }
+
     public function render()
     {
-        return view('livewire.material.upload-notes');
+        return view('livewire.material.upload-notes', [
+            'exams' => $this->exams,
+        ]);
     }
 }

@@ -47,6 +47,31 @@ return [
             'report' => false,
         ],
 
+        /**
+         * Cloudflare R2 — where user files actually live in production.
+         *
+         * R2 rather than S3 for one reason that decides it: ZERO EGRESS FEES. This product
+         * serves 25 MB PDFs to people on 3G, repeatedly, for free. On S3 the bandwidth bill
+         * scales with exactly the behaviour we are trying to encourage, and the cheapest
+         * way to control it would be to stop people downloading — which is the product.
+         *
+         * S3-compatible, so the driver is the same; only the endpoint differs.
+         */
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            // R2 has no regions, but the SDK insists on one.
+            'region' => 'auto',
+            'bucket' => env('R2_BUCKET'),
+            'url' => env('R2_URL'),
+            'endpoint' => env('R2_ENDPOINT'),
+            // R2 requires path-style addressing.
+            'use_path_style_endpoint' => true,
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Community;
 
 use App\Jobs\AnswerDoubtWithAi;
+use App\Models\Exam;
 use App\Models\Post;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -99,8 +101,20 @@ class AskDoubt extends Component
             // English question asked by someone browsing in Telugu.
             'source_locale' => app()->getLocale(),
             'subject' => $validated['subject'] ?: null,
-            'image_path' => $this->image?->store('doubts/images', 'public'),
-            'audio_path' => $this->audio?->store('doubts/audio', 'public'),
+            /**
+             * The default disk, NOT the public one, and served back through the app.
+             *
+             * A doubt attachment is a photograph of someone's textbook page as often as not.
+             * On a permanently world-readable prefix it sits at a guessable URL forever, and
+             * a takedown deletes the row while the file keeps serving from our own domain —
+             * the exact failure the material quarantine exists to prevent.
+             *
+             * It also has to match how the thread renders it. Writing to `public` while the
+             * view resolved through the default disk meant every photo and every voice note
+             * on every doubt was a broken link.
+             */
+            'image_path' => $this->image?->store('doubts/images', config('filesystems.default')),
+            'audio_path' => $this->audio?->store('doubts/audio', config('filesystems.default')),
         ]);
 
         /**
@@ -131,8 +145,28 @@ class AskDoubt extends Component
         return $slug;
     }
 
+    /**
+     * The exam list the form offers.
+     *
+     * Loaded by the component rather than handed down from the page. A Livewire component
+     * has its own scope — it does not inherit the parent view's variables — so relying on
+     * the controller to pass this meant the form rendered with an undefined $exams and the
+     * whole screen 500'd for every signed-in user who tried to ask a question.
+     *
+     * @return Collection<int, Exam>
+     */
+    public function getExamsProperty()
+    {
+        return Exam::query()
+            ->active()
+            ->orderBy('short_name')
+            ->get(['id', 'slug', 'name', 'short_name']);
+    }
+
     public function render()
     {
-        return view('livewire.community.ask-doubt');
+        return view('livewire.community.ask-doubt', [
+            'exams' => $this->exams,
+        ]);
     }
 }

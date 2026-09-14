@@ -123,6 +123,11 @@ Route::group([
     Route::get('/doubts', [CommunityController::class, 'index'])->name('community.index');
     Route::get('/doubts/{slug}', [CommunityController::class, 'show'])->name('community.show');
 
+    // Attachments stream through the app so an unpublished post stops serving its file.
+    Route::get('/doubts/{slug}/attachment/{type}', [CommunityController::class, 'attachment'])
+        ->whereIn('type', ['image', 'audio'])
+        ->name('community.attachment');
+
     // ---- current affairs ----
     //
     // The most SEO-valuable page type in the product: daily fresh Telugu content on

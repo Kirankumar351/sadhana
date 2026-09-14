@@ -9,7 +9,9 @@ use App\Models\Post;
 use App\Support\SeoBuilder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The doubt community.
@@ -90,6 +92,43 @@ class CommunityController extends Controller
         return view('community.create', [
             'seo' => SeoBuilder::forRoute('community.create', __('Ask a doubt'), __('Ask a doubt in Telugu.')),
             'exams' => Exam::query()->active()->orderBy('short_name')->get(['id', 'slug', 'name', 'short_name']),
+        ]);
+    }
+
+    /**
+     * Serve an attachment on a doubt.
+     *
+     * Through the application, never as a direct object URL, for the same reason material
+     * downloads are: a taken-down file must stop being reachable the moment the post is
+     * unpublished. A permanently public prefix keeps serving the file from our own domain
+     * long after the row is gone, and these attachments are photographs of textbook pages
+     * as often as they are anything else.
+     *
+     * Only two kinds exist, and the type is matched rather than taken from the URL — a path
+     * segment a visitor controls must never decide which directory we read from.
+     */
+    public function attachment(string $locale, string $slug, string $type): StreamedResponse
+    {
+        abort_unless(in_array($type, ['image', 'audio'], true), 404);
+
+        $post = Post::query()
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
+
+        $path = $type === 'image' ? $post->image_path : $post->audio_path;
+
+        abort_if(blank($path), 404);
+
+        $disk = Storage::disk(config('filesystems.default'));
+
+        // The row can outlive the file — a purge, a failed upload, a restore from backup.
+        abort_unless($disk->exists($path), 404);
+
+        return $disk->response($path, null, [
+            // Cacheable, because the file never changes while the post is up, but private
+            // so a CDN edge does not keep serving it after a takedown.
+            'Cache-Control' => 'private, max-age=3600',
         ]);
     }
 }
