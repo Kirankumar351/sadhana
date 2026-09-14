@@ -128,9 +128,10 @@
     }
 
     /* Machine translation and AI output are always labelled. We never blur that line. */
+    /* The AI mark. Its colour appears nowhere else, on purpose. */
     .badge-ai {
-        @apply inline-flex items-center gap-1 rounded-pill bg-violet-100 px-2 py-0.5
-               text-meta font-medium text-violet-700;
+        @apply inline-flex items-center gap-1 rounded-pill bg-ai-wash px-2 py-0.5
+               text-meta font-medium text-ai-ink;
     }
 
     .chip {

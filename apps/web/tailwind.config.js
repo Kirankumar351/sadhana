@@ -25,18 +25,46 @@ export default {
                 ink: {
                     DEFAULT: '#12211C',   // body text, headers
                     soft: '#33463E',      // secondary text, labels
+                    faint: '#9AA8A1',     // disabled, placeholder, tertiary
                 },
                 muted: '#6B7C74',         // meta, captions, placeholders
                 green: {
                     DEFAULT: '#0F6B4F',   // primary action, eligible, active tab
+                    deep: '#0A4E39',      // pressed and hover states
                     wash: '#E3F0EA',      // eligible badge, correct answer
                 },
                 marigold: {
                     DEFAULT: '#E8A33D',   // streaks, partial match, quiz CTA
+                    ink: '#B67A1F',       // text on the wash: the fill is too light to read on
                     wash: '#FCF1DE',      // partial badge, your leaderboard row
                 },
-                danger: '#C4362B',        // deadline under 3 days, errors only
+                danger: {
+                    DEFAULT: '#C4362B',   // deadline under 3 days, errors only
+                    wash: '#FBE7E4',      // error panel background
+                },
                 paper: '#F7F8F5',         // app background: reads as document, not warmth
+                line: '#DDE3DF',          // the one border colour, from the spec
+
+                /**
+                 * AI surfaces get their own colour, and it is deliberately NOT one of the
+                 * product's own. A muted purple appears nowhere else in the interface, so a
+                 * student can tell at a glance which text a machine produced and which text
+                 * a person verified — which is the entire trust proposition. Reusing green
+                 * would put generated content in the same colour as a confirmed eligibility
+                 * result, and that is the one confusion this product cannot afford.
+                 */
+                ai: {
+                    DEFAULT: '#5B4B8A',
+                    ink: '#40356A',       // text on the wash
+                    wash: '#EEEAF7',      // AI answer panels
+                    border: '#C9BEE6',
+                },
+
+                /** Informational only. Never for a state a user must act on. */
+                info: {
+                    DEFAULT: '#2C5F8A',
+                    wash: '#E4EDF4',
+                },
             },
 
             fontFamily: {
@@ -62,7 +90,7 @@ export default {
                 'pill': '99px',
                 'control': '9px',
                 'card': '11px',
-                'sheet': '20px',
+                'sheet': '22px',
             },
 
             spacing: {

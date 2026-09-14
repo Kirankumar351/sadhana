@@ -26,7 +26,7 @@
     </div>
 
     @if ($result)
-        <div class="card mt-4 border-violet-200 bg-violet-50/50 p-5">
+        <div class="card mt-4 border-ai-border bg-ai-wash/50 p-5">
             <div class="flex items-center gap-2">
                 <span class="badge-ai">✦ {{ __('AI') }}</span>
                 <span class="text-meta text-muted">

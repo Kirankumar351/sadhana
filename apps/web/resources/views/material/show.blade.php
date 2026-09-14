@@ -16,7 +16,7 @@
     {{-- AI-assisted material carries the editor's name publicly. Readers deserve to know,
          and a named editor creates real accountability. --}}
     @if ($material->source_type === 'ai_assisted')
-        <p class="mt-4 rounded-control bg-violet-50 px-3 py-2 text-meta text-violet-800">
+        <p class="mt-4 rounded-control bg-ai-wash px-3 py-2 text-meta text-ai-ink">
             ✦ {{ __('Written with AI assistance and edited by :name before publishing.', ['name' => $material->editor?->name ?? __('our content team')]) }}
         </p>
     @endif
