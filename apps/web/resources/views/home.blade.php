@@ -26,7 +26,7 @@
                 <dd class="numeral font-display text-2xl font-extrabold text-green">{{ number_format($stats['open']) }}</dd>
             </div>
             <div>
-                <dt class="text-meta text-muted">{{ __('vacancies') }}</dt>
+                <dt class="text-meta text-muted">{{ __('Vacancies') }}</dt>
                 <dd class="numeral font-display text-2xl font-extrabold text-green">{{ number_format($stats['vacancies']) }}</dd>
             </div>
         </dl>
@@ -35,7 +35,7 @@
     {{-- The daily habit, above the fold. This is the retention engine, so it is not
          buried three taps deep. --}}
     <div class="card bg-marigold-wash p-5">
-        <p class="font-display text-screen-title">రోజు ప్రశ్న</p>
+        <p class="font-display text-screen-title">{{ __('Question of the day') }}</p>
         <p class="mt-1 text-body text-ink-soft">
             {{ __('Ten free questions every morning at 7 AM, in Telugu and English.') }}
         </p>

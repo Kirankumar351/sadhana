@@ -25,7 +25,7 @@
     <dl class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-body">
         @if ($n->total_vacancies)
             <div>
-                <dt class="inline text-muted">{{ __('vacancies') }}:</dt>
+                <dt class="inline text-muted">{{ __('Vacancies') }}:</dt>
                 <dd class="numeral inline font-semibold">{{ number_format($n->total_vacancies) }}</dd>
             </div>
         @endif

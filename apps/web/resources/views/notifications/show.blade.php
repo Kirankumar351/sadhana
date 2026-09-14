@@ -59,7 +59,7 @@
         <dl class="card mt-3 divide-y divide-ink/10">
             @php
                 $facts = array_filter([
-                    __('vacancies')      => $n->total_vacancies ? number_format($n->total_vacancies) : null,
+                    __('Vacancies')      => $n->total_vacancies ? number_format($n->total_vacancies) : null,
                     __('Qualification')  => $n->min_qualification ? __($n->min_qualification) : null,
                     __('Age limit')      => $n->min_age ? $n->min_age.'–'.($n->max_age ?? '-') : null,
                     __('Apply start')    => $n->apply_start_date?->format('d M Y'),
