@@ -212,17 +212,9 @@ final class CostMeter
      */
     private function priceFor(string $model, int $inputTokens, int $outputTokens): int
     {
-        /** @var array{input: float, output: float}|null $rate */
-        $rate = config("ai.pricing.{$model}");
-
-        if ($rate === null) {
-            return 0;
-        }
-
-        return (int) ceil(
-            $inputTokens / 1_000_000 * $rate['input']
-            + $outputTokens / 1_000_000 * $rate['output']
-        );
+        // Not config("ai.pricing.{$model}"): Laravel reads the dots in "gemini-3.8-flash" as
+        // nesting, which metered every Gemini call at zero and left its cost uncapped.
+        return AiPricing::costPaise($model, $inputTokens, $outputTokens);
     }
 
     private function counterKey(User $user, string $feature, string $window): string

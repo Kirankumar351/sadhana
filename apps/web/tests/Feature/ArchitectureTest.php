@@ -16,7 +16,7 @@ declare(strict_types=1);
  */
 arch('only the AI layer talks to the model provider')
     ->expect('App')
-    ->not->toUse(['Anthropic', 'OpenAI'])
+    ->not->toUse(['Anthropic', 'OpenAI', 'Gemini', 'Google\Cloud\AIPlatform', 'Google\GenerativeAI'])
     ->ignoring('App\Services\AI');
 
 /**

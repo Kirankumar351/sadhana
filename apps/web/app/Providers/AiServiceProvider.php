@@ -12,10 +12,13 @@ use App\Models\NewsItem;
 use App\Models\Profile;
 use App\Observers\CorpusObserver;
 use App\Observers\ProfileObserver;
+use App\Services\AI\AiProvider;
 use App\Services\AI\AnthropicClient;
 use App\Services\AI\Contracts\EmbeddingClient;
 use App\Services\AI\Contracts\ModelClient;
 use App\Services\AI\Contracts\VectorStore;
+use App\Services\AI\GeminiClient;
+use App\Services\AI\GeminiEmbedder;
 use App\Services\AI\QdrantStore;
 use App\Services\AI\VoyageEmbedder;
 use App\Services\Billing\Contracts\PaymentGateway;
@@ -34,8 +37,20 @@ class AiServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ModelClient::class, AnthropicClient::class);
-        $this->app->singleton(EmbeddingClient::class, VoyageEmbedder::class);
+        $this->app->singleton(AiProvider::class);
+
+        /**
+         * Whichever provider holds a key. With no key at all the Anthropic client stays bound
+         * and reports itself unconfigured, so every AI surface degrades to "temporarily
+         * unavailable" instead of erroring.
+         */
+        $this->app->singleton(ModelClient::class, fn ($app): ModelClient => $app->make(AiProvider::class)->chat() === AiProvider::GEMINI
+            ? $app->make(GeminiClient::class)
+            : $app->make(AnthropicClient::class));
+
+        $this->app->singleton(EmbeddingClient::class, fn ($app): EmbeddingClient => $app->make(AiProvider::class)->embeddings() === AiProvider::GEMINI
+            ? $app->make(GeminiEmbedder::class)
+            : $app->make(VoyageEmbedder::class));
 
         $this->app->singleton(VectorStore::class, fn () => match (config('ai.vector.driver')) {
             'qdrant' => new QdrantStore,

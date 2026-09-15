@@ -7,12 +7,14 @@ namespace App\Jobs;
 use App\Models\AiChunk;
 use App\Services\AI\ChunkBuilder;
 use App\Services\AI\Contracts\EmbeddingClient;
+use App\Services\AI\Contracts\ReportsConfiguration;
 use App\Services\AI\Contracts\VectorStore;
 use App\Services\AI\QdrantStore;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -97,7 +99,21 @@ class ReindexChunks implements ShouldQueue
          * because an unrelated subsystem is unconfigured. Publishing a notification must
          * never depend on the assistant being available.
          */
-        if (blank(config('ai.anthropic.key'))) {
+        // Asks the bound embedder, whichever provider it is. This checked the Anthropic key,
+        // which has nothing to do with embeddings: Anthropic has no embedding model.
+        if ($embedder instanceof ReportsConfiguration && ! $embedder->isConfigured()) {
+            return;
+        }
+
+        // Nowhere to put the vectors. Embedding anyway spends money on vectors that are then
+        // thrown away, and failing the job three times over reports an outage as if it were a
+        // fault in every saved notification. The rows stay stale for `corpus:reindex --stale`.
+        if ($vectors instanceof QdrantStore && ! $vectors->isReachable()) {
+            Log::warning('corpus.reindex.vector_store_unreachable', [
+                'model' => $this->modelClass,
+                'id' => $this->modelId,
+            ]);
+
             return;
         }
 

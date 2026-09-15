@@ -6,19 +6,21 @@ namespace App\Services\AI;
 
 use App\Services\Agents\AgentDecision;
 use App\Services\AI\Contracts\ModelClient;
+use App\Services\AI\Contracts\ReportsConfiguration;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * The only class in this application that talks to a model provider.
+ * Claude, behind the provider boundary. GeminiClient is the other implementation; which one
+ * is bound is decided by AiProvider from the keys that exist.
  *
- * An architecture test fails the build if anything outside App\Services\AI references the
+ * An architecture test fails the build if anything outside App\Services\AI references a
  * provider, because the moment a feature can call the API itself, every cost cap, refusal
  * log and output filter in AiGateway becomes optional — and the one that gets skipped will
  * be the one that mattered.
  */
-final class AnthropicClient implements ModelClient
+final class AnthropicClient implements ModelClient, ReportsConfiguration
 {
     private const API_VERSION = '2023-06-01';
 
@@ -248,40 +250,23 @@ final class AnthropicClient implements ModelClient
     }
 
     /**
-     * A confidence estimate, since the provider does not return one.
-     *
-     * Deliberately crude and deliberately pessimistic. It combines retrieval strength with
-     * whether the model hedged, and it only ever REDUCES confidence — an answer that says
-     * "I could not find" must fall below the floor and hand over to the community, however
-     * fluent it reads.
+     * Shared with GeminiClient, so both providers are judged by the same rule.
      *
      * @param  array<string, mixed>  $body
      * @param  list<RetrievedPassage>  $passages
      */
     private function confidenceFrom(array $body, array $passages): float
     {
-        $scores = array_map(static fn (RetrievedPassage $p): float => $p->score, $passages);
-        $retrieval = $scores === [] ? 0.0 : max($scores);
+        return app(ConfidenceEstimator::class)->estimate(
+            $this->textFrom($body),
+            $passages,
+            data_get($body, 'stop_reason') === 'max_tokens',
+        );
+    }
 
-        $text = mb_strtolower($this->textFrom($body));
-
-        $hedges = [
-            'i could not find', 'i do not have', 'not in the passages', 'unclear',
-            'నా దగ్గర లేదు', 'కనుగొనలేకపోయాను',
-        ];
-
-        foreach ($hedges as $hedge) {
-            if (str_contains($text, $hedge)) {
-                return 0.2;
-            }
-        }
-
-        // A truncated answer is an incomplete answer, whatever its content.
-        if (data_get($body, 'stop_reason') === 'max_tokens') {
-            return min($retrieval, 0.5);
-        }
-
-        return round(min($retrieval, 1.0), 3);
+    public function isConfigured(): bool
+    {
+        return filled(config('ai.anthropic.key'));
     }
 
     private function modelFor(string $tier): string
@@ -291,13 +276,6 @@ final class AnthropicClient implements ModelClient
 
     private function costPaise(string $model, int $input, int $output): int
     {
-        /** @var array{input: float, output: float}|null $rate */
-        $rate = config("ai.pricing.{$model}");
-
-        if ($rate === null) {
-            return 0;
-        }
-
-        return (int) ceil($input / 1_000_000 * $rate['input'] + $output / 1_000_000 * $rate['output']);
+        return AiPricing::costPaise($model, $input, $output);
     }
 }

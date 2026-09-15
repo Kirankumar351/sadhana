@@ -72,7 +72,7 @@ async def health(settings: Settings = Depends(get_settings)) -> HealthResponse:
     return HealthResponse(
         ok=True,
         vector_store_reachable=await store.ping(),
-        embedding_model=settings.embedding_model,
+        embedding_model=settings.active_embedding_model,
     )
 
 

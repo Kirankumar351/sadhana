@@ -126,6 +126,30 @@ final class QdrantStore implements VectorStore
         }
     }
 
+    /**
+     * Whether the vector store answers at all.
+     *
+     * Checked before embedding, because embeddings cost money and a vector with nowhere to be
+     * stored is money spent for nothing. A short timeout: a dead host should be noticed in a
+     * couple of seconds, not after the twenty-second request timeout.
+     */
+    public function isReachable(): bool
+    {
+        try {
+            $request = Http::baseUrl(rtrim((string) config('ai.vector.host'), '/'))
+                ->connectTimeout(2)
+                ->timeout(3);
+
+            if ($key = config('ai.vector.api_key')) {
+                $request = $request->withHeaders(['api-key' => (string) $key]);
+            }
+
+            return $request->get('/readyz')->successful();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     public function ensureCollection(): void
     {
         $name = $this->collection();

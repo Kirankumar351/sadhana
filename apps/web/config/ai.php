@@ -15,7 +15,18 @@ declare(strict_types=1);
  */
 return [
 
-    'provider' => env('AI_PROVIDER', 'anthropic'),
+    /**
+     * WHICHEVER KEY IS SET IS THE PROVIDER THAT WORKS.
+     *
+     * `auto` uses Anthropic when ANTHROPIC_API_KEY is set, Gemini when only GEMINI_API_KEY is.
+     * Naming a provider is a preference, not a requirement: without its key the layer falls
+     * back to a provider that has one rather than switching every AI feature off.
+     * See App\Services\AI\AiProvider.
+     */
+    'provider' => env('AI_PROVIDER', 'auto'),
+
+    /** Voyage when its key is set, otherwise Gemini. Anthropic has no embedding model. */
+    'embedding_provider' => env('AI_EMBEDDING_PROVIDER', 'auto'),
 
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
@@ -23,11 +34,46 @@ return [
     ],
 
     /**
-     * Two tiers, used deliberately.
+     * Google Gemini, verified against the live API in September 2026.
+     *
+     * Thinking tokens count against the output cap and are billed as output. With a 60-token
+     * cap gemini-3.8-flash thought for 56 and returned nothing, hence `thinking_headroom`.
+     * gemini-3.8-flash rejects thinking level "minimal"; flash-lite accepts it.
+     *
+     * A free-tier key hits "429 quota exceeded" within a handful of calls. Enable billing on
+     * the Google project before real students use it.
+     */
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com'),
+        'models' => [
+            'small' => env('GEMINI_MODEL_SMALL', 'gemini-3.5-flash-lite'),
+            'large' => env('GEMINI_MODEL_LARGE', 'gemini-3.8-flash'),
+            'embedding' => env('GEMINI_MODEL_EMBEDDING', 'gemini-embedding-2'),
+        ],
+        'thinking' => [
+            'small' => env('GEMINI_THINKING_SMALL', 'minimal'),
+            'large' => env('GEMINI_THINKING_LARGE', 'low'),
+        ],
+        'thinking_headroom' => 4096,
+
+        // Retry a 503 or a short rate limit; never make a student wait out a long quota.
+        'retries' => 2,
+        'max_retry_wait' => 10,
+    ],
+
+    'voyage' => [
+        // Voyage issues its own keys. It is a separate company from Anthropic.
+        'key' => env('VOYAGE_API_KEY'),
+    ],
+
+    /**
+     * Anthropic models, in two tiers used deliberately.
      *
      * The exam-relevance classifier reads 412 news articles every morning. Running that on
      * a large model would cost roughly 20x for no measurable gain. Routing, classification,
      * deduplication and filtering are small-model work; anything a student reads is large.
+     * Gemini's equivalents are under `gemini.models`.
      */
     'models' => [
         'small' => env('AI_MODEL_SMALL', 'claude-haiku-4-5'),
@@ -142,6 +188,14 @@ return [
         'claude-sonnet-5' => ['input' => 25_000.0,  'output' => 125_000.0],
         'claude-opus-5' => ['input' => 125_000.0, 'output' => 625_000.0],
         'voyage-3' => ['input' => 1_000.0,   'output' => 0.0],
+
+        // Gemini, from ai.google.dev pricing in September 2026, converted at Rs 85 per USD.
+        // gemini-3.8-flash is $0.75 in / $3.75 out per million THROUGH 31 DECEMBER 2026 and
+        // doubles on 1 January 2027 ($1.50 / $7.50): update these figures before then.
+        // Output prices include thinking tokens, which GeminiClient meters as output.
+        'gemini-3.8-flash' => ['input' => 6_375.0,  'output' => 31_875.0],
+        'gemini-3.5-flash-lite' => ['input' => 2_550.0,  'output' => 21_250.0],
+        'gemini-embedding-2' => ['input' => 1_700.0,  'output' => 0.0],
     ],
 
     /**

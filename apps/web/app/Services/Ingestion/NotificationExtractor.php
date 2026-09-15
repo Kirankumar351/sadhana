@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ingestion;
 
-use App\Services\AI\AnthropicClient;
 use App\Services\AI\Contracts\ModelClient;
+use App\Services\AI\Contracts\ReportsConfiguration;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Throwable;
@@ -81,7 +81,9 @@ final class NotificationExtractor
             return false;
         }
 
-        return ! $this->client instanceof AnthropicClient || filled(config('ai.anthropic.key'));
+        // Whichever provider is bound — Claude or Gemini — reports for itself. Test doubles
+        // have nothing to configure and do not implement the interface.
+        return ! $this->client instanceof ReportsConfiguration || $this->client->isConfigured();
     }
 
     /**
