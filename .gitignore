@@ -55,3 +55,8 @@ Thumbs.db
 
 # Generated sitemaps
 /apps/web/public/sitemap*.xml
+
+# Public CA intermediate certificates that some government servers omit from their TLS
+# chain (see apps/web/app/Services/Ingestion/ScraperTls.php). Certificates only, never keys:
+# the *.pem rule above still protects every other path.
+!apps/web/resources/certs/*.pem

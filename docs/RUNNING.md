@@ -73,6 +73,75 @@ php artisan schedule:work
 
 ---
 
+## Pulling real notifications
+
+Sources live in **Admin → System → Scrape Sources**. Each board has its own
+parser, because each publishes differently: TGPSC and APPSC as PDFs behind a
+listing, SSC through a JSON API, IBPS as links to its registration portal, RRB
+as notice cards, TGPRB inside a JavaScript bundle.
+
+**Automatic:** keep `schedule:work` and `queue:work` (above) running. Active
+sources are checked on their own frequency — TGPSC and APPSC every 15 minutes.
+
+**Right now, from a terminal:**
+
+```bash
+php artisan scrape:run --sync --force               # every active source
+php artisan scrape:run --sync --force --source=TGPSC  # one source
+```
+
+**Right now, from the admin panel:** the **Pull now** button on each row.
+
+Everything pulled lands in **Admin → Review Queue** as a draft. **Nothing is
+published automatically** — a person checks the dates and links against the
+official PDF and publishes. Notifications whose application window has already
+closed are counted as "skipped already closed" and not queued.
+
+Without an Anthropic key, dates, vacancies and age limits are read directly from
+the labelled lines in each notification ("Last Date … 22/08/2026"). With a key,
+the model fills in the rest; values it cannot ground in the page are dropped.
+
+PDFs are read with Poppler's `pdftotext`, which ships with Git for Windows. Set
+its full path in `.env` (on Linux, install `poppler-utils` and leave the default):
+
+```ini
+PDFTOTEXT_PATH="C:/Program Files/Git/mingw64/bin/pdftotext.exe"
+```
+
+Use forward slashes. Backslashes inside double quotes are escape sequences to
+the `.env` parser, and one bad line stops the whole application from booting.
+
+Without it ingestion still works, using a slower PHP parser.
+
+APPSC's server sends an incomplete certificate chain. The missing GlobalSign
+intermediate is supplied from `resources/certs` — verification stays on. Never
+"fix" a certificate error by turning verification off.
+
+---
+
+## AI features
+
+Every AI feature needs `ANTHROPIC_API_KEY` in `.env`. Without it they answer
+"temporarily unavailable" and hand over to the community — nothing crashes.
+
+```ini
+ANTHROPIC_API_KEY=sk-ant-...
+AI_MODEL_LARGE=claude-sonnet-5
+AI_MODEL_SMALL=claude-haiku-4-5
+```
+
+Run `php artisan config:clear` after setting it.
+
+The Python AI service (`apps/ai`) listens on **8100** so it never collides with
+the web app on 8001:
+
+```bash
+cd D:/Sadhana/apps/ai
+uvicorn sadhana_ai.main:app --host 127.0.0.1 --port 8100
+```
+
+---
+
 ## Sign in
 
 | | |

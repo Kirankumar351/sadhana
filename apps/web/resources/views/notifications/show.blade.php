@@ -93,9 +93,22 @@
                     {{ __('Official notification PDF') }} ↗
                 </a>
             @endif
+            {{-- Registration first, when it is a separate step on a separate site. TGPSC and
+                 APPSC both require a one-time profile before any application, and an "Apply
+                 now" button alone drops a first-time candidate onto a login form they cannot
+                 get past. Where one portal does both, the second button would only repeat. --}}
+            @if ($n->registration_url && $n->registration_url !== $n->apply_url)
+                <a href="{{ $n->registration_url }}" rel="nofollow noopener" target="_blank" class="btn-secondary text-body">
+                    {{ __('Register first') }} ↗
+                </a>
+            @endif
             @if ($n->apply_url)
                 <a href="{{ $n->apply_url }}" rel="nofollow noopener" target="_blank" class="btn-primary text-body">
                     {{ __('Apply now') }} ↗
+                </a>
+            @elseif ($n->registration_url)
+                <a href="{{ $n->registration_url }}" rel="nofollow noopener" target="_blank" class="btn-primary text-body">
+                    {{ __('Register and apply') }} ↗
                 </a>
             @endif
         </div>

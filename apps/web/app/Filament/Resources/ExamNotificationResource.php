@@ -191,7 +191,13 @@ class ExamNotificationResource extends Resource
                         ->helperText('Every notification must link to its official source. Non-negotiable for trust.')
                         ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('apply_url')->url()->columnSpanFull(),
+                    Forms\Components\TextInput::make('registration_url')
+                        ->url()
+                        ->label('Registration link')
+                        ->helperText('One-time registration, where the board requires it before applying (TGPSC OTR, APPSC OTPR). Leave blank if the apply link handles registration.')
+                        ->columnSpanFull(),
+
+                    Forms\Components\TextInput::make('apply_url')->url()->label('Apply link')->columnSpanFull(),
                     Forms\Components\TextInput::make('source_url')->url()->columnSpanFull(),
 
                     Forms\Components\Placeholder::make('verified')

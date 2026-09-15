@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\ScrapeSource;
-use App\Notifications\ScraperBroken;
-use App\Services\Ingestion\GenericListingScraper;
+use App\Services\Ingestion\ScrapeRunner;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Run one scrape source.
@@ -19,6 +16,10 @@ use Illuminate\Support\Facades\Notification;
  * On the `high` queue: being first to publish a breaking notification matters enormously
  * for search ranking, and a student who hears it on Telegram first has no reason to open
  * us. This is the one background job that should not wait behind anything.
+ *
+ * The scraper is the one the source row names. This job used to type-hint the generic
+ * scraper, so `parser_class` was stored, shown in the admin panel, and never used — every
+ * board was read with the one parser that cannot read any of the boards that matter.
  */
 class ScrapeSourceJob implements ShouldQueue
 {
@@ -26,7 +27,7 @@ class ScrapeSourceJob implements ShouldQueue
 
     public int $tries = 1;
 
-    public int $timeout = 300;
+    public int $timeout = 600;
 
     public function __construct(public readonly int $sourceId)
     {
@@ -42,7 +43,7 @@ class ScrapeSourceJob implements ShouldQueue
         return [(new WithoutOverlapping('scrape:'.$this->sourceId))->dontRelease()];
     }
 
-    public function handle(GenericListingScraper $scraper): void
+    public function handle(ScrapeRunner $runner): void
     {
         $source = ScrapeSource::find($this->sourceId);
 
@@ -50,23 +51,6 @@ class ScrapeSourceJob implements ShouldQueue
             return;
         }
 
-        $result = $scraper->run($source);
-
-        Log::info('scraper.run', [
-            'source' => $source->name,
-            'summary' => $result->summary(),
-        ]);
-
-        /**
-         * Three consecutive failures is a layout change, not a blip.
-         *
-         * Government sites change without warning and that is normal — but it stops being
-         * normal during notification season, and a scraper failing quietly through a
-         * season is how we lose the ranking on every notification it would have caught.
-         */
-        if ($source->fresh()->consecutive_failures >= 3) {
-            Notification::route('mail', config('app.ops_email'))
-                ->notify(new ScraperBroken($source, $result));
-        }
+        $runner->run($source);
     }
 }

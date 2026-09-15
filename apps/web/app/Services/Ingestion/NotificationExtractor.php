@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Ingestion;
 
+use App\Services\AI\AnthropicClient;
 use App\Services\AI\Contracts\ModelClient;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -28,28 +30,72 @@ final class NotificationExtractor
 {
     public function __construct(
         private readonly ModelClient $client,
+        private readonly RuleBasedExtractor $rules = new RuleBasedExtractor,
     ) {}
 
     /**
+     * Model extraction where a model can run; the page's own labelled facts where it cannot.
+     *
+     * With no provider key configured, or when the call fails, the rule-based pass is the
+     * extraction. That is not a degraded mode worth apologising for: it only returns values
+     * the page states beside a label, which is the same standard the grounding check below
+     * holds the model to.
+     *
      * @return array<string, mixed>
      */
     public function extract(string $text, string $sourceUrl): array
     {
+        if (! $this->modelAvailable()) {
+            return $this->readDirectly($text, $sourceUrl);
+        }
+
         try {
             $raw = $this->client->extract(
                 instruction: $this->instruction(),
-                content: $text,
+                // Trimmed for the model only: it is charged per token and the facts sit at
+                // the top. The grounding check still sees the whole text.
+                content: Str::limit($text, 12000, ''),
                 schema: $this->schema(),
             );
         } catch (Throwable $e) {
             // Extraction failing is not a reason to lose the notification. A reviewer can
-            // fill in a blank draft far faster than they can find the page again.
+            // fill in a draft far faster than they can find the page again.
             report($e);
 
-            return ['official_pdf_url' => str_ends_with($sourceUrl, '.pdf') ? $sourceUrl : null];
+            return $this->readDirectly($text, $sourceUrl);
         }
 
         return $this->sanitise($raw->data, $text, $sourceUrl);
+    }
+
+    /**
+     * Whether calling the provider can possibly succeed.
+     *
+     * Checked up front rather than discovered by exception: an unset key is a deployment
+     * state, not an incident, and reporting it once per scraped item would bury the errors
+     * that actually need someone.
+     */
+    private function modelAvailable(): bool
+    {
+        if (! config('ai.features.extraction.enabled', true)) {
+            return false;
+        }
+
+        return ! $this->client instanceof AnthropicClient || filled(config('ai.anthropic.key'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function readDirectly(string $text, string $sourceUrl): array
+    {
+        $data = $this->rules->extract($text);
+
+        if (str_ends_with(strtolower($sourceUrl), '.pdf')) {
+            $data['official_pdf_url'] ??= $sourceUrl;
+        }
+
+        return $data;
     }
 
     private function instruction(): string

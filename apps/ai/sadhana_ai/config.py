@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # Small for routing and classification, large for anything a student reads.
     # The relevance classifier reads hundreds of articles a day; a large model there
     # costs roughly 20x for no measurable gain.
-    ai_model_small: str = "claude-haiku-4-5-20251001"
+    ai_model_small: str = "claude-haiku-4-5"
     ai_model_large: str = "claude-sonnet-5"
 
     embedding_model: str = "voyage-3"

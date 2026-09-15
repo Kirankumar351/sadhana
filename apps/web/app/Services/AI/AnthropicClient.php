@@ -33,7 +33,7 @@ final class AnthropicClient implements ModelClient
     ): ModelResponse {
         $model = $this->modelFor($tier);
 
-        $body = $this->post([
+        $body = $this->post($this->withoutThinking($model, [
             'model' => $model,
             'max_tokens' => (int) config('ai.guardrails.max_answer_tokens', 1200),
             'system' => $prompt->systemPrompt,
@@ -41,14 +41,18 @@ final class AnthropicClient implements ModelClient
                 'role' => 'user',
                 'content' => $this->userMessage($passages, $question),
             ]],
-        ]);
+        ]));
+
+        // A declined request is not an answer, whatever partial text came with it. Zero
+        // confidence hands the student to the community instead of showing a fragment.
+        $refused = data_get($body, 'stop_reason') === 'refusal';
 
         return new ModelResponse(
-            text: $this->textFrom($body),
+            text: $refused ? '' : $this->textFrom($body),
             model: $model,
             inputTokens: (int) data_get($body, 'usage.input_tokens', 0),
             outputTokens: (int) data_get($body, 'usage.output_tokens', 0),
-            confidence: $this->confidenceFrom($body, $passages),
+            confidence: $refused ? 0.0 : $this->confidenceFrom($body, $passages),
             stopReason: data_get($body, 'stop_reason'),
         );
     }
@@ -67,18 +71,21 @@ final class AnthropicClient implements ModelClient
     {
         $model = $this->modelFor($tier);
 
-        $body = $this->post([
+        $body = $this->post($this->withoutThinking($model, [
             'model' => $model,
-            'max_tokens' => 2000,
+            // Room to finish. JSON cut off at the cap does not decode, and an object that
+            // fails to decode reads downstream as "nothing was extracted".
+            'max_tokens' => 16000,
             'system' => $instruction."\n\nReturn ONLY valid JSON matching the given schema. "
                 .'Use null for anything not clearly stated. NEVER guess a date.',
             'messages' => [[
                 'role' => 'user',
                 'content' => "JSON schema:\n".json_encode($schema, JSON_PRETTY_PRINT)."\n\nContent:\n".$content,
             ]],
-        ]);
+        ]));
 
-        $text = $this->textFrom($body);
+        // A refusal carries no usable fields, even when some text came back with it.
+        $text = data_get($body, 'stop_reason') === 'refusal' ? '' : $this->textFrom($body);
 
         // Models wrap JSON in a fenced block more often than not, whatever the prompt says.
         $text = trim(preg_replace('/^```(?:json)?|```$/m', '', $text) ?? $text);
@@ -91,6 +98,31 @@ final class AnthropicClient implements ModelClient
             inputTokens: (int) data_get($body, 'usage.input_tokens', 0),
             outputTokens: (int) data_get($body, 'usage.output_tokens', 0),
         );
+    }
+
+    /**
+     * Short, bounded calls run without extended thinking.
+     *
+     * Sonnet 5 and Opus 5 think by default when `thinking` is omitted, and thinking tokens
+     * count against `max_tokens`. Under a 1,200-token answer cap the model could spend the
+     * whole budget reasoning and return no text — which the caller would read as an empty
+     * answer rather than an error. Grounded answers and JSON extraction do not need it.
+     *
+     * Haiku 4.5 does not think unless asked, and the Fable and Mythos models reject a
+     * disabled setting outright, so those are sent unchanged.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function withoutThinking(string $model, array $payload): array
+    {
+        foreach (['claude-haiku', 'claude-fable', 'claude-mythos'] as $family) {
+            if (str_starts_with($model, $family)) {
+                return $payload;
+            }
+        }
+
+        return $payload + ['thinking' => ['type' => 'disabled']];
     }
 
     /**
@@ -123,7 +155,9 @@ final class AnthropicClient implements ModelClient
 
         $body = $this->post(array_filter([
             'model' => $model,
-            'max_tokens' => 2000,
+            // Agent steps keep the model's default thinking — choosing the next tool is the
+            // reasoning — so the cap leaves room for thinking and the tool call together.
+            'max_tokens' => 16000,
             'system' => $system,
             'messages' => $messages,
             'tools' => $tools ?: null,

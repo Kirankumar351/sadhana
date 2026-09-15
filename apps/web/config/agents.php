@@ -171,7 +171,7 @@ return [
      */
     'runtime' => [
         'driver' => env('AGENT_RUNTIME', 'php'),
-        'service_url' => env('AI_SERVICE_URL', 'http://127.0.0.1:8001'),
+        'service_url' => env('AI_SERVICE_URL', 'http://127.0.0.1:8100'),
         'service_token' => env('AI_SERVICE_TOKEN'),
         'queue' => 'agents',
     ],

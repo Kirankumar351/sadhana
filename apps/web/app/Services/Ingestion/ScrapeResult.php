@@ -10,6 +10,11 @@ namespace App\Services\Ingestion;
  * `errors` is a list rather than a flag because the useful signal is usually partial: a
  * run that found 12 items and failed on 2 is healthy, and one that found 12 and failed on
  * 11 is a layout change. Collapsing both to "failed" loses the difference.
+ *
+ * `skipped` counts notifications nobody can apply to any more: a stated closing date in the
+ * past, or published so long ago with no closing date that the window is certainly over.
+ * They were read correctly and deliberately not queued — a reviewer's time goes to jobs
+ * people can still apply for.
  */
 final readonly class ScrapeResult
 {
@@ -21,6 +26,7 @@ final readonly class ScrapeResult
         public int $created = 0,
         public array $errors = [],
         public bool $failed = false,
+        public int $skipped = 0,
     ) {}
 
     public function summary(): string
@@ -30,6 +36,10 @@ final readonly class ScrapeResult
         }
 
         $line = "found {$this->found}, queued {$this->created} for review";
+
+        if ($this->skipped > 0) {
+            $line .= ", skipped {$this->skipped} closed or out of date";
+        }
 
         return $this->errors === []
             ? $line

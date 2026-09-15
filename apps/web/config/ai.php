@@ -30,7 +30,7 @@ return [
      * deduplication and filtering are small-model work; anything a student reads is large.
      */
     'models' => [
-        'small' => env('AI_MODEL_SMALL', 'claude-haiku-4-5-20251001'),
+        'small' => env('AI_MODEL_SMALL', 'claude-haiku-4-5'),
         'large' => env('AI_MODEL_LARGE', 'claude-sonnet-5'),
         'embedding' => env('AI_MODEL_EMBEDDING', 'voyage-3'),
         'embedding_dimensions' => 1024,
@@ -138,7 +138,7 @@ return [
      * page before launch. Money is integer paise everywhere: never a float.
      */
     'pricing' => [
-        'claude-haiku-4-5-20251001' => ['input' => 8_000.0,   'output' => 40_000.0],
+        'claude-haiku-4-5' => ['input' => 8_000.0,   'output' => 40_000.0],
         'claude-sonnet-5' => ['input' => 25_000.0,  'output' => 125_000.0],
         'claude-opus-5' => ['input' => 125_000.0, 'output' => 625_000.0],
         'voyage-3' => ['input' => 1_000.0,   'output' => 0.0],

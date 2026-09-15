@@ -141,6 +141,24 @@
                     <p class="mt-1 text-xs text-gray-500">{{ $current->source->name }}</p>
                 @endif
 
+                {{-- The links a student will click. Checked here, before publishing, because a
+                     dead apply link on a live notification is the complaint that arrives
+                     first and costs the most trust. --}}
+                @if ($current->apply_url || $current->registration_url)
+                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                        @if ($current->registration_url)
+                            <a href="{{ $current->registration_url }}" target="_blank" rel="noopener" class="font-medium text-primary-600 hover:underline">
+                                {{ __('Registration link') }} ↗
+                            </a>
+                        @endif
+                        @if ($current->apply_url && $current->apply_url !== $current->registration_url)
+                            <a href="{{ $current->apply_url }}" target="_blank" rel="noopener" class="font-medium text-primary-600 hover:underline">
+                                {{ __('Apply link') }} ↗
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
                 @if ($current->official_pdf_url && str_ends_with(strtolower($current->official_pdf_url), '.pdf'))
                     <iframe src="{{ $current->official_pdf_url }}"
                             class="mt-3 h-[36rem] w-full rounded-lg border border-gray-200 dark:border-white/10"

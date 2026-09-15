@@ -62,4 +62,21 @@ return [
         'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | PDF text
+    |--------------------------------------------------------------------------
+    |
+    | Poppler's pdftotext reads only the pages it is asked for, so a 70-page notification
+    | costs milliseconds instead of loading the whole document into PHP. It is not a
+    | credential, so a default is safe: on Linux it is found by name once poppler-utils is
+    | installed. On Windows, give the full path to pdftotext.exe. Without it, ingestion
+    | falls back to the slower PHP parser and still works.
+    |
+    */
+
+    'pdftotext' => [
+        'path' => env('PDFTOTEXT_PATH', 'pdftotext'),
+    ],
+
 ];
