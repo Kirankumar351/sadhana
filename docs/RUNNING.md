@@ -139,20 +139,15 @@ Run `php artisan config:clear` after setting it.
 
 They search Sadhana's own material before answering, and that search runs on Qdrant.
 Without it they reply "not available right now". The Windows build lives in
-`infra/qdrant` (not committed); download it once:
+`infra/qdrant` (not committed). One script downloads it the first time and starts it;
+run it in its own PowerShell window and leave the window open:
 
-```bash
-cd D:/Sadhana/infra/qdrant
-curl -L -o qdrant.zip https://github.com/qdrant/qdrant/releases/download/v1.19.1/qdrant-x86_64-pc-windows-msvc.zip
-unzip qdrant.zip && rm qdrant.zip
+```powershell
+powershell -ExecutionPolicy Bypass -File D:\Sadhana\infra\qdrant\start-qdrant.ps1
 ```
 
-Then, each time, in its own terminal:
-
-```bash
-cd D:/Sadhana/infra/qdrant
-QDRANT__TELEMETRY_DISABLED=true QDRANT__STORAGE__STORAGE_PATH=./storage ./qdrant.exe
-```
+If Qdrant is already running it says so and exits. Do not type `NAME=value command`
+in PowerShell — that is Bash syntax and PowerShell rejects it.
 
 Embed the corpus once Qdrant and a key are both available (the queue worker must be
 running, or run the worker line below once):
