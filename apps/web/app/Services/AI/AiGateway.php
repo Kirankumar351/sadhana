@@ -85,7 +85,11 @@ final class AiGateway
             // 4. Retrieval gate. No corpus, no answer.
             $passages = $this->retriever->retrieve($question, $locale, $context);
 
-            if (count($passages) < (int) config('ai.guardrails.min_passages')) {
+            // Per feature where one says so: Explain rewrites the passage the student selected,
+            // so that passage is already the source. Everything else keeps the global floor.
+            $minPassages = (int) config("ai.features.{$feature}.min_passages", config('ai.guardrails.min_passages'));
+
+            if (count($passages) < $minPassages) {
                 $this->meter->recordRefusal($user, $feature, 'no_sources');
 
                 return AiResult::noSources();

@@ -88,7 +88,24 @@ final class ChunkBuilder
                 ->delete();
         }
 
-        return $stale;
+        /**
+         * Everything still awaiting embedding, not only what changed in this run.
+         *
+         * A chunk built while no embedding key existed is stale with unchanged text. Returning
+         * only changed chunks meant it was never returned again, so `corpus:reindex --stale`
+         * — the documented way to embed the corpus once a key is added — queued every record
+         * and embedded nothing. Unchanged text that is already embedded is still skipped.
+         */
+        return array_values(array_unique([
+            ...$stale,
+            ...AiChunk::query()
+                ->where('source_type', $sourceType)
+                ->where('source_id', $record->getKey())
+                ->where('is_stale', true)
+                ->pluck('id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all(),
+        ]));
     }
 
     public function sourceTypeFor(Model $record): ?string

@@ -132,6 +132,40 @@ AI_MODEL_SMALL=claude-haiku-4-5
 
 Run `php artisan config:clear` after setting it.
 
+`GEMINI_API_KEY` works too. Whichever key is set is the provider used; with both,
+`AI_PROVIDER=auto` picks Claude and `AI_PROVIDER=gemini` picks Gemini.
+
+### Ask Sadhana, Explain and the doubt solver need the vector store
+
+They search Sadhana's own material before answering, and that search runs on Qdrant.
+Without it they reply "not available right now". The Windows build lives in
+`infra/qdrant` (not committed); download it once:
+
+```bash
+cd D:/Sadhana/infra/qdrant
+curl -L -o qdrant.zip https://github.com/qdrant/qdrant/releases/download/v1.19.1/qdrant-x86_64-pc-windows-msvc.zip
+unzip qdrant.zip && rm qdrant.zip
+```
+
+Then, each time, in its own terminal:
+
+```bash
+cd D:/Sadhana/infra/qdrant
+QDRANT__TELEMETRY_DISABLED=true QDRANT__STORAGE__STORAGE_PATH=./storage ./qdrant.exe
+```
+
+Embed the corpus once Qdrant and a key are both available (the queue worker must be
+running, or run the worker line below once):
+
+```bash
+php artisan corpus:reindex --stale
+php artisan queue:work --queue=low --stop-when-empty
+php artisan corpus:reindex            # shows how many chunks are still awaiting embedding
+```
+
+New and edited content is embedded automatically by the queue worker. Doubt answers are
+queued too, so keep `queue:work` running for the doubt solver to reply.
+
 The Python AI service (`apps/ai`) listens on **8100** so it never collides with
 the web app on 8001:
 

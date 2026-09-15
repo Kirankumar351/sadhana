@@ -1,0 +1,6 @@
+# The Qdrant binary and its data are local to each machine. Download the binary with the
+# command in docs/RUNNING.md; the storage directory is rebuilt by `php artisan corpus:reindex`.
+qdrant.exe
+qdrant
+storage/
+snapshots/

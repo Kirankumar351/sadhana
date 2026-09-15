@@ -218,8 +218,11 @@ return [
      */
     'features' => [
         'ask' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
-        'doubt_solver' => ['tier' => 'large', 'enabled' => false, 'gate' => null],
-        'explain' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        // On: a posted doubt gets a grounded first answer, or nothing below the confidence floor.
+        'doubt_solver' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
+        // One passage is enough: the selected text is itself the source being rewritten, and a
+        // short material may have only one chunk.
+        'explain' => ['tier' => 'large', 'enabled' => true,  'gate' => null, 'min_passages' => 1],
         'notes' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
         'flashcards' => ['tier' => 'large', 'enabled' => true,  'gate' => null],
         'study_plan' => ['tier' => 'large', 'enabled' => false, 'gate' => null],

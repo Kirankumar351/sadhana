@@ -120,6 +120,13 @@ final class Retriever
             $filters['source_id'] = $context['notification_id'];
         }
 
+        // "Explain this" on a material page explains that material. Unscoped, it grounded
+        // itself in whichever exams and notifications happened to score highest.
+        if (isset($context['material_id'])) {
+            $filters['source_type'] = 'material';
+            $filters['source_id'] = $context['material_id'];
+        }
+
         if (isset($context['exam_id'])) {
             $filters['exam_id'] = $context['exam_id'];
         }

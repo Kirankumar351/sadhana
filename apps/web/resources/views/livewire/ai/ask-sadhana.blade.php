@@ -108,14 +108,24 @@
             {{-- ------------------------------ nothing retrievable / low confidence --}}
             @elseif ($result->shouldOfferCommunity())
                 <article class="card p-5">
-                    <p class="text-body font-medium">
-                        {{ $result->status === 'low_confidence'
-                            ? __('I am not confident about this one.')
-                            : __('I do not have material on this yet.') }}
-                    </p>
-                    <p class="mt-1 text-body text-ink-soft">
-                        {{ __('I would rather tell you that than guess. Someone who has actually written this exam will answer better.') }}
-                    </p>
+                    {{-- An outage is not a content gap. Saying "I do not have material on this"
+                         when the provider or the vector store is down tells the student the
+                         question was the problem, and they stop asking. --}}
+                    @if ($result->status === 'unavailable')
+                        <p class="text-body font-medium">{{ __('The assistant is not available right now.') }}</p>
+                        <p class="mt-1 text-body text-ink-soft">
+                            {{ __('Please try again in a few minutes. Everything else on Sadhana keeps working.') }}
+                        </p>
+                    @else
+                        <p class="text-body font-medium">
+                            {{ $result->status === 'low_confidence'
+                                ? __('I am not confident about this one.')
+                                : __('I do not have material on this yet.') }}
+                        </p>
+                        <p class="mt-1 text-body text-ink-soft">
+                            {{ __('I would rather tell you that than guess. Someone who has actually written this exam will answer better.') }}
+                        </p>
+                    @endif
                     <div class="mt-3 flex flex-wrap gap-2">
                         <button type="button" wire:click="reset_" class="btn-secondary text-body">
                             {{ __('Try rewording it') }}
